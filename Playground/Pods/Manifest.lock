@@ -1,0 +1,31 @@
+PODS:
+  - Core (0.1.0):
+    - VideoLab
+  - FBSnapshotTestCase (2.1.4):
+    - FBSnapshotTestCase/SwiftSupport (= 2.1.4)
+  - FBSnapshotTestCase/Core (2.1.4)
+  - FBSnapshotTestCase/SwiftSupport (2.1.4):
+    - FBSnapshotTestCase/Core
+  - VideoLab (0.0.1)
+
+DEPENDENCIES:
+  - Core (from `../`)
+  - FBSnapshotTestCase (~> 2.1.4)
+
+SPEC REPOS:
+  trunk:
+    - FBSnapshotTestCase
+    - VideoLab
+
+EXTERNAL SOURCES:
+  Core:
+    :path: "../"
+
+SPEC CHECKSUMS:
+  Core: dcd4c80bd72eb153aea1c517f8dd9edbfa4fb127
+  FBSnapshotTestCase: 094f9f314decbabe373b87cc339bea235a63e07a
+  VideoLab: b073f9e63b9625b2783d658a543969f559e506c1
+
+PODFILE CHECKSUM: 70ee49583c4f5aae6e559cfe274a892286e72eb5
+
+COCOAPODS: 1.11.2

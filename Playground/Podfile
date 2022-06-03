@@ -1,0 +1,23 @@
+use_frameworks!
+
+platform :ios, '13.0'
+
+target 'Playground' do
+  pod 'Core', :path => '../'
+
+  target 'Tests' do
+    inherit! :search_paths
+
+    pod 'FBSnapshotTestCase' , '~> 2.1.4'
+  end
+end
+
+post_install do |installer|
+  installer.pods_project.targets.each do |target|
+    target.build_configurations.each do |config|
+      if target.name == 'FBSnapshotTestCase'
+        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.0'
+      end
+    end
+  end
+end
