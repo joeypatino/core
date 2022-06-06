@@ -38,6 +38,7 @@ public final class GenericVideoPlayerControls: UIView, VideoPlayerControls {
     public var duration: CMTime = .zero {
         didSet {
             let seconds = CMTimeGetSeconds(duration)
+            guard !seconds.isNaN else { return }
             let secondText = String(format: "%02d", Int(seconds) % 60)
             let minuteText = String(format: "%02d", Int(seconds) / 60)
             videoLengthLabel.text = "\(minuteText):\(secondText)"
@@ -45,17 +46,17 @@ public final class GenericVideoPlayerControls: UIView, VideoPlayerControls {
     }
     public var timeAndDuration: (CMTime, CMTime) = (.zero, .zero) {
         didSet {
+             
             let durationSeconds = CMTimeGetSeconds(timeAndDuration.1)
             let seconds = CMTimeGetSeconds(timeAndDuration.0)
             let progress = Float(seconds/durationSeconds)
-            self.timeSlider.value = progress
-            
+            if !timeSlider.isTracking { timeSlider.value = progress }
             let secondText = String(format: "%02d", Int(seconds) % 60)
             let minuteText = String(format: "%02d", Int(seconds) / 60)
-            self.elapsedTimeLabel.text = "\(minuteText):\(secondText)"
+            elapsedTimeLabel.text = "\(minuteText):\(secondText)"
             if progress >= 1.0 {
-                self.timeSlider.value = 0.0
-                self.elapsedTimeLabel.text = "00:00"
+                timeSlider.value = 0.0
+                elapsedTimeLabel.text = "00:00"
             }
         }
     }
@@ -66,7 +67,7 @@ public final class GenericVideoPlayerControls: UIView, VideoPlayerControls {
             let loadedDuration = CMTimeGetSeconds(timeRange.duration)
             let bufferLoadedTime: CGFloat = CGFloat(startTime + loadedDuration) / 100
             if bufferLoadedTime <= 1.0 {
-                self.bufferLoadRangeLayer.strokeEnd = bufferLoadedTime
+                bufferLoadRangeLayer.strokeEnd = bufferLoadedTime
             }
         }
     }
@@ -136,7 +137,6 @@ public final class GenericVideoPlayerControls: UIView, VideoPlayerControls {
         slider.minimumTrackTintColor = .red
         slider.maximumTrackTintColor = UIColor(white: 1, alpha: 0.4)
         slider.setThumbImage(UIImage(systemName: "circle.fill"), for: .normal)
-        slider.translatesAutoresizingMaskIntoConstraints = false
         slider.addTarget(self, action: #selector(handleSlider(_:)), for: .valueChanged)
         return slider
     }()
@@ -168,8 +168,6 @@ public final class GenericVideoPlayerControls: UIView, VideoPlayerControls {
         path.move(to: CGPoint(x: timeSlider.bounds.minX + 3, y: timeSlider.bounds.midY))
         path.addLine(to: CGPoint(x: timeSlider.bounds.maxX, y: timeSlider.bounds.midY))
         animationLayer.path = path.cgPath
-        //timeSlider.layer.insertSublayer(animationLayer, at: 0)
-        //animationLayer.add(setupBufferLoadAnimation, forKey: "strokeEndAnimation")
         return animationLayer
     }()
     
@@ -184,12 +182,7 @@ public final class GenericVideoPlayerControls: UIView, VideoPlayerControls {
         fatalError("init(coder:) has not been implemented")
     }
     
-    deinit {
-        NotificationCenter.default.removeObserver(self)
-    }
-
     private func setup() {
-        NotificationCenter.default.addObserver(self, selector: #selector(playerEndedPlaying), name: .AVPlayerItemDidPlayToEndTime, object: nil)
         addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleTap)))
     }
     
@@ -230,18 +223,18 @@ public final class GenericVideoPlayerControls: UIView, VideoPlayerControls {
             elapsedTimeLabel.widthAnchor.constraint(equalToConstant: 45),
             elapsedTimeLabel.heightAnchor.constraint(equalToConstant: 25),
             elapsedTimeLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 8),
-            elapsedTimeLabel.bottomAnchor.constraint(equalTo: bottomAnchor),
+            elapsedTimeLabel.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -40),
             
             // Total time label
             videoLengthLabel.widthAnchor.constraint(equalToConstant: 45),
             videoLengthLabel.heightAnchor.constraint(equalToConstant: 25),
             videoLengthLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -8),
-            videoLengthLabel.bottomAnchor.constraint(equalTo: bottomAnchor),
+            videoLengthLabel.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -40),
             
             // Slider constraints
             timeSlider.leadingAnchor.constraint(equalTo: elapsedTimeLabel.trailingAnchor),
             timeSlider.trailingAnchor.constraint(equalTo: videoLengthLabel.leadingAnchor),
-            timeSlider.bottomAnchor.constraint(equalTo: bottomAnchor),
+            timeSlider.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -40),
             timeSlider.heightAnchor.constraint(equalToConstant: 25),
             
             // Play pause button constraints
@@ -261,15 +254,15 @@ public final class GenericVideoPlayerControls: UIView, VideoPlayerControls {
         guard !self.container.isHidden else { return }
         handleTap()
     }
-
-    @objc private func playerEndedPlaying(_ notification: Notification) {
-        DispatchQueue.main.async {
-            self.player?.seek(to: CMTime.zero)
-            self.playPauseButton.setImage(UIImage(systemName: "gobackward"), for: .normal)
-            self.showControls()
-        }
+    
+    public func show() {
+        showControls()
     }
     
+    public func hide() {
+        hideControls()
+    }
+
     @objc private func handleTap() {
         UIView.transition(with: self, duration: 0.5, options: .transitionCrossDissolve, animations: {
             self.container.isHidden = !self.container.isHidden
@@ -302,10 +295,10 @@ public final class GenericVideoPlayerControls: UIView, VideoPlayerControls {
     }
     
     @objc private func handleSlider(_ sender: UISlider) {
-        if let duration = player?.currentItem?.duration {
+        if let duration = player?.currentItem?.duration {            
             let totalSeconds = CMTimeGetSeconds(duration)
             let value = totalSeconds * Float64(timeSlider.value)
-            let seekTime = CMTime(value: Int64(value), timescale: 1)
+            let seekTime = CMTime(value: Int64(value * 1000), timescale: 1000)
             player?.seek(to: seekTime)
         }
     }

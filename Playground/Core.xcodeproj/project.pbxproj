@@ -13,6 +13,8 @@
 		607FACDD1AFB9204008FA782 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 607FACDC1AFB9204008FA782 /* Assets.xcassets */; };
 		607FACE01AFB9204008FA782 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 607FACDE1AFB9204008FA782 /* LaunchScreen.xib */; };
 		607FACEC1AFB9204008FA782 /* Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 607FACEB1AFB9204008FA782 /* Tests.swift */; };
+		D411149A284E8B1A00D593FD /* VideoEditorPlaygroundViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4111499284E8B1A00D593FD /* VideoEditorPlaygroundViewController.swift */; };
+		D41FF58C28513D18006B2688 /* CAAnimationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D41FF58B28513D18006B2688 /* CAAnimationViewController.swift */; };
 		D481326E284CD7E2001948F7 /* ModalViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D481326D284CD7E2001948F7 /* ModalViewController.swift */; };
 		D4813271284CDA57001948F7 /* ModalPresentationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4813270284CDA57001948F7 /* ModalPresentationViewController.swift */; };
 		D4813273284CDB9D001948F7 /* LoadingBannerModalPresentationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4813272284CDB9D001948F7 /* LoadingBannerModalPresentationViewController.swift */; };
@@ -20,9 +22,12 @@
 		D4813277284CDEC3001948F7 /* ActionSheetPlaygroundViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4813276284CDEC3001948F7 /* ActionSheetPlaygroundViewController.swift */; };
 		D4813279284CDF61001948F7 /* MediaCapturePlaygroundViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4813278284CDF61001948F7 /* MediaCapturePlaygroundViewController.swift */; };
 		D4813286284CEE0A001948F7 /* CameraCaptureViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4813285284CEE0A001948F7 /* CameraCaptureViewController.swift */; };
-		D4ACCB1A284D147C00DC0425 /* VideoEditorPlaygroundViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4ACCB19284D147C00DC0425 /* VideoEditorPlaygroundViewController.swift */; };
+		D4ACCB1A284D147C00DC0425 /* VideoCapturePlaygroundViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4ACCB19284D147C00DC0425 /* VideoCapturePlaygroundViewController.swift */; };
 		D4ACCB1E284D23C700DC0425 /* VideoPlayerPlaygroundViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4ACCB1D284D23C700DC0425 /* VideoPlayerPlaygroundViewController.swift */; };
 		D4CBA2AB284A515800040CD6 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4CBA2AA284A515800040CD6 /* SceneDelegate.swift */; };
+		D4DEE16F2853679300E56202 /* AudioEditingPlaygroundViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4DEE16E2853679300E56202 /* AudioEditingPlaygroundViewController.swift */; };
+		D4DEE17B28536BB600E56202 /* audio_sample_2.aiff in Resources */ = {isa = PBXBuildFile; fileRef = D4DEE17928536BB600E56202 /* audio_sample_2.aiff */; };
+		D4DEE17C28536BB600E56202 /* audio_sample_1.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = D4DEE17A28536BB600E56202 /* audio_sample_1.mp3 */; };
 		E6CF88126472FDB15F2CBFE3 /* Pods_Tests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4EECF0083534776F348F7C3F /* Pods_Tests.framework */; };
 /* End PBXBuildFile section */
 
@@ -58,6 +63,8 @@
 		A2B13ED6377C79E5364E9B28 /* Pods-Playground.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Playground.release.xcconfig"; path = "Target Support Files/Pods-Playground/Pods-Playground.release.xcconfig"; sourceTree = "<group>"; };
 		B8FED4338D56BDD609E8F929 /* Pods-Core_Example.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Core_Example.release.xcconfig"; path = "Target Support Files/Pods-Core_Example/Pods-Core_Example.release.xcconfig"; sourceTree = "<group>"; };
 		CACFB25EE2758D54181A2A1B /* Pods-Core_Tests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Core_Tests.debug.xcconfig"; path = "Target Support Files/Pods-Core_Tests/Pods-Core_Tests.debug.xcconfig"; sourceTree = "<group>"; };
+		D4111499284E8B1A00D593FD /* VideoEditorPlaygroundViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoEditorPlaygroundViewController.swift; sourceTree = "<group>"; };
+		D41FF58B28513D18006B2688 /* CAAnimationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CAAnimationViewController.swift; sourceTree = "<group>"; };
 		D481326D284CD7E2001948F7 /* ModalViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModalViewController.swift; sourceTree = "<group>"; };
 		D4813270284CDA57001948F7 /* ModalPresentationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModalPresentationViewController.swift; sourceTree = "<group>"; };
 		D4813272284CDB9D001948F7 /* LoadingBannerModalPresentationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadingBannerModalPresentationViewController.swift; sourceTree = "<group>"; };
@@ -65,9 +72,12 @@
 		D4813276284CDEC3001948F7 /* ActionSheetPlaygroundViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActionSheetPlaygroundViewController.swift; sourceTree = "<group>"; };
 		D4813278284CDF61001948F7 /* MediaCapturePlaygroundViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaCapturePlaygroundViewController.swift; sourceTree = "<group>"; };
 		D4813285284CEE0A001948F7 /* CameraCaptureViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraCaptureViewController.swift; sourceTree = "<group>"; };
-		D4ACCB19284D147C00DC0425 /* VideoEditorPlaygroundViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoEditorPlaygroundViewController.swift; sourceTree = "<group>"; };
+		D4ACCB19284D147C00DC0425 /* VideoCapturePlaygroundViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoCapturePlaygroundViewController.swift; sourceTree = "<group>"; };
 		D4ACCB1D284D23C700DC0425 /* VideoPlayerPlaygroundViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPlayerPlaygroundViewController.swift; sourceTree = "<group>"; };
 		D4CBA2AA284A515800040CD6 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
+		D4DEE16E2853679300E56202 /* AudioEditingPlaygroundViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioEditingPlaygroundViewController.swift; sourceTree = "<group>"; };
+		D4DEE17928536BB600E56202 /* audio_sample_2.aiff */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff; path = audio_sample_2.aiff; sourceTree = "<group>"; };
+		D4DEE17A28536BB600E56202 /* audio_sample_1.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = audio_sample_1.mp3; sourceTree = "<group>"; };
 		DCC3EBA1F8C3A960D48BBA53 /* Pods-Playground.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Playground.debug.xcconfig"; path = "Target Support Files/Pods-Playground/Pods-Playground.debug.xcconfig"; sourceTree = "<group>"; };
 		E293F0C81642178801B13DFB /* LICENSE */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = LICENSE; path = ../LICENSE; sourceTree = "<group>"; };
 		F605849F130B762D8D9510AC /* Pods-Core_Example.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Core_Example.debug.xcconfig"; path = "Target Support Files/Pods-Core_Example/Pods-Core_Example.debug.xcconfig"; sourceTree = "<group>"; };
@@ -139,6 +149,8 @@
 				D4CBA2AA284A515800040CD6 /* SceneDelegate.swift */,
 				607FACD71AFB9204008FA782 /* RootViewController.swift */,
 				D481326D284CD7E2001948F7 /* ModalViewController.swift */,
+				D4DEE17A28536BB600E56202 /* audio_sample_1.mp3 */,
+				D4DEE17928536BB600E56202 /* audio_sample_2.aiff */,
 				607FACDC1AFB9204008FA782 /* Assets.xcassets */,
 				607FACDE1AFB9204008FA782 /* LaunchScreen.xib */,
 				607FACD41AFB9204008FA782 /* Info.plist */,
@@ -183,7 +195,10 @@
 				D4813278284CDF61001948F7 /* MediaCapturePlaygroundViewController.swift */,
 				D4813285284CEE0A001948F7 /* CameraCaptureViewController.swift */,
 				D4ACCB1D284D23C700DC0425 /* VideoPlayerPlaygroundViewController.swift */,
-				D4ACCB19284D147C00DC0425 /* VideoEditorPlaygroundViewController.swift */,
+				D4ACCB19284D147C00DC0425 /* VideoCapturePlaygroundViewController.swift */,
+				D4111499284E8B1A00D593FD /* VideoEditorPlaygroundViewController.swift */,
+				D41FF58B28513D18006B2688 /* CAAnimationViewController.swift */,
+				D4DEE16E2853679300E56202 /* AudioEditingPlaygroundViewController.swift */,
 			);
 			path = Modules;
 			sourceTree = "<group>";
@@ -286,8 +301,10 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D4DEE17B28536BB600E56202 /* audio_sample_2.aiff in Resources */,
 				607FACE01AFB9204008FA782 /* LaunchScreen.xib in Resources */,
 				607FACDD1AFB9204008FA782 /* Assets.xcassets in Resources */,
+				D4DEE17C28536BB600E56202 /* audio_sample_1.mp3 in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -390,10 +407,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D4ACCB1A284D147C00DC0425 /* VideoEditorPlaygroundViewController.swift in Sources */,
+				D4ACCB1A284D147C00DC0425 /* VideoCapturePlaygroundViewController.swift in Sources */,
+				D411149A284E8B1A00D593FD /* VideoEditorPlaygroundViewController.swift in Sources */,
 				D4813279284CDF61001948F7 /* MediaCapturePlaygroundViewController.swift in Sources */,
 				D4813277284CDEC3001948F7 /* ActionSheetPlaygroundViewController.swift in Sources */,
 				D481326E284CD7E2001948F7 /* ModalViewController.swift in Sources */,
+				D4DEE16F2853679300E56202 /* AudioEditingPlaygroundViewController.swift in Sources */,
+				D41FF58C28513D18006B2688 /* CAAnimationViewController.swift in Sources */,
 				607FACD81AFB9204008FA782 /* RootViewController.swift in Sources */,
 				D4ACCB1E284D23C700DC0425 /* VideoPlayerPlaygroundViewController.swift in Sources */,
 				D4813286284CEE0A001948F7 /* CameraCaptureViewController.swift in Sources */,

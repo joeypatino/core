@@ -12,6 +12,7 @@ public protocol CameraDelegate: AnyObject {
 public final class Camera: NSObject {
     public enum Error: Swift.Error {
         case photoCaptureFailed
+        case invalidState
     }
     public enum CaptureMode {
         case photo
@@ -58,7 +59,7 @@ public final class Camera: NSObject {
     public var maxVideoDuration: Int64 = Int64.max {
         didSet { maxRecordedDuration = maxVideoDuration == Int64.max ? CMTime.invalid : CMTime(value: maxVideoDuration, timescale: 1) }
     }
-    public var captureSessionPresent: AVCaptureSession.Preset = .vga640x480
+    public var captureSessionPresent: AVCaptureSession.Preset = .hd1280x720
     
     private var videoFileOutput: AVCaptureMovieFileOutput?
     private var photoCaptureOutput: AVCapturePhotoOutput?
@@ -79,7 +80,7 @@ public final class Camera: NSObject {
             captureImage()
         case .video(let isRecording):
             isRecording ? stopRecording() : startRecording()
-            mode = .video(isRecording: !isRecording)
+            if !isRecording { mode = .video(isRecording: !isRecording) }
         }
     }
     
@@ -98,7 +99,7 @@ public final class Camera: NSObject {
             return
         }
         
-        videoFileOutput?.startRecording(to: FileManager.default.temporaryURL, recordingDelegate: self)
+        videoFileOutput?.startRecording(to: FileManager.default.temporaryMovieURL, recordingDelegate: self)
         delegate?.cameraVideoCaptureDidBegin(self)
     }
     
@@ -139,7 +140,7 @@ public final class Camera: NSObject {
                 return
             }
             do {
-                let location = FileManager.default.temporaryURL
+                let location = FileManager.default.temporaryPhotoURL
                 try data.write(to: location)
                 delegate?.camera(self, didCapturePhoto: image, photoURL: location)
             } catch {
@@ -218,7 +219,7 @@ extension Camera: AVCapturePhotoCaptureDelegate {
             return
         }
         do {
-            let location = FileManager.default.temporaryURL
+            let location = FileManager.default.temporaryPhotoURL
             try data.write(to: location)
             delegate?.camera(self, didCapturePhoto: image, photoURL: location)
         } catch {

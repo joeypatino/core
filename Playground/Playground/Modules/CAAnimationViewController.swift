@@ -1,8 +1,9 @@
 import UIKit
 import Core
 
-class CameraPlaygroundViewController: UIViewController {
-    private let captureButton = CaptureButton()
+class CAAnimationViewController: UIViewController {
+    private let ring = RingView(duration: 5)
+    
     public init() {
         super.init(nibName: nil, bundle: nil)
     }
@@ -20,39 +21,37 @@ class CameraPlaygroundViewController: UIViewController {
         setup()
         layout()
     }
-
+    
     private func setup() {
-
+        
     }
     
     private func layout() {
+        view.addAutoLayoutSubview(ring)
+        ring.centerYAnchor.equalTo(view.centerYAnchor)
+        ring.centerXAnchor.equalTo(view.centerXAnchor)
+        ring.widthAnchor.equalToConstant(100)
+        
         let button = UIButton()
         button.setTitleColor(.black, for: .normal)
-        button.setTitle("Open...", for: .normal)
+        button.setTitle("delete...", for: .normal)
         view.addAutoLayoutSubview(button)
         button.widthAnchor.equalToConstant(100)
         button.heightAnchor.equalToConstant(60)
         button.centerXAnchor.equalTo(view.centerXAnchor)
         button.centerYAnchor.equalTo(view.centerYAnchor)
         button.addTarget(self, action: #selector(showModalViewController(_:)), for: .touchUpInside)
-        
-        view.addAutoLayoutSubview(captureButton)
-        captureButton.widthAnchor.equalToConstant(100)
-        captureButton.topAnchor.equalTo(button.bottomAnchor).constant(160)
-        captureButton.centerXAnchor.equalTo(view.centerXAnchor)
-        captureButton.addTarget(self, action: #selector(onCaptureButtonSelected(_:)), for: .touchUpInside)
     }
     
     @objc private func showModalViewController(_ sender: UIButton) {
-        let viewController = CameraViewController()
-        present(viewController, animated: true)
+        ring.removeSegment()
     }
     
-    @objc private func onCaptureButtonSelected(_ sender: UIButton) {
-        if captureButton.isAnimating() {
-            captureButton.stopAnimation()
-        } else {
-            captureButton.startAnimation()
-        }
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        ring.startAnimation()
+    }
+    
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        ring.stopAnimation()
     }
 }

@@ -9,7 +9,10 @@ enum Playgrounds: String, CaseIterable {
     case mediaCaptureOptions
     case cameraCapture
     case mediaPlayer
+    case videoCapture
     case videoEditor
+    case caAnimations
+    case audioEditor
 }
 
 class RootViewController: UIViewController {
@@ -43,6 +46,8 @@ extension RootViewController: UITableViewDelegate {
         
         let playground = Playgrounds.allCases[indexPath.row]
         switch playground {
+        case .caAnimations:
+            show(CAAnimationViewController(), sender: nil)
         case .modalPresentation:
             show(ModalPresentationViewController(), sender: nil)
         case .modalPresentationWithLoadingBanner:
@@ -57,8 +62,12 @@ extension RootViewController: UITableViewDelegate {
             show(CameraPlaygroundViewController(), sender: nil)
         case .mediaPlayer:
             show(VideoPlayerPlaygroundViewController(), sender: nil)
+        case .videoCapture:
+            show(VideoCapturePlaygroundViewController(), sender: nil)
         case .videoEditor:
             show(VideoEditorPlaygroundViewController(), sender: nil)
+        case .audioEditor:
+            show(AudioEditingPlaygroundViewController(), sender: nil)
         }
     }
 }
@@ -70,7 +79,7 @@ extension RootViewController: UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: String(describing: PlaygroundCell.self), for: indexPath) as! PlaygroundCell
-        cell.title = Playgrounds.allCases[indexPath.row].rawValue.capitalized
+        cell.title = Playgrounds.allCases[indexPath.row].rawValue.capitalizingFirstLetter()
         return cell
     }
     

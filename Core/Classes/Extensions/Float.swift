@@ -16,3 +16,9 @@ public extension Float {
         return CGFloat(self)
     }
 }
+
+public extension Float64 {
+    func truncate(to places : Int)-> Float64 {
+        floor(pow(10.0, places.float64) * self)/pow(10.0, places.float64)
+    }
+}

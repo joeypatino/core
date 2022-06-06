@@ -17,8 +17,8 @@ public final class VideoTrimmerThumb: UIView {
     public let trailingGrabber = UIControl()
     
 	private var isActive = false
-    private var leadingChevronImageView = UIImageView(image: UIImage(systemName: "chevron.compact.left"))
-    private var trailingChevronView = UIImageView(image: UIImage(systemName: "chevron.compact.right"))
+    private var leadingChevronImageView = UIImageView(image: UIImage(systemName: "line.3.horizontal")?.rotated(by: .degrees(90))?.withRenderingMode(.alwaysTemplate))
+    private var trailingChevronView = UIImageView(image: UIImage(systemName: "line.3.horizontal")?.rotated(by: .degrees(90))?.withRenderingMode(.alwaysTemplate))
 
     private let wrapperView = UIView()
     private let leadingView = UIView()
@@ -26,7 +26,7 @@ public final class VideoTrimmerThumb: UIView {
     private let topView = UIView()
     private let bottomView = UIView()
 
-    public let chevronWidth = CGFloat(16)
+    public let chevronWidth = CGFloat(22)
     public let edgeHeight = CGFloat(4)
 
 	// MARK: - Input
@@ -44,8 +44,8 @@ public final class VideoTrimmerThumb: UIView {
 
 	private func setup() {
 
-		leadingChevronImageView.contentMode = .scaleAspectFill
-		trailingChevronView.contentMode = .scaleAspectFill
+		leadingChevronImageView.contentMode = .scaleAspectFit
+		trailingChevronView.contentMode = .scaleAspectFit
 
 		leadingChevronImageView.tintColor = .white
 		trailingChevronView.tintColor = .white
@@ -53,13 +53,8 @@ public final class VideoTrimmerThumb: UIView {
 		leadingChevronImageView.tintAdjustmentMode = .normal
 		trailingChevronView.tintAdjustmentMode = .normal
 
-		leadingView.layer.cornerRadius = 0
-		leadingView.layer.cornerCurve = .continuous
-		leadingView.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMinXMinYCorner]
-
-		trailingView.layer.cornerRadius = 6
-		trailingView.layer.cornerCurve = .continuous
-		trailingView.layer.maskedCorners = [.layerMaxXMaxYCorner, .layerMaxXMinYCorner]
+        leadingView.setLayerCornerRadius(6.0, maskCorners: [.topLeftCorner, .bottomLeftCorner])
+        trailingView.setLayerCornerRadius(6.0, maskCorners: [.topRightCorner, .bottomRightCorner])
 
 		leadingView.addSubview(leadingChevronImageView)
 		trailingView.addSubview(trailingChevronView)

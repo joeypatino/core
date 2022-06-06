@@ -91,6 +91,18 @@ import AVFoundation
         }
     }
     
+    public var generator: AVAssetImageGenerator? {
+        didSet {
+            let duration = generator?.asset.duration ?? .zero
+            range = CMTimeRange(start: .zero, duration: duration)
+            selectedRange = range
+            thumbnails.removeAll()
+            thumbnailTrackView.removeSubviews()
+            lastKnownViewSizeForThumbnailGeneration = .zero
+            setNeedsLayout()
+        }
+    }
+    
     // defines what to do with the progress indicator
     public enum ProgressIndicatorMode {
         case hiddenOnlyWhenTrimming // the progress indicator gets hidden when the user starts trimming
@@ -133,7 +145,6 @@ import AVFoundation
             })
         }
     }
-    
     
     // defines if the user is trimming or not, and if so, which edge
     enum TrimmingState {
@@ -208,8 +219,6 @@ import AVFoundation
     private var thumbnailSize: CGSize = .zero
     private var lastKnownThumbnailRange: CMTimeRange = .zero
     private var thumbnails = Array<Thumbnail>()
-    private var generator: AVAssetImageGenerator?
-    
     private var impactFeedbackGenerator: UIImpactFeedbackGenerator?
     private var didClampWhilePanning = false
     
@@ -232,7 +241,7 @@ import AVFoundation
         progressIndicator.layer.cornerCurve = .continuous
         
         addSubview(shadowView)
-        wrapperView.clipsToBounds = true
+        wrapperView.clipsToBounds = false
         shadowView.addSubview(wrapperView)
         wrapperView.addSubview(thumbView)
         
@@ -293,7 +302,7 @@ import AVFoundation
         let size = bounds.size
         guard size.width > 0 && size.height > 0 else {return}
         guard lastKnownViewSizeForThumbnailGeneration != size || CMTimeRangeEqual(lastKnownThumbnailRange, visibleRange) == false else {return}
-        guard let asset = asset else {return}
+        guard let asset = generator?.asset else {return}
         guard let track = asset.tracks(withMediaType: .video).first else {return}
         
         lastKnownViewSizeForThumbnailGeneration = size
@@ -303,31 +312,28 @@ import AVFoundation
         let transform = track.preferredTransform
         let fixedSize = naturalSize.applyingVideoTransform(transform)
         
-        let generator = AVAssetImageGenerator(asset: asset)
-        generator.apertureMode = .cleanAperture
-        generator.videoComposition = videoComposition
-        self.generator = generator
-        
         let height = size.height - thumbView.edgeHeight * 2
         thumbnailSize = CGSize(width: height / fixedSize.height * fixedSize.width, height: height)
-        let numberOfThumbnails = Int(ceil(size.width / thumbnailSize.width))
+        let thumbCount = ceil(size.width / thumbnailSize.width)
+        let numberOfThumbnails = Int(thumbCount.isNaN ? 0 : thumbCount)
         
         var newThumbnails = Array<Thumbnail>()
         let thumbnailDuration = visibleRange.duration.seconds / Double(numberOfThumbnails)
         var times = Array<NSValue>()
+        
         // we add some extra thumbnails as padding
         for index in -3..<numberOfThumbnails + 6 {
             let time = CMTimeAdd(visibleRange.start, CMTime(seconds: thumbnailDuration * Double(index), preferredTimescale: asset.duration.timescale * 2))
             guard CMTimeCompare(time, .zero) != -1 else {continue}
             times.append(NSValue(time: time))
-            
-            let newThumbnail = Thumbnail(imageView: UIImageView(), time: time)
+
+            let newThumbnail = Thumbnail(imageView: UIImageView(frame: .zero), time: time)
             self.thumbnailTrackView.addSubview(newThumbnail.imageView)
             newThumbnails.append(newThumbnail)
         }
         
-        generator.appliesPreferredTrackTransform = true
-        generator.maximumSize = CGSize(width: thumbnailSize.width * UIScreen.main.scale, height: thumbnailSize.height * UIScreen.main.scale)
+        generator?.appliesPreferredTrackTransform = true
+        generator?.maximumSize = CGSize(width: thumbnailSize.width * UIScreen.main.scale, height: thumbnailSize.height * UIScreen.main.scale)
         
         let oldThumbnails = thumbnails
         thumbnails.append(contentsOf: newThumbnails)
@@ -341,9 +347,9 @@ import AVFoundation
         })
         
         var seenIndex = 0
-        generator.requestedTimeToleranceBefore = .zero
-        generator.requestedTimeToleranceAfter = .zero
-        generator.generateCGImagesAsynchronously(forTimes: times) { requestedTime, cgImage, actualTime, result, error in
+        generator?.requestedTimeToleranceBefore = .zero
+        generator?.requestedTimeToleranceAfter = .zero
+        generator?.generateCGImagesAsynchronously(forTimes: times) { requestedTime, cgImage, actualTime, result, error in
             DispatchQueue.main.async {
                 seenIndex += 1
                 
@@ -377,10 +383,8 @@ import AVFoundation
         let availableWidth = size.width - inset * 2
         
         let offset = CMTimeSubtract(time, visibleRange.start)
-        
         let visibleDurationInSeconds = CGFloat(visibleRange.duration.seconds)
         let ratio = visibleDurationInSeconds != 0 ? availableWidth / visibleDurationInSeconds : 0
-        
         let location = CGFloat(offset.seconds) * ratio
         return SnapToDevicePixels(location) + inset
     }
@@ -494,12 +498,10 @@ import AVFoundation
         progressIndicatorControl.alpha = progressIndicator.alpha
     }
     
-    
     // MARK: - Input
     @objc private func thumbnailPanned(_ sender: UILongPressGestureRecognizer) {
         progressGrabberPanned(sender)
     }
-    
     
     @objc private func progressGrabberPanned(_ sender: UILongPressGestureRecognizer) {
         
@@ -554,7 +556,6 @@ import AVFoundation
             break
         }
     }
-    
     
     @objc private func leadingGrabberPanned(_ sender: UILongPressGestureRecognizer) {
         switch sender.state {
@@ -719,10 +720,10 @@ import AVFoundation
         trailingThumbRest.frame = CGRect(x: thumbnailRect.width - inset, y: 0, width: inset, height: thumbnailRect.height)
         
         if progressIndicator.alpha > 0 {
-            let progressWidth = CGFloat(4)
+            let progressWidth = CGFloat(6)
             let progressIndicatorOffset = locationForTime(progress)
             let progressLeft = min(max(thumbView.frame.minX + inset, progressIndicatorOffset - progressWidth * 0.5), thumbView.frame.maxX - inset - progressWidth)
-            progressIndicator.frame = CGRect(x: progressLeft, y: thumbnailRect.minY, width: progressWidth, height: thumbnailRect.height)
+            progressIndicator.frame = CGRect(x: progressLeft, y: thumbnailRect.minY, width: progressWidth, height: thumbnailRect.height).insetBy(dx: 0, dy: -8)
             
             let progressControlWidth = CGFloat(24)
             
@@ -750,18 +751,15 @@ import AVFoundation
         }
     }
     
-    override init(frame: CGRect) {
-        super.init(frame: frame)
+    public init() {
+        super.init(frame: .zero)
         setup()
     }
     
     required init?(coder: NSCoder) {
-        super.init(coder: coder)
-        setup()
+        fatalError("init(coder:) has not been implemented")
     }
 }
-
-// MARK: -
 
 fileprivate func SnapToDevicePixels(_ value: CGFloat, scale: CGFloat? = nil) -> CGFloat {
     let actualScale = scale ?? UIScreen.main.scale

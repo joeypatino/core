@@ -16,6 +16,11 @@ public extension Int {
         return Float(self)
     }
 
+    /// convert to Float64.
+    var float64: Float64 {
+        return Float64(self)
+    }
+
     /// convert to CGFloat.
     var cgFloat: CGFloat {
         return CGFloat(self)
