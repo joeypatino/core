@@ -1,6 +1,6 @@
 import Foundation
 
-protocol Localizable {
+public protocol Localizable {
     // Properties for NSLocalizedString function
     var key      : String  { get }
     var tableName: String? { get }
@@ -13,7 +13,7 @@ protocol Localizable {
 }
 
 // MARK: - Default values of the Localizable protocol properties for the NSLocalizedString function
-extension Localizable {
+public extension Localizable {
     var tableName: String? {
         return nil
     }
@@ -29,7 +29,7 @@ extension Localizable {
 }
 
 // MARK: - Localized string property Extraction
-extension Localizable {
+public extension Localizable {
     /// Default localized string, helper property
     fileprivate var defaultLocalizedString: String {
         return NSLocalizedString(key, tableName: tableName, bundle: bundle, value: value, comment: comment)
@@ -42,7 +42,7 @@ extension Localizable {
 }
 
 // MARK: - Default values where RawRepresentable protocol is implemented and RawRepresentable.RawValue == String
-extension Localizable where Self: RawRepresentable, Self.RawValue == String {
+public extension Localizable where Self: RawRepresentable, Self.RawValue == String {
     /// Default key value
     var key: String {
         return rawValue
@@ -55,7 +55,7 @@ extension Localizable where Self: RawRepresentable, Self.RawValue == String {
 }
 
 // MARK: - Localized string property Extraction where RawRepresentable protocol is implemented and RawRepresentable.RawValue == String
-extension Localizable where Self: RawRepresentable, Self.RawValue == String {
+public extension Localizable where Self: RawRepresentable, Self.RawValue == String {
     /// Localized string extracted
     var localizedString: String {
         return defaultLocalizedString

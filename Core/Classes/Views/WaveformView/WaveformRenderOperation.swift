@@ -212,7 +212,6 @@ final public class WaveformRenderOperation: Operation {
                            downSampledLength: downSampledLength,
                            samplesPerPixel: samplesPerPixel,
                            filter: filter)
-            //print("Status: \(reader.status)")
         }
         
         // Process the remaining samples that did not fit into samplesPerPixel at the end
@@ -231,7 +230,6 @@ final public class WaveformRenderOperation: Operation {
                            downSampledLength: downSampledLength,
                            samplesPerPixel: samplesPerPixel,
                            filter: filter)
-            //print("Status: \(reader.status)")
         }
         
         // if (reader.status == AVAssetReaderStatusFailed || reader.status == AVAssetReaderStatusUnknown)

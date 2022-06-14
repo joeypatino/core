@@ -66,9 +66,6 @@ open class WaveformView: UIView {
     /// The samples to be displayed
     open var zoomSamples: CountableRange<Int> = 0 ..< 0 {
         didSet {
-            if zoomSamples.startIndex < 0{
-                print("rip")
-            }
             setNeedsDisplay()
             setNeedsLayout()
         }

@@ -66,6 +66,6 @@ extension VideoCapturePlaygroundViewController: CameraViewControllerDelegate {
     func viewController(_ viewController: CameraViewController, didCaptureAsset asset: AVAsset, atUrl url: URL) {
         composition.addLayer(with: asset)
         videoPlayerViewController.playerItem = videoLab.makePlayerItem()
-        timeline.generator = videoLab.makeImageGenerator()
+        timeline.imageGenerator = videoLab.makeImageGenerator()
     }
 }

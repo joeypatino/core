@@ -1,6 +1,6 @@
 import Foundation
 
-internal struct Localization {
+public struct Localization {
     private init() {}
     
     enum MediaCapture: String, Localizable {

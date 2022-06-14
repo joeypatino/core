@@ -38,7 +38,7 @@ class VideoEditorPlaygroundViewController: UIViewController {
         do {
             composition = try JSONDecoder().decode(Composition.self, from: data)
             videoPlayerViewController.playerItem = composition.playerItem
-            trimmer.generator = composition.thumbnailGenerator
+            trimmer.imageGenerator = composition.imageGenerator
         } catch {
             try? FileManager.default.removeItem(at: url)
             compositionName = nil
@@ -117,7 +117,7 @@ class VideoEditorPlaygroundViewController: UIViewController {
     private func updateComposition() {
         timeline.composition = composition
         videoPlayerViewController.playerItem = composition.playerItem
-        trimmer.generator = composition.thumbnailGenerator
+        trimmer.imageGenerator = composition.imageGenerator
     }
     
     @objc private func showModalViewController(_ sender: UIButton) {
@@ -144,9 +144,23 @@ extension VideoEditorPlaygroundViewController: CompositionCameraViewControllerDe
 
 extension VideoEditorPlaygroundViewController: VideoTimelineViewDelegate {
     public func view(_ videoTimeline: VideoTimelineView, didSelectAsset asset: Asset) {
+//        let url = Bundle.main.url(forResource: "audio_sample_1", withExtension: "mp3")!
+//        let asset = Asset(url: url)
+//        asset.trim(CMTimeRange(start: .zero, duration: CMTime(seconds: 8.966666666666667, preferredTimescale: CMTimeScale(600))))
+//        composition.append(layerWithAsset: asset)
+//
+//        DispatchQueue.main.asyncAfter(delay: 0.5) {
+//            self.updateComposition()
+//        }
+
         let time = composition.timeRange(forAsset: asset).start
         videoPlayerViewController.seek(to: time)
-        
+        DispatchQueue.main.asyncAfter(delay: 0.15) {
+            if self.composition.layers.firstIndex(where: { $0.asset == asset }) == 0 {
+                self.timeline.updateCurrentTime(CMTimeAdd(.zero, CMTime(seconds: 0.01, preferredTimescale: CMTimeScale(30))))
+            }
+        }
+
         // The bug in the timeline...
         // when scrolling through the timeline, the periodic time observer responds with CMTime.zero in between clips
         // what is the cause?
@@ -161,12 +175,6 @@ extension VideoEditorPlaygroundViewController: VideoTimelineViewDelegate {
         
         // if all else fails, try to only setup boundary time observers, and update these when the composition changes.
         // this *should* prevent the issues seen but will require more careful maintaince to keep the observers up to date.
-        
-        DispatchQueue.main.asyncAfter(delay: 0.15) {
-            if self.composition.layers.firstIndex(where: { $0.asset == asset }) == 0 {
-                self.timeline.updateCurrentTime(CMTimeAdd(.zero, CMTime(seconds: 0.01, preferredTimescale: CMTimeScale(30))))
-            }
-        }
     }
     
     public func view(_ videoTimeline: VideoTimelineView, didEditComposition composition: Composition) {
