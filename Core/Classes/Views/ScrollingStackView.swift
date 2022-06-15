@@ -61,6 +61,14 @@ public final class ScrollingStackView: UIScrollView {
         commonInit()
     }
 
+    public convenience init(axis: NSLayoutConstraint.Axis, subviews: [UIView] = [], distribution: UIStackView.Distribution = .fill, alignment: UIStackView.Alignment = .fill) {
+        self.init(frame: .zero)
+        self.axis = axis
+        self.distribution = distribution
+        self.alignment = alignment
+        subviews.forEach { stackView.addArrangedSubview($0) }
+    }
+    
     // MARK: - Tasks
     private func commonInit() {
         setupStackView()
