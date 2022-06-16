@@ -1,6 +1,6 @@
 import UIKit
 
-public class SmallButton: UIButton {
+open class SmallButton: UIButton {
     public var image: UIImage? {
         set { setImage(newValue, for: .normal) }
         get { image(for: .normal) }
@@ -12,7 +12,7 @@ public class SmallButton: UIButton {
         setImage(image, for: .normal)
     }
     
-    required init?(coder: NSCoder) {
+    required public init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     

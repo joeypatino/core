@@ -1,9 +1,9 @@
 import UIKit
 import Combine
 
-open class InputField: UIView {
+open class SearchField: UIView {
     @Published public var text: String = ""
-
+    
     public var font: UIFont {
         get { textField.font }
         set { textField.font = newValue }
@@ -35,15 +35,6 @@ open class InputField: UIView {
         set { textField.placeholderKern = newValue }
     }
     
-    public var footerFont: UIFont {
-        get { footer.font }
-        set { footer.font = newValue }
-    }
-    public var footerTextColor: UIColor {
-        get { footer.textColor }
-        set { footer.textColor = newValue }
-    }
-    
     public var focusedBorderColor: UIColor {
         get { textField.focusedBorderColor }
         set { textField.focusedBorderColor = newValue }
@@ -59,7 +50,7 @@ open class InputField: UIView {
     
     public var unFocusedBorderColor: UIColor {
         get { textField.unFocusedBorderColor }
-        set { textField.unFocusedBorderColor = newValue }
+        set { textField.unFocusedBorderColor = newValue; leftView?.tintColor = newValue; clear.tintColor = newValue }
     }
     public var unFocusedHeaderFont: UIFont {
         get { textField.unFocusedHeaderFont }
@@ -72,7 +63,7 @@ open class InputField: UIView {
     
     public var borderRadius: CGFloat {
         get { textField.borderRadius }
-        set { textField.borderRadius = newValue }
+        set { textField.borderRadius = newValue; layer.cornerRadius = newValue }
     }
     public var displaysHeader: Bool {
         get { textField.displaysHeader }
@@ -84,17 +75,27 @@ open class InputField: UIView {
         set { textField.minimumHeight = newValue }
     }
     
-    private let footer = UILabel(font: .systemFont(ofSize: 12.0, weight: .regular), color: .lightGray)
-    internal let textField: InputTextField
+    public var leftView: UIView? {
+        get { textField.leftView }
+        set { textField.leftView = newValue; leftView?.tintColor = unFocusedBorderColor; clear.tintColor = unFocusedBorderColor }
+    }
     
-    public init(headerLabel: UILabel = UILabel(),
-                placeholder: String? = nil,
-                headerText: String? = nil,
-                footerText: String? = nil,
-                defaultText: String? = nil) {
-        self.textField = InputTextField(headerLabel: headerLabel, header: headerText, placeholder: placeholder, defaultValue: defaultText)
+    public var leftViewMode: UITextField.ViewMode {
+        get { textField.leftViewMode }
+        set { textField.leftViewMode = newValue }
+    }
+
+    public var absoluteTextInsets: UIEdgeInsets {
+        get { textField.absoluteTextInsets }
+        set { textField.absoluteTextInsets = newValue }
+    }
+
+    private let textField: InputTextField
+    private let clear = ClearButton()
+    
+    public init(defaultValue: String? = nil) {
+        self.textField = InputTextField(defaultValue: defaultValue)
         super.init(frame: .zero)
-        footer.text = footerText
         setup()
         layout()
     }
@@ -104,27 +105,36 @@ open class InputField: UIView {
     }
     
     private func setup() {
+        clear.addTarget(self, action: #selector(onClearAction(_:)), for: .touchUpInside)
+        
+        layer.cornerRadius = borderRadius
+        textField.displaysHeader = false
+        textField.insets.left = 0
         textField.delegate = self
         textField.autocorrectionType = .no
         textField.autocapitalizationType = .none
+        textField.leftViewMode = .always
+        textField.clearButtonMode = .whenContentAvailable
+        textField.addAccessoryView(clear)
+        leftView = UIImageView(image: UIImage(systemName: "magnifyingglass"))
+        absoluteTextInsets.left = 8
     }
     
     private func layout() {
-        let bottom = textField.embed(in: self).bottom
-        bottom.isActive = false
-        addAutoLayoutSubview(footer)
-        footer.topAnchor.equalTo(textField.bottomAnchor).constant(4)
-        footer.leadingAnchor.equalTo(leadingAnchor).constant(16)
-        footer.trailingAnchor.equalTo(trailingAnchor)
-        footer.bottomAnchor.equalTo(bottomAnchor)
+        textField.embed(in: self)
+    }
+    
+    @objc private func onClearAction(_ sender: UIButton) {
+        textField.setText("")
     }
 }
 
-extension InputField: InputTextFieldDelegate {
+extension SearchField: InputTextFieldDelegate {
     public func textFieldDidChange(_ textField: InputTextField) {
         text = textField.text
     }
-    public func textFieldDidEndEditing(_ textField: InputTextField) {
+    
+    public func textFieldDidBeginEditing(_ textField: InputTextField) {
         text = textField.text
     }
 }

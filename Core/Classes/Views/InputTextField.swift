@@ -1,18 +1,18 @@
 import UIKit
 
-internal protocol InputTextFieldDelegate: AnyObject {
+public protocol InputTextFieldDelegate: AnyObject {
     func textFieldDidBeginEditing(_ textField: InputTextField)
     func textFieldDidChange(_ textField: InputTextField)
     func textFieldDidEndEditing(_ textField: InputTextField)
 }
 
 extension InputTextFieldDelegate {
-    func textFieldDidBeginEditing(_ textField: InputTextField) {}
-    func textFieldDidChange(_ textField: InputTextField) {}
-    func textFieldDidEndEditing(_ textField: InputTextField) {}
+    public func textFieldDidBeginEditing(_ textField: InputTextField) {}
+    public func textFieldDidChange(_ textField: InputTextField) {}
+    public func textFieldDidEndEditing(_ textField: InputTextField) {}
 }
 
-internal final class InputTextField: UIView {
+public final class InputTextField: UIView {
     public enum FocusStyle {
         case unfocused
         case focused
@@ -132,6 +132,21 @@ internal final class InputTextField: UIView {
         didSet { updateBorder() }
     }
     
+    public var leftView: UIView? {
+        get { textField.leftView }
+        set { textField.leftView = newValue; textField.leftViewMode = .always }
+    }
+    
+    public var leftViewMode: UITextField.ViewMode {
+        get { textField.leftViewMode }
+        set { textField.leftViewMode = newValue }
+    }
+    
+    public var absoluteTextInsets: UIEdgeInsets {
+        get { textField.insets }
+        set { textField.insets = newValue }
+    }
+    
     private var focusedHeaderOffset: CGPoint = .init(x: 16, y: 12)
     private var unFocusedHeaderOffset: CGPoint = .init(x: 16, y: 20)
     private var borderWidth: CGFloat {
@@ -141,7 +156,7 @@ internal final class InputTextField: UIView {
         headerStyle == .focused ? focusedHeaderOffset : unFocusedHeaderOffset
     }
 
-    private let textField = UITextField()
+    private let textField = TextField()
     private let header: UILabel
     private let stack = UIStackView(axis: .horizontal)
     private var borderStyle: FocusStyle = .unfocused {
@@ -182,21 +197,21 @@ internal final class InputTextField: UIView {
         NotificationCenter.default.removeObserver(self)
     }
         
-    override func updateConstraints() {
+    public override func updateConstraints() {
         super.updateConstraints()
         removeConstraint(minHeightConstraint)
         minHeightConstraint = heightAnchor.equalToConstant(minimumHeight)
     }
     
-    override var canBecomeFirstResponder: Bool {
+    public override var canBecomeFirstResponder: Bool {
         textField.canBecomeFirstResponder
     }
     
-    override func becomeFirstResponder() -> Bool {
+    public override func becomeFirstResponder() -> Bool {
         textField.becomeFirstResponder()
     }
     
-    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+    public override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         textField.becomeFirstResponder()
     }
     
@@ -314,7 +329,7 @@ internal final class InputTextField: UIView {
 }
 
 extension InputTextField: UITextFieldDelegate {
-    func textFieldDidBeginEditing(_ textField: UITextField) {
+    public func textFieldDidBeginEditing(_ textField: UITextField) {
         delegate?.textFieldDidBeginEditing(self)
         self.borderStyle = .focused
         self.headerStyle = .focused
@@ -322,7 +337,7 @@ extension InputTextField: UITextFieldDelegate {
         UIView.animate(withDuration: 0.35, delay: 0, options: [], animations: animations)
     }
     
-    func textFieldDidEndEditing(_ textField: UITextField) {
+    public func textFieldDidEndEditing(_ textField: UITextField) {
         delegate?.textFieldDidEndEditing(self)
         self.borderStyle = .unfocused
         self.headerStyle = textField.text.orEmpty.isEmpty ? .unfocused : .focused
@@ -336,8 +351,21 @@ extension InputTextField: UITextFieldDelegate {
         updateClearButton()
     }
     
-    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+    public func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.resignFirstResponder()
         return true
+    }
+}
+
+internal class TextField: UITextField {
+    public var insets: UIEdgeInsets = .zero {
+        didSet { setNeedsDisplay() }
+    }
+    override func textRect(forBounds bounds: CGRect) -> CGRect {
+        super.textRect(forBounds: bounds).inset(by: insets)
+    }
+    
+    override func editingRect(forBounds bounds: CGRect) -> CGRect {
+        super.editingRect(forBounds: bounds).inset(by: insets)
     }
 }
