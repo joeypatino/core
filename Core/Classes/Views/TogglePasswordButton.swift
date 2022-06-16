@@ -5,7 +5,7 @@ public class TogglePasswordButton: SmallButton {
     private var hConstraint = NSLayoutConstraint()
     
     public init() {
-        super.init(image: UIImage(systemName: "eye"), insets: .init(width: 10, height: 10))
+        super.init(image: UIImage(systemName: "eye.slash"), insets: .init(width: 10, height: 10))
         setup()
         layout()
     }
@@ -15,7 +15,7 @@ public class TogglePasswordButton: SmallButton {
     }
     
     private func setup() {
-        setImage(UIImage(systemName: "eye.slash"), for: .selected)
+        setImage(UIImage(systemName: "eye"), for: .selected)
         imageView?.clipsToBounds = false
         imageView?.layer.masksToBounds = false
         clipsToBounds = false

@@ -4,4 +4,9 @@
 "media_capture_access_disabled" = "Select from library";
 "media_capture_settings_button" = "Settings";
 "media_capture_cancel_button" = "Cancel";
+
 "action_sheet_cancel_button" = "Cancel";
+
+"email_validation_hint" = "Invalid email address";
+"name_validation_hint" = "Must contain a first and last name";
+"notEmpty_validation_hint" = "A value is required";

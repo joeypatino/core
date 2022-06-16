@@ -23,5 +23,15 @@ public struct Localization {
             return Bundle(identifier: "com.joeypatino.core")!
         }
     }
-    
+
+    enum Validators: String, Localizable {
+        case emailHint = "email_validation_hint"
+        case nameHint = "name_validation_hint"
+        case notEmptyHint = "notEmpty_validation_hint"
+        
+        var bundle: Bundle {
+            return Bundle(identifier: "com.joeypatino.core")!
+        }
+    }
+
 }
