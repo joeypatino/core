@@ -15,4 +15,9 @@ public extension Double {
     var cgFloat: CGFloat {
         return CGFloat(self)
     }
+    
+    /// convert to NSNumber.
+    var number: NSNumber {
+        return NSNumber(value: self)
+    }
 }
