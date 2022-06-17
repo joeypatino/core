@@ -1,7 +1,7 @@
 import UIKit
 
 public extension UIViewController {
-    func presentModal<T>(_ presentationController: T, completion: (() -> Void)? = nil) where T: ModalPresentationController {
+    func presentModalPush<T>(_ presentationController: T, completion: (() -> Void)? = nil) where T: PushPresentationController {
         let viewController = presentationController.presentedViewController
         viewController.transitioningDelegate = presentationController
         viewController.modalPresentationStyle = .custom
@@ -9,11 +9,10 @@ public extension UIViewController {
     }
     
     @discardableResult
-    func presentModal<T>(_ viewController: UIViewController, canTapToDismiss: Bool = true, canSwipeDownToDismiss: Bool = true, completion: (() -> Void)? = nil) -> T where T: ModalPresentationController {
+    func presentModalPush<T>(_ viewController: UIViewController, canSwipeToDismiss: Bool = true, completion: (() -> Void)? = nil) -> T where T: PushPresentationController {
         let presentationController = T.init(presentedViewController: viewController,
                                             presenting: self,
-                                            canTapToDismiss: canTapToDismiss,
-                                            canSwipeDownToDismiss: canSwipeDownToDismiss)
+                                            canSwipeToDismiss: canSwipeToDismiss)
         viewController.transitioningDelegate = presentationController
         viewController.modalPresentationStyle = .custom
         present(viewController, animated: true, completion: completion)
@@ -21,10 +20,10 @@ public extension UIViewController {
     }
 }
 
-open class ModalPresentationController: UIPresentationController {
+
+open class PushPresentationController: UIPresentationController {
     public let background = UIView()
-    public var canTapToDismiss: Bool
-    public var canSwipeDownToDismiss: Bool
+    public var canSwipeToDismiss: Bool
     private let interactor = UIPercentDrivenInteractiveTransition()
     private var propertyAnimator: UIViewPropertyAnimator!
     private var isInteractive = false
@@ -51,14 +50,13 @@ open class ModalPresentationController: UIPresentationController {
         }
         return lastViewController(presentingViewController)
     }
-    public var topSpacing: CGFloat { UIApplication.shared.windowSafeAreaInsets.top + 20 }
     
     // MARK: Public Properties
     
     public override var frameOfPresentedViewInContainerView: CGRect {
         guard let containerBounds = containerView?.bounds else { return .zero }
         var frame = containerBounds
-        frame.size.height = (containerBounds.height - topSpacing)
+        frame.size.height = (containerBounds.height)
         frame.origin.y = containerBounds.height - frame.size.height
         
         return frame
@@ -66,9 +64,8 @@ open class ModalPresentationController: UIPresentationController {
     
     // MARK: Initializers
     
-    required public init(presentedViewController: UIViewController, presenting presentingViewController: UIViewController?, canTapToDismiss: Bool = true, canSwipeDownToDismiss: Bool = true) {
-        self.canTapToDismiss = canTapToDismiss
-        self.canSwipeDownToDismiss = canSwipeDownToDismiss
+    required public init(presentedViewController: UIViewController, presenting presentingViewController: UIViewController?, canSwipeToDismiss: Bool = true) {
+        self.canSwipeToDismiss = canSwipeToDismiss
         super.init(presentedViewController: presentedViewController, presenting: presentingViewController)
     }
     
@@ -80,7 +77,7 @@ open class ModalPresentationController: UIPresentationController {
         containerView?.addSubview(presentedView)
         presentedView.layoutIfNeeded()
         presentedView.frame = frameOfPresentedViewInContainerView
-        presentedView.frame.origin.y = containerBounds.height
+        presentedView.frame.origin.x = containerBounds.width
         presentedView.layer.masksToBounds = true
         presentedView.layer.cornerRadius = 20
         
@@ -92,12 +89,10 @@ open class ModalPresentationController: UIPresentationController {
         
         // Add pan gesture recognizers for interactive dismissal.
         let panGesture = UIPanGestureRecognizer(target: self, action: #selector(handlePan(_:)))
+        panGesture.delegate = self
         presentedView.addGestureRecognizer(panGesture)
         scrollView?.panGestureRecognizer.addTarget(self, action: #selector(handlePan(_:)))
-        
-        // Add tap recognizer for dismissal.
-        if canTapToDismiss { background.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(dismiss))) }
-        
+
         presentedViewController.transitionCoordinator?.animate(alongsideTransition: { [unowned self] _ in
             self.presentingViewController.view.layer.transform = self.calculatePerspectiveTransform()
             self.presentingViewController.view.layer.cornerRadius = 20
@@ -157,15 +152,15 @@ open class ModalPresentationController: UIPresentationController {
         
         limitScrollView(gesture)
         
-        let percent = gesture.translation(in: containerView).y / containerView.bounds.height
+        let percent = gesture.translation(in: containerView).x / containerView.bounds.width
         switch gesture.state {
         case .began:
-            if !presentedViewController.isBeingDismissed && scrollView?.contentOffset.y ?? 0 <= 0 {
+            if !presentedViewController.isBeingDismissed && scrollView?.contentOffset.x ?? 0 <= 0 {
                 isInteractive = true
                 presentedViewController.dismiss(animated: true)
             }
         case .changed:
-            if canSwipeDownToDismiss {
+            if canSwipeToDismiss {
                 interactor.update(percent)
             } else {
                 interactor.update(abs(1.0 - pow(1.5, percent)))
@@ -174,8 +169,8 @@ open class ModalPresentationController: UIPresentationController {
             interactor.cancel()
             isInteractive = false
         case .ended:
-            if canSwipeDownToDismiss {
-                let velocity = gesture.velocity(in: nil).y
+            if canSwipeToDismiss {
+                let velocity = gesture.velocity(in: nil).x
                 interactor.completionSpeed = 0.9
                 if percent > 0.3 || velocity > 1600 {
                     interactor.finish()
@@ -196,13 +191,27 @@ open class ModalPresentationController: UIPresentationController {
         guard let scrollView = scrollView else { return }
         if interactor.percentComplete > 0 {
             // Don't let the scroll view scroll while dismissing.
-            scrollView.contentOffset.y = -scrollView.adjustedContentInset.top
+            scrollView.contentOffset.x = -scrollView.adjustedContentInset.left
         }
     }
 }
 
+extension PushPresentationController: UIGestureRecognizerDelegate {
+    public func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+        false
+    }
+    
+    public func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+        let touchLocation = touch.location(in: gestureRecognizer.view)
+        guard let view = gestureRecognizer.view?.hitTest(touchLocation, with: nil) else { return true }
+        let location = view.convert(touchLocation, from: nil)
+        let isInBoundsAndIsControl = view.frame.contains(location) && (view is UIControl)
+        return !isInBoundsAndIsControl
+    }
+}
+
 // MARK: UIViewControllerAnimatedTransitioning
-extension ModalPresentationController: UIViewControllerAnimatedTransitioning {
+extension PushPresentationController: UIViewControllerAnimatedTransitioning {
     public func transitionDuration(using transitionContext: UIViewControllerContextTransitioning?) -> TimeInterval {
         0.6
     }
@@ -219,7 +228,7 @@ extension ModalPresentationController: UIViewControllerAnimatedTransitioning {
             if self.presentedViewController.isBeingPresented {
                 transitionContext.view(forKey: .to)?.frame = self.frameOfPresentedViewInContainerView
             } else {
-                transitionContext.view(forKey: .from)?.frame.origin.y = transitionContext.containerView.frame.maxY
+                transitionContext.view(forKey: .from)?.frame.origin.x = transitionContext.containerView.frame.maxX
             }
         }
         propertyAnimator.addCompletion { _ in
@@ -230,7 +239,7 @@ extension ModalPresentationController: UIViewControllerAnimatedTransitioning {
 }
 
 // MARK: UIViewControllerTransitioningDelegate
-extension ModalPresentationController: UIViewControllerTransitioningDelegate {
+extension PushPresentationController: UIViewControllerTransitioningDelegate {
     public func presentationController(forPresented presented: UIViewController, presenting: UIViewController?, source: UIViewController) -> UIPresentationController? {
         self
     }

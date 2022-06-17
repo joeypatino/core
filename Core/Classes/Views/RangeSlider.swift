@@ -224,8 +224,8 @@ public class RangeSlider: UIControl {
     func updateLayerFrames() {
         CATransaction.begin()
         CATransaction.setDisableActions(true)
-        
-        trackLayer.frame = bounds.insetBy(dx: 0.0, dy: bounds.height/3)
+        // hack...
+        trackLayer.frame = bounds.insetBy(dx: 0.0, dy: bounds.height/2.5)
         trackLayer.setNeedsDisplay()
         
         let lowerThumbCenter = CGFloat(positionForValue(lowerValue))
