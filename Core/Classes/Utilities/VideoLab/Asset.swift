@@ -1,6 +1,19 @@
 import VideoLab
 import AVKit
 
+extension AVMediaType: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        switch self {
+        case .video: return "video"
+        case .audio: return "audio"
+        case .text: return "text"
+        case .closedCaption: return "closedCaption"
+        default:
+            return "\(self.rawValue)"
+        }
+    }
+}
+
 /// An asset is a reprensetation of a video or audio source, based on a local file URL
 public class Asset: Codable {
     public enum Error: Swift.Error, LocalizedError {
@@ -8,14 +21,21 @@ public class Asset: Codable {
         case imageDecoding
     }
     public let url: URL
-    public let source: AVAssetSource
+    public var source: AVAssetSource
     public var duration: CMTime { asset.duration }
     public var timeRange: CMTimeRange {
         get { source.selectedTimeRange }
         set { source.selectedTimeRange = newValue }
     }
-    
-    private let asset: AVAsset
+    public var mediaType: AVMediaType {
+        asset.tracks.first?.mediaType ?? .video
+    }
+    public private(set) var asset: AVAsset {
+        didSet {
+            source = AVAssetSource(asset: asset)
+            timeRange = CMTimeRange(start: CMTime.zero, duration: asset.duration)
+        }
+    }
     public init(url: URL) {
         self.url = url
         self.asset = AVAsset(url: url)
@@ -46,6 +66,16 @@ public class Asset: Codable {
             }
         }
     }
+    
+    public func trim(_ timeRange: CMTimeRange) {
+        do {
+            asset = try asset.trim(toRange: timeRange)
+        } catch {
+            // handle error
+            print(error)
+        }
+    }
+    
     // Coding
     public enum CodingKeys: String, CodingKey {
         case url
@@ -70,5 +100,21 @@ public class Asset: Codable {
 extension Asset: Equatable {
     public static func == (lhs: Asset, rhs: Asset) -> Bool {
         lhs.asset == rhs.asset
+    }
+}
+
+public extension AVAsset {
+    var mediaType: AVMediaType { tracks.first?.mediaType ?? .muxed }
+    func trim(toRange range: CMTimeRange) throws -> AVAsset {
+        guard CMTimeRangeEqual(CMTimeRange(start: .zero, duration: duration), range) == false else {
+            return self
+        }
+        
+        let composition = AVMutableComposition()
+        try composition.insertTimeRange(range, of: self, at: .zero)
+        if let videoTrack = tracks(withMediaType: .video).first {
+            composition.tracks.forEach {$0.preferredTransform = videoTrack.preferredTransform}
+        }
+        return composition
     }
 }

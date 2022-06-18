@@ -10,7 +10,7 @@ public final class VideoTimelineView: UIView {
     public weak var delegate: VideoTimelineViewDelegate?
     private let collection = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
     private var avComposition: AVComposition {
-        composition.thumbnailGenerator.asset as! AVComposition
+        composition.imageGenerator.asset as! AVComposition
     }
     private var selectedIndexPath = IndexPath(row: 0, section: 0)
     private var follow: (IndexPath) -> Void = { _ in }
@@ -51,7 +51,7 @@ public final class VideoTimelineView: UIView {
             if !track.isEnabled { return [:] }
             let segments: [AVCompositionTrackSegment] = track.segments
             return ["track.trackID": track.trackID,
-                    "track.type": track.mediaType,
+                    "track.mediaType": track.mediaType,
                     "track.start": track.timeRange.start.value,
                     "track.duration": track.timeRange.duration.value,
                     "segments": segments.map { segment in
@@ -79,11 +79,7 @@ public final class VideoTimelineView: UIView {
             offset = CMTimeAdd(offset, time.duration)
             return range
         }
-        //let buffer = CMTime(seconds: 0.0, preferredTimescale: CMTimeScale(30))
-        guard let idx = sequenced.firstIndex(where: {
-            //let range = CMTimeRangeMake(start: CMTimeAdd($0.start, buffer), duration: $0.duration)
-            return $0.containsTime(time)
-        }) else { return }
+        guard let idx = sequenced.firstIndex(where: { $0.containsTime(time) }) else { return }
         let newIndexPath = IndexPath(row: idx, section: 0)
         let previousIndexPath = selectedIndexPath
         selectedIndexPath = newIndexPath

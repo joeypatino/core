@@ -10,15 +10,25 @@ public extension RenderLayer {
 }
 
 public extension RenderComposition {
+    func addLayer(_ layer: RenderLayer) {
+        layers.append(layer)
+    }
+
+    func insertLayer(_ layer: RenderLayer, at index: Int) {
+        layers.insert(layer, at: index)
+    }
+
     func addLayer(with asset: AVAsset) {
         let source = AVAssetSource(asset: asset)
         source.selectedTimeRange = CMTimeRange(start: CMTime.zero, duration: asset.duration)
         var timeRange = source.selectedTimeRange
         if let lastLayer = layers.last {
             timeRange.start = CMTimeRangeGetEnd(lastLayer.timeRange)
-            layers.append(RenderLayer(timeRange: timeRange, source: source))
+            let renderLayer = RenderLayer(timeRange: timeRange, source: source)
+            layers.append(renderLayer)
         } else {
-            layers.append(RenderLayer(timeRange: timeRange, source: source))
+            let renderLayer = RenderLayer(timeRange: timeRange, source: source)
+            layers.append(renderLayer)
         }
     }
     

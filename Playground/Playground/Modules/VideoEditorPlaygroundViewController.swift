@@ -9,7 +9,7 @@ class VideoEditorPlaygroundViewController: UIViewController {
     lazy var composition = Composition() {
         didSet { updateComposition() }
     }
-    lazy var videoPlayerViewController = VideoPlayerViewController(playerItem: composition.playerItem)
+    lazy var videoPlayerViewController = VideoPlayerViewController(playerItem: composition.layers.isEmpty ? AVPlayerItem(asset: AVComposition()) : composition.playerItem)
     @Storage (key:"composition_name", defaultValue: nil) private var compositionName: String?
     
     public init() {
@@ -144,13 +144,11 @@ extension VideoEditorPlaygroundViewController: CompositionCameraViewControllerDe
 
 extension VideoEditorPlaygroundViewController: VideoTimelineViewDelegate {
     public func view(_ videoTimeline: VideoTimelineView, didSelectAsset asset: Asset) {
-//        let url = Bundle.main.url(forResource: "audio_sample_1", withExtension: "mp3")!
-//        let asset = Asset(url: url)
-//        asset.trim(CMTimeRange(start: .zero, duration: CMTime(seconds: 8.966666666666667, preferredTimescale: CMTimeScale(600))))
-//        composition.append(layerWithAsset: asset)
-//
+        let url = Bundle.main.url(forResource: "audio_sample_1", withExtension: "mp3")!
+        let asset = Asset(url: url)
+        composition.setAudio(layerWithAsset: asset, timeRange: CMTimeRange(start: .zero, duration: CMTime(seconds: 5.0, preferredTimescale: CMTimeScale(600))))
 //        DispatchQueue.main.asyncAfter(delay: 0.5) {
-//            self.updateComposition()
+            self.updateComposition()
 //        }
 
         let time = composition.timeRange(forAsset: asset).start
@@ -181,3 +179,4 @@ extension VideoEditorPlaygroundViewController: VideoTimelineViewDelegate {
         updateComposition()
     }
 }
+

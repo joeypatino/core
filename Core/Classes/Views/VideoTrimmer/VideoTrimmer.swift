@@ -91,9 +91,9 @@ import AVFoundation
         }
     }
     
-    public var generator: AVAssetImageGenerator? {
+    public var imageGenerator: AVAssetImageGenerator? {
         didSet {
-            let duration = generator?.asset.duration ?? .zero
+            let duration = imageGenerator?.asset.duration ?? .zero
             range = CMTimeRange(start: .zero, duration: duration)
             selectedRange = range
             thumbnails.removeAll()
@@ -302,7 +302,7 @@ import AVFoundation
         let size = bounds.size
         guard size.width > 0 && size.height > 0 else {return}
         guard lastKnownViewSizeForThumbnailGeneration != size || CMTimeRangeEqual(lastKnownThumbnailRange, visibleRange) == false else {return}
-        guard let asset = generator?.asset else {return}
+        guard let asset = imageGenerator?.asset else {return}
         guard let track = asset.tracks(withMediaType: .video).first else {return}
         
         lastKnownViewSizeForThumbnailGeneration = size
@@ -332,8 +332,8 @@ import AVFoundation
             newThumbnails.append(newThumbnail)
         }
         
-        generator?.appliesPreferredTrackTransform = true
-        generator?.maximumSize = CGSize(width: thumbnailSize.width * UIScreen.main.scale, height: thumbnailSize.height * UIScreen.main.scale)
+        imageGenerator?.appliesPreferredTrackTransform = true
+        imageGenerator?.maximumSize = CGSize(width: thumbnailSize.width * UIScreen.main.scale, height: thumbnailSize.height * UIScreen.main.scale)
         
         let oldThumbnails = thumbnails
         thumbnails.append(contentsOf: newThumbnails)
@@ -347,9 +347,9 @@ import AVFoundation
         })
         
         var seenIndex = 0
-        generator?.requestedTimeToleranceBefore = .zero
-        generator?.requestedTimeToleranceAfter = .zero
-        generator?.generateCGImagesAsynchronously(forTimes: times) { requestedTime, cgImage, actualTime, result, error in
+        imageGenerator?.requestedTimeToleranceBefore = .zero
+        imageGenerator?.requestedTimeToleranceAfter = .zero
+        imageGenerator?.generateCGImagesAsynchronously(forTimes: times) { requestedTime, cgImage, actualTime, result, error in
             DispatchQueue.main.async {
                 seenIndex += 1
                 
