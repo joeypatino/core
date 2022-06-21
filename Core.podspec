@@ -14,7 +14,7 @@ Core is a collection iOS User interface elements and extensions to speed up your
   s.homepage         = 'https://www.github.com/joeypatino/core'
   s.license          = { :type => 'MIT', :file => 'LICENSE' }
   s.author       = { 'joey patino' => 'joey.patino@pm.com' }
-  s.source       = { :git => 'https://github.com/joeypatino/core.git', :tag => s.version.to_s }
+  s.source       = { :git => 'git@github.com:joeypatino/core.git', :tag => s.version.to_s }
   
   s.source_files    = 'Core/Classes/**/*'
   s.platform        = :ios, '13.0'
