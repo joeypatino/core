@@ -4,7 +4,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'Core'
-  s.version          = '0.1.0'
+  s.version          = '0.1.1'
   s.summary          = 'A collection iOS User interface elements and extensions to speed up your iOS development.'
 
   s.description  = <<-DESC
