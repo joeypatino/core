@@ -81,4 +81,12 @@ public extension UIImage {
 
         self.init(cgImage: aCgImage)
     }
+    
+    /// Create 1x1 UIImage from color
+    /// - Parameters:
+    ///   - color: image fill color.
+    convenience init(color: UIColor) {
+        self.init(color: color, size: .init(width: 1, height: 1))
+    }
+
 }
