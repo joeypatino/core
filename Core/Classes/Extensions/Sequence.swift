@@ -11,6 +11,37 @@ public extension Sequence {
 }
 
 public extension Sequence {
+    func asyncMap<T>(
+        _ transform: (Element) async throws -> T
+    ) async rethrows -> [T] {
+        var values = [T]()
+        
+        for element in self {
+            try await values.append(transform(element))
+        }
+        
+        return values
+    }
+}
+
+public extension Sequence {
+    func asyncCompactMap<T>(
+        _ transform: (Element) async throws -> T?
+    ) async rethrows -> [T] {
+        var values = [T]()
+        
+        for element in self {
+            let el = try await transform(element)
+            if el != nil {
+                values.append(el!)
+            }
+        }
+        
+        return values
+    }
+}
+
+public extension Sequence {
     /// Check if all elements in collection match a condition.
     ///
     ///     [2, 2, 4].all(matching: {$0 % 2 == 0}) -> true
@@ -47,7 +78,7 @@ public extension Sequence {
     /// Filter elements based on a rejection condition.
     ///
     ///     [2, 2, 4, 7].reject(where: {$0 % 2 == 0}) -> [7]
-    ///     
+    ///
     /// - Parameter condition: to evaluate the exclusion of an element from the array.
     /// - Returns: the array with rejected values filtered from it.
     func reject(where condition: (Element) throws -> Bool) rethrows -> [Element] {

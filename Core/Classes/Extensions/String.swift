@@ -50,7 +50,6 @@ public extension String {
     }
 }
 
-
 public extension String {
     func capitalizingFirstLetter() -> String {
         return prefix(1).capitalized + dropFirst()
@@ -110,5 +109,19 @@ public extension String {
         } else {
             return String(self[..<self.index(self.startIndex, offsetBy: newLength - toLength)])
         }
+    }
+}
+
+public extension String {
+    static var empty = ""
+}
+
+public extension String {
+    static func loremIpsum(_ length: Int) -> String {
+        var ipsum = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+        while length > ipsum.lengthOfBytes(using: .utf8) {
+            ipsum = ipsum + " " + ipsum
+        }
+        return ipsum.substring(to: length)
     }
 }

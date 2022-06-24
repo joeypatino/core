@@ -23,11 +23,21 @@ open class VideoPlayerViewController: UIViewController {
             registerPlayerItemObservers(playerItem)
         }
     }
+    public var videoGravity: AVLayerVideoGravity {
+        get { playerViewController.videoGravity }
+        set { playerViewController.videoGravity = newValue }
+    }
+
     public var playbackComplete: (CMTime) -> Void = { _ in }
     public var timeAndDurationObserver: (CMTime, CMTime) -> Void = { _, _ in }
     private let playerViewController = AVPlayerViewController()
     private let activity = UIActivityIndicatorView(style: .medium)
-    private lazy var controls: VideoPlayerControls = GenericVideoPlayerControls(player: player)
+    public lazy var controls: VideoPlayerControls = GenericVideoPlayerControls(player: player) {
+        didSet {
+            oldValue.removeFromSuperview()
+            controls.embed(in: view, usingSafeAreaLayoutGuides: false)
+        }
+    }
     
     private var lastProgress: CMTime = .zero
     private var asset: AVAsset
@@ -105,13 +115,21 @@ open class VideoPlayerViewController: UIViewController {
         
         playerViewController.player = player
         playerViewController.showsPlaybackControls = false
-        addChildViewController(playerViewController) { $0.embed(in: self.view) }
         playerViewController.updatesNowPlayingInfoCenter = false
-        controls.embed(in: view, usingSafeAreaLayoutGuides: false)
+        
     }
     
     private func layout() {
-        
+        addChildViewController(playerViewController) { $0.embed(in: self.view) }
+        controls.embed(in: view, usingSafeAreaLayoutGuides: false)
+    }
+    
+    public func play() {
+        player.play()
+    }
+    
+    public func pause() {
+        player.pause()
     }
     
     public func seek(to time: CMTime) {

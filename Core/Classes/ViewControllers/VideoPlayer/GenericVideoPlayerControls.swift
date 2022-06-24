@@ -1,6 +1,30 @@
 import UIKit
 import AVKit
 
+public final class DisabledVideoPlayerControls: UIView, VideoPlayerControls {
+    public var player: AVPlayer?
+    
+    public var status: AVPlayerItem.Status = .readyToPlay
+    
+    public var timeControlStatus: AVPlayer.TimeControlStatus = .playing
+    
+    public var playbackRate: Float = 1.0
+    
+    public var duration: CMTime = .zero
+    
+    public var timeAndDuration: (CMTime, CMTime) = (.zero, .zero)
+    
+    public var loadedTimeRanges: [NSValue] = []
+    
+    public func show() {
+        
+    }
+    
+    public func hide() {
+        
+    }
+}
+
 public final class GenericVideoPlayerControls: UIView, VideoPlayerControls {
     public weak var player: AVPlayer?
     public var status: AVPlayerItem.Status = .unknown {
