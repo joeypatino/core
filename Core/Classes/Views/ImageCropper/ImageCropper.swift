@@ -22,7 +22,7 @@ public final class ImageCropView: UIView {
     }
     
     private func setup() {
-        
+        clipsToBounds = true
     }
     
     private func layout() {
@@ -32,6 +32,7 @@ public final class ImageCropView: UIView {
     private func update() {
         scroll.imageToDisplay = image
         isZoomEnabled = !isSquareImage()
+        scroll.setZoomScale(scroll.zoomScaleWithNoWhiteSpaces(), animated: false)
     }
 
     public func croppedImage() -> UIImage {
@@ -39,7 +40,6 @@ public final class ImageCropView: UIView {
     }
     
     private func captureVisibleRect() -> UIImage {
-        
         var croprect = CGRect.zero
         let xOffset = (scroll.imageToDisplay?.size.width)! / scroll.contentSize.width;
         let yOffset = (scroll.imageToDisplay?.size.height)! / scroll.contentSize.height;

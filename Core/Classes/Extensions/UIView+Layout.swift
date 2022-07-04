@@ -87,7 +87,12 @@ public extension UIView {
         subview.translatesAutoresizingMaskIntoConstraints = false
         addSubview(subview)
     }
-    
+
+    func insertAutoLayoutSubview(_ subview: UIView, atIndex index: Int) {
+        subview.translatesAutoresizingMaskIntoConstraints = false
+        insertSubview(subview, at: index)
+    }
+
     func removeSubviews() {
         subviews.forEach { $0.removeFromSuperview() }
     }

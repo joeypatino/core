@@ -87,7 +87,7 @@ public class ImageCropScrollView: UIScrollView {
         return  CGSize(width: actualWidth, height: actualHeight)
     }
     
-    private func zoomScaleWithNoWhiteSpaces() -> CGFloat{
+    public func zoomScaleWithNoWhiteSpaces() -> CGFloat{
         let imageViewSize:CGSize  = imageView.bounds.size
         let scrollViewSize:CGSize = bounds.size;
         let widthScale:CGFloat  = scrollViewSize.width / imageViewSize.width

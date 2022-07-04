@@ -1,7 +1,7 @@
 import UIKit
 import Photos
 
-public protocol MediaCapturePresenter: ActionSheetViewControllerDelegate {
+public protocol MediaCapturePresenter: ActionSheetViewControllerDelegate, AudioVideoPermissionPresenter {
     var imagePicker: UIImagePickerController { get }
     var actionSheet: ActionSheetTransitioningDelegate? { get set }
     var defaultCamera: UIImagePickerController.CameraDevice { get }
@@ -31,6 +31,26 @@ extension MediaCapturePresenter where Self: UIViewController {
         present(viewController, animated: true)
     }
     
+    public func presentCamera() {
+        Task {
+            if await checkPermission(mode: .camera) {
+                DispatchQueue.main.async {
+                    self.showImagePicker(withType: .camera)
+                }
+            }
+        }
+    }
+    
+    public func presentPhotosLibrary() {
+        Task {
+            if await checkPermission(mode: .camera) {
+                DispatchQueue.main.async {
+                    self.showImagePicker(withType: .photoLibrary)
+                }
+            }
+        }
+    }
+        
     private func alertCameraAccessNeeded() {
         guard let settingsAppURL = URL(string: UIApplication.openSettingsURLString) else { return }
         let viewController = UIAlertController(title: Localization.MediaCapture.errorTitle.localizedString, message: Localization.MediaCapture.accessDisabled.localizedString, preferredStyle: .alert)

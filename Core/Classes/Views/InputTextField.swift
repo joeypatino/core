@@ -297,12 +297,6 @@ public final class InputTextField: UIView {
     }
     
     private func updateSecureText() {
-//        if let existingText = textField.text, isSecureTextEntry {
-//            textField.deleteBackward()
-//            if let textRange = textField.textRange(from: textField.beginningOfDocument, to: textField.endOfDocument) {
-//                textField.replace(textRange, withText: existingText)
-//            }
-//        }
         if let existingSelectedTextRange = textField.selectedTextRange {
             textField.selectedTextRange = nil
             textField.selectedTextRange = existingSelectedTextRange

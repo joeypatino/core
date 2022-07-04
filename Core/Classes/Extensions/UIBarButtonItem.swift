@@ -15,6 +15,13 @@ public extension UIBarButtonItem {
     func addTargetForAction(_ target: AnyObject, action: Selector) {
         self.target = target
         self.action = action
+        
+        if let button = customView as? UIButton {
+            button.addTarget(target, action: action, for: .touchUpInside)
+        } else if let view = customView {
+            let gesture = UITapGestureRecognizer(target: target, action: action)
+            view.addGestureRecognizer(gesture)
+        }
     }
     
     /// Creates a fixed space UIBarButtonItem with a specific width.

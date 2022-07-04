@@ -105,7 +105,7 @@ public final class TextView: UITextView {
         headerLabel.text = header
         
         updateConstraintsForPlaceholderLabel()
-        textContainerInset = UIEdgeInsets(top: 32, left: 12, bottom: 12, right: 12)
+        textContainerInset = UIEdgeInsets(top: 0, left: 12, bottom: 12, right: 12)
     }
     
     private func updateConstraintsForPlaceholderLabel() {
