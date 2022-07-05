@@ -34,13 +34,17 @@ public extension UIButton {
     func centerTextAndImage(imageAboveText: Bool = false, spacing: CGFloat) {
         if imageAboveText {
             // https://stackoverflow.com/questions/2451223/#7199529
-            guard
-                let imageSize = imageView?.image?.size,
-                let text = titleLabel?.text,
-                let font = titleLabel?.font else { return }
+            guard let imageSize = imageView?.image?.size else { return }
             
-            let titleSize = text.size(withAttributes: [.font: font])
-            
+            let titleSize: CGSize
+            if let text = titleLabel?.text,
+               let font = titleLabel?.font {
+                titleSize = text.size(withAttributes: [.font: font])
+            } else if let title = attributedTitle(for: .normal) {
+                titleSize = title.size()
+            } else {
+                return
+            }
             let titleOffset = -(imageSize.height + spacing)
             titleEdgeInsets = UIEdgeInsets(top: 0.0, left: -imageSize.width, bottom: titleOffset, right: 0.0)
             
