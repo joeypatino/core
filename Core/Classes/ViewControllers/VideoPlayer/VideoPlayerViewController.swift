@@ -14,6 +14,11 @@ public protocol VideoPlayerControls: UIView {
     func hide()
 }
 
+public enum PlaybackCompletionAction {
+    case `repeat`
+    case stop
+}
+
 open class VideoPlayerViewController: UIViewController {
     public var playerItem: AVPlayerItem {
         didSet {
@@ -28,6 +33,8 @@ open class VideoPlayerViewController: UIViewController {
         set { playerViewController.videoGravity = newValue }
     }
 
+    public var playbackCompletionAction: PlaybackCompletionAction = .stop
+    public var player: AVPlayer
     public var playbackComplete: (CMTime) -> Void = { _ in }
     public var timeAndDurationObserver: (CMTime, CMTime) -> Void = { _, _ in }
     private let playerViewController = AVPlayerViewController()
@@ -41,7 +48,6 @@ open class VideoPlayerViewController: UIViewController {
     
     private var lastProgress: CMTime = .zero
     private var asset: AVAsset
-    private var player: AVPlayer
     private var timeObserver: Any?
     private var status: AVPlayerItem.Status {
         get { controls.status }
@@ -88,21 +94,11 @@ open class VideoPlayerViewController: UIViewController {
     }
     
     private func setup() {
-        NotificationCenter.default.addObserver(self, selector: #selector(playerEndedPlaying), name: .AVPlayerItemDidPlayToEndTime, object: nil)
         registerPlayerItemObservers(playerItem)
         player.addObserver(self, forKeyPath: #keyPath(AVPlayer.rate), options: [.new], context: nil)
         player.addObserver(self, forKeyPath: #keyPath(AVPlayer.timeControlStatus), options: [.new], context: nil)
         timeObserver = player.addPeriodicTimeObserver(forInterval: CMTime(value: 1, timescale: 30), queue: .main) { [weak self] progress in
             guard let self = self else { return }
-            // Get passed time for video (minute & seconds)
-            //            var adjustedProgress = progress
-            //            if adjustedProgress == .zero {
-            //                let hundreth = CMTime(seconds: 0.01, preferredTimescale: CMTimeScale(600))
-            //                adjustedProgress = CMTimeAdd(.zero, hundreth)
-            //            }
-            //            if adjustedProgress != .zero {
-            //                self.lastProgress = adjustedProgress
-            //            }
             if progress != .zero {
                 self.lastProgress = progress
             }
@@ -137,11 +133,13 @@ open class VideoPlayerViewController: UIViewController {
     }
     
     private func unregisterPlayerItemObservers(_ playerItem: AVPlayerItem) {
+        NotificationCenter.default.removeObserver(self)
         playerItem.removeObserver(self, forKeyPath: #keyPath(AVPlayerItem.loadedTimeRanges))
         playerItem.removeObserver(self, forKeyPath: #keyPath(AVPlayerItem.status))
     }
     
     private func registerPlayerItemObservers(_ playerItem: AVPlayerItem) {
+        NotificationCenter.default.addObserver(self, selector: #selector(playerEndedPlaying), name: .AVPlayerItemDidPlayToEndTime, object: playerItem)
         playerItem.addObserver(self, forKeyPath: #keyPath(AVPlayerItem.status), options: [.new], context: nil)
         playerItem.addObserver(self, forKeyPath: #keyPath(AVPlayerItem.loadedTimeRanges), options: [.new], context: nil)
     }
@@ -165,10 +163,18 @@ open class VideoPlayerViewController: UIViewController {
     
     @objc private func playerEndedPlaying(_ notification: Notification) {
         DispatchQueue.main.async {
-            self.playbackComplete(self.player.currentTime())
-            self.player.seek(to: CMTime.zero)
-            self.lastProgress = .zero
-            self.controls.show()
+            switch self.playbackCompletionAction {
+            case .repeat:
+                self.playbackComplete(self.player.currentTime())
+                self.player.seek(to: CMTime.zero)
+                self.lastProgress = .zero
+                self.play()
+            case .stop:
+                self.playbackComplete(self.player.currentTime())
+                self.player.seek(to: CMTime.zero)
+                self.lastProgress = .zero
+                self.controls.show()
+            }
         }
     }
 }

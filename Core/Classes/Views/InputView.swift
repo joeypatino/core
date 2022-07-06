@@ -121,10 +121,11 @@ open class InputView: UIView {
 }
 
 extension InputView: InputTextViewDelegate {
-    public func textFieldDidChange(_ textField: InputTextView) {
-        text = textField.text
+    public func textViewDidChange(_ textView: InputTextView) {
+        text = textView.text
     }
-    public func textFieldDidEndEditing(_ textField: InputTextView) {
-        text = textField.text
+    
+    public func textViewDidEndEditing(_ textView: InputTextView) {
+        text = textView.text
     }
 }

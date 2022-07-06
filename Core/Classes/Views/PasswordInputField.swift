@@ -8,6 +8,9 @@ public final class PasswordInputField: InputField {
     public override var placeholderColor: UIColor {
         didSet { togglePassword.tintColor = placeholderColor }
     }
+    public var toggleTintColor: UIColor {
+        didSet { togglePassword.tintColor = toggleTintColor }
+    }
     private let togglePassword = TogglePasswordButton()
     
     public override init(headerLabel: UILabel = UILabel(),
@@ -15,6 +18,7 @@ public final class PasswordInputField: InputField {
                 headerText: String? = nil,
                 footerText: String? = nil,
                 defaultText: String? = nil) {
+        self.toggleTintColor = headerLabel.tintColor
         super.init(headerLabel: headerLabel, placeholder: placeholder, headerText: headerText, footerText: footerText, defaultText: defaultText)
         setup()
         layout()
