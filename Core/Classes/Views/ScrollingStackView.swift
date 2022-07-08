@@ -8,9 +8,9 @@ public protocol StackView {
 extension ScrollingStackView: StackView {}
 extension UIStackView: StackView {}
 
-public final class ScrollingStackView: UIScrollView {
+open class ScrollingStackView: UIScrollView {
     // MARK: - Properties
-    private let stackView = UIStackView()
+    public let stackView = UIStackView()
     
     public var axis: NSLayoutConstraint.Axis {
         get { stackView.axis }
@@ -51,7 +51,7 @@ public final class ScrollingStackView: UIScrollView {
     private lazy var stackViewHeightConstraint = stackView.heightAnchor.constraint(equalTo: heightAnchor)
 
     // MARK: - Lifecycle
-    override init(frame: CGRect) {
+    public override init(frame: CGRect) {
         super.init(frame: frame)
         commonInit()
     }
@@ -125,9 +125,7 @@ public extension StackView {
         addArrangedSubview(stack)
     }
     
-    func addArrangedSubview(_ view: UIView, leadingMargin leading: CGFloat = 0, trailingMargin trailing: CGFloat = 0) {
-        guard leading != 0 && trailing != 0 else { addArrangedSubview(view); return }
-        
+    func addArrangedSubview(_ view: UIView, leadingMargin leading: CGFloat = 0, trailingMargin trailing: CGFloat = 0) {        
         let stack = UIStackView()
         switch axis {
         case .horizontal:

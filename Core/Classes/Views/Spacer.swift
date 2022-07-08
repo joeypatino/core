@@ -6,16 +6,11 @@ public class Spacer: UIView {
         case vertical(height: CGFloat? = nil)
     }
     
+    private var layoutConstraints: [NSLayoutConstraint] = []
+    
     public init(orientation: Orientation, huggingPriority: Float = 250) {
         super.init(frame: .zero)
-        switch orientation {
-        case .horizonal(width: let width):
-            width.map { _ = widthAnchor.equalToConstant($0) }
-            horizontalHugging = huggingPriority
-        case .vertical(height: let height):
-            height.map { _ = heightAnchor.equalToConstant($0) }
-            verticalHugging = huggingPriority
-        }
+        updateOrientation(orientation, huggingPriority: huggingPriority)
         setup()
         layout()
     }
@@ -29,6 +24,20 @@ public class Spacer: UIView {
     }
     
     private func layout() {
-        
+    }
+    
+    public func updateOrientation(_ orientation: Orientation, huggingPriority: Float = 250) {
+        horizontalHugging = 250
+        verticalHugging = 250
+        NSLayoutConstraint.deactivate(layoutConstraints)
+        layoutConstraints.removeAll()
+        switch orientation {
+        case .horizonal(width: let width):
+            width.map { layoutConstraints.append(widthAnchor.equalToConstant($0)) }
+            horizontalHugging = huggingPriority
+        case .vertical(height: let height):
+            height.map { layoutConstraints.append(heightAnchor.equalToConstant($0)) }
+            verticalHugging = huggingPriority
+        }
     }
 }

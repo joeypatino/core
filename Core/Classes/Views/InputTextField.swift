@@ -336,13 +336,15 @@ public final class InputTextField: UIView {
     }
     
     private func layout() {
-        accessibilityIdentifier = "InputTextField"
-        accessoryContentView.accessibilityIdentifier = "InputTextField.AccessoryContentView"
-        accessoryBackingView.accessibilityIdentifier = "InputTextField.AccessoryBackingView"
+        accessibilityIdentifier = "InputField"
+        stack.accessibilityIdentifier = "InputField.Stack"
+        header.accessibilityIdentifier = "InputField.Header"
+        textField.accessibilityIdentifier = "InputField.TextField"
+        accessoryContentView.accessibilityIdentifier = "InputField.Accessory.ContentView"
+        accessoryBackingView.accessibilityIdentifier = "InputField.Accessory.BackingView"
         
-        removeAccessoryConstraints()
         addAccessoryConstraints()
-        
+
         addAutoLayoutSubview(stack)
         stack.topAnchor.equalTo(topAnchor)
         stack.trailingAnchor.equalTo(trailingAnchor).constant(-16)
@@ -375,6 +377,8 @@ public final class InputTextField: UIView {
     }
     
     private func addAccessoryConstraints() {
+        removeAccessoryConstraints()
+
         addAutoLayoutSubview(accessoryContentView)
         sendSubviewToBack(accessoryContentView)
         var accessoryPresentationUpConstraints = [NSLayoutConstraint]()
@@ -437,7 +441,6 @@ public final class InputTextField: UIView {
         accessoryContentView.setLayerCornerRadius(borderRadius, maskCorners: [.bottomLeftCorner, .bottomRightCorner])
         accessoryBackingView.setLayerCornerRadius(borderRadius, maskCorners: .allCorners)
         
-        removeAccessoryConstraints()
         addAccessoryConstraints()
     }
     

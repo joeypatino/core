@@ -23,6 +23,7 @@ public extension UIViewController {
 
 open class ModalPresentationController: UIPresentationController {
     public let background = UIView()
+    private let dismissBackground = UIView()
     public var canTapToDismiss: Bool
     public var canSwipeDownToDismiss: Bool
     private let interactor = UIPercentDrivenInteractiveTransition()
@@ -54,10 +55,10 @@ open class ModalPresentationController: UIPresentationController {
         return lastViewController(presentingViewController)
     }
     public var topSpacing: CGFloat {
-        let h = presentedViewController.view.requiredHeight
-        let safeArea = UIApplication.shared.windowSafeAreaInsets.top + 20
+        let height = presentedViewController.view.requiredHeight
+        let safeArea = UIApplication.shared.windowSafeAreaInsets.top
         let screenHeight = UIScreen.main.bounds.height
-        return screenHeight - safeArea - h
+        return screenHeight - height - safeArea
     }
     
     // MARK: Public Properties
@@ -88,6 +89,13 @@ open class ModalPresentationController: UIPresentationController {
         presentingCornerRadius = presentingViewController.view.layer.cornerRadius
         presentedCornerRadius = presented?.view.layer.cornerRadius ?? 0
         presented?.view.layer.masksToBounds = true
+        
+        presentingViewController.view.addSubview(background)
+        // Add a dimming view below the presented view controller.
+        background.backgroundColor = .black
+        background.frame = presentingViewController.view.bounds
+        background.alpha = 0
+
         // Configure the presented view.
         containerView?.addSubview(presentedView)
         presentedView.layoutIfNeeded()
@@ -96,11 +104,14 @@ open class ModalPresentationController: UIPresentationController {
         presentedView.layer.masksToBounds = true
         presentedView.layer.cornerRadius = 20
         
-        // Add a dimming view below the presented view controller.
-        background.backgroundColor = .black
-        background.frame = containerBounds
-        background.alpha = 0
-        containerView?.insertSubview(background, at: 0)
+        // Add a dismissing background to the container. using two backgrounds since
+        // using one was causing issues where background would not animate alpha (when it was
+        // presented as a second modal) and if background was added directly to presentingViewController
+        // then dissmissal gesture was not being triggered.. so now there's two backgrounds..
+        dismissBackground.backgroundColor = UIColor(white: 0, alpha: 0.25)
+        dismissBackground.frame = containerBounds
+        dismissBackground.alpha = 0.025
+        containerView?.insertSubview(dismissBackground, at: 0)
         
         // Add pan gesture recognizers for interactive dismissal.
         let panGesture = UIPanGestureRecognizer(target: self, action: #selector(handlePan(_:)))
@@ -108,7 +119,7 @@ open class ModalPresentationController: UIPresentationController {
         scrollView?.panGestureRecognizer.addTarget(self, action: #selector(handlePan(_:)))
         
         // Add tap recognizer for dismissal.
-        if canTapToDismiss { background.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(dismiss))) }
+        if canTapToDismiss { dismissBackground.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(dismiss))) }
         
         presentedViewController.transitionCoordinator?.animate(alongsideTransition: { [unowned self] _ in
             self.presentingViewController.view.layer.transform = self.calculatePerspectiveTransform()
@@ -144,9 +155,9 @@ open class ModalPresentationController: UIPresentationController {
         }
     }
     
-    public func updatePresentedLayout() {
+    public func updatePresentedLayout(animated flag: Bool = true) {
         let animations:() -> Void = { self.presentedViewController.view.frame = self.frameOfPresentedViewInContainerView }
-        UIView.animate(withDuration: 0.5, delay: 0, options: [.curveEaseInOut], animations: animations)
+        UIView.animate(withDuration: flag ? 0.5 : 0, delay: 0, options: [.curveEaseInOut], animations: animations)
     }
     
     open func canDismiss() -> Bool {
