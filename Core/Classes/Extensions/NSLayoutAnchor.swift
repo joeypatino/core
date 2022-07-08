@@ -105,6 +105,12 @@ import UIKit
 
 @objc public extension NSLayoutConstraint {
     @discardableResult
+    func setIsActive(_ isActive: Bool) -> NSLayoutConstraint {
+        self.isActive = isActive
+        return self
+    }
+    
+    @discardableResult
     func priority(_ priority: Float) -> NSLayoutConstraint {
         self.priority = UILayoutPriority(rawValue: priority)
         return self

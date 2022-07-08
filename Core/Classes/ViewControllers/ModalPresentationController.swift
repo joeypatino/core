@@ -31,6 +31,8 @@ open class ModalPresentationController: UIPresentationController {
     private var scrollView: UIScrollView? {
         presentedView as? UIScrollView ?? presentedView?.firstSubview(of: UIScrollView.self)
     }
+    private var presentedCornerRadius: CGFloat
+    private var presentingCornerRadius: CGFloat
     private var presented: UIViewController? {
         func lastViewController(_ viewController: UIViewController) -> UIViewController {
             if let navigationController = viewController as? UINavigationController {
@@ -51,7 +53,12 @@ open class ModalPresentationController: UIPresentationController {
         }
         return lastViewController(presentingViewController)
     }
-    public var topSpacing: CGFloat { UIApplication.shared.windowSafeAreaInsets.top + 20 }
+    public var topSpacing: CGFloat {
+        let h = presentedViewController.view.requiredHeight
+        let safeArea = UIApplication.shared.windowSafeAreaInsets.top + 20
+        let screenHeight = UIScreen.main.bounds.height
+        return screenHeight - safeArea - h
+    }
     
     // MARK: Public Properties
     
@@ -69,12 +76,17 @@ open class ModalPresentationController: UIPresentationController {
     required public init(presentedViewController: UIViewController, presenting presentingViewController: UIViewController?, canTapToDismiss: Bool = true, canSwipeDownToDismiss: Bool = true) {
         self.canTapToDismiss = canTapToDismiss
         self.canSwipeDownToDismiss = canSwipeDownToDismiss
+        self.presentedCornerRadius = presentedViewController.view.layer.cornerRadius
+        self.presentingCornerRadius = presentingViewController?.view.layer.cornerRadius ?? 0
         super.init(presentedViewController: presentedViewController, presenting: presentingViewController)
     }
     
     // MARK: Public Functions
     public override func presentationTransitionWillBegin() {
         guard let containerBounds = containerView?.bounds, let presentedView = presentedView else { return }
+        
+        presentingCornerRadius = presentingViewController.view.layer.cornerRadius
+        presentedCornerRadius = presented?.view.layer.cornerRadius ?? 0
         presented?.view.layer.masksToBounds = true
         // Configure the presented view.
         containerView?.addSubview(presentedView)
@@ -109,8 +121,8 @@ open class ModalPresentationController: UIPresentationController {
     public override func dismissalTransitionWillBegin() {
         presentedViewController.transitionCoordinator?.animate(alongsideTransition: { [unowned self] _ in
             self.presentingViewController.view.layer.transform = CATransform3DIdentity
-            self.presentingViewController.view.layer.cornerRadius = 0
-            self.presented?.view.layer.cornerRadius = 0
+            self.presentingViewController.view.layer.cornerRadius = self.presentingCornerRadius
+            self.presented?.view.layer.cornerRadius = self.presentedCornerRadius
             self.background.alpha = 0
         })
     }
@@ -130,6 +142,11 @@ open class ModalPresentationController: UIPresentationController {
             }
             animator.startAnimation()
         }
+    }
+    
+    public func updatePresentedLayout() {
+        let animations:() -> Void = { self.presentedViewController.view.frame = self.frameOfPresentedViewInContainerView }
+        UIView.animate(withDuration: 0.5, delay: 0, options: [.curveEaseInOut], animations: animations)
     }
     
     open func canDismiss() -> Bool {

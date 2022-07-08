@@ -3,6 +3,11 @@ import Combine
 
 open class InputField: UIView {
     @Published public var text: String = ""
+    
+    public weak var delegate: InputTextFieldDelegate? {
+        get { textField.delegate }
+        set { textField.delegate = newValue }
+    }
 
     public var font: UIFont {
         get { textField.font }
@@ -78,10 +83,17 @@ open class InputField: UIView {
         get { textField.displaysHeader }
         set { textField.displaysHeader = newValue }
     }
-    
     public var minimumHeight: CGFloat {
         get { textField.minimumHeight }
         set { textField.minimumHeight = newValue }
+    }
+    public var validators: [ValidatorType] {
+        get { textField.validators }
+        set { textField.validators = newValue }
+    }
+    public var accessoryPresentationDirection: InputTextField.AccessoryPresentationDirection {
+        get { textField.accessoryPresentationDirection }
+        set { textField.accessoryPresentationDirection = newValue }
     }
     
     private let footer = UILabel(font: .systemFont(ofSize: 12.0, weight: .regular), color: .lightGray)
@@ -117,6 +129,50 @@ open class InputField: UIView {
         footer.leadingAnchor.equalTo(leadingAnchor).constant(16)
         footer.trailingAnchor.equalTo(trailingAnchor)
         footer.bottomAnchor.equalTo(bottomAnchor)
+    }
+    
+    public func setText(_ text: String?) {
+        textField.setText(text.orEmpty)
+    }
+    
+    public func setAccessoryView(_ height: CGFloat) {
+        textField.setAccessoryView(height)
+    }
+    
+    public func setAccessoryView(_ view: UIView) {
+        textField.setAccessoryView(view)
+    }
+    
+    public override var isFirstResponder: Bool {
+        textField.isFirstResponder
+    }
+
+    @discardableResult
+    public override func resignFirstResponder() -> Bool {
+        textField.resignFirstResponder()
+    }
+
+    public override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
+        if textField.point(inside: point, with: event) { return true }
+        else { return super.point(inside: point, with: event) }
+    }
+    
+    /// Invalidates the text input control and configures the visual state. The delegate may also
+    /// be called `textInput(_:didUpdateValidation:)` depending on the current editing state
+    public func invalidate() {
+        textField.invalidate()
+    }
+    
+    /// Clears the validation state of the text input control and re-configures the visual state.
+    /// The delegate may also be called `textInput(_:didUpdateValidation:)` depending on the current editing state
+    public func clearInvalidation() {
+        textField.clearInvalidation()
+    }
+    
+    /// Triggers the delegate callback `textInput(_:didUpdateValidation:)` with the current validation
+    /// error (if any) by running the currently configured valiation objects for this text input control.
+    public func updateValidation() {
+        textField.updateValidation()
     }
 }
 
