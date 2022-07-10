@@ -1,7 +1,9 @@
 import UIKit
 
-public extension UIViewController {
-    func presentModal<T>(_ presentationController: T, completion: (() -> Void)? = nil) where T: ModalPresentationController {
+public protocol ModallyPresentable {}
+
+extension ModallyPresentable where Self: UIViewController {
+    public func presentModal<T>(_ presentationController: T, completion: (() -> Void)? = nil) where T: ModalPresentationController {
         let viewController = presentationController.presentedViewController
         viewController.transitioningDelegate = presentationController
         viewController.modalPresentationStyle = .custom
@@ -9,17 +11,20 @@ public extension UIViewController {
     }
     
     @discardableResult
-    func presentModal<T>(_ viewController: UIViewController, canTapToDismiss: Bool = true, canSwipeDownToDismiss: Bool = true, completion: (() -> Void)? = nil) -> T where T: ModalPresentationController {
+    public func presentModal<T>(_ viewController: UIViewController, canTapToDismiss: Bool = true, canSwipeDownToDismiss: Bool = true, shouldUseIntrinsicHeight: Bool = false, completion: (() -> Void)? = nil) -> T where T: ModalPresentationController {
         let presentationController = T.init(presentedViewController: viewController,
                                             presenting: self,
                                             canTapToDismiss: canTapToDismiss,
-                                            canSwipeDownToDismiss: canSwipeDownToDismiss)
+                                            canSwipeDownToDismiss: canSwipeDownToDismiss,
+                                            shouldUseIntrinsicHeight: shouldUseIntrinsicHeight)
         viewController.transitioningDelegate = presentationController
         viewController.modalPresentationStyle = .custom
         present(viewController, animated: true, completion: completion)
         return presentationController
     }
 }
+
+extension UIViewController: ModallyPresentable {}
 
 open class ModalPresentationController: UIPresentationController {
     public let background = UIView()
@@ -55,11 +60,16 @@ open class ModalPresentationController: UIPresentationController {
         return lastViewController(presentingViewController)
     }
     public var topSpacing: CGFloat {
-        let height = presentedViewController.view.requiredHeight
-        let safeArea = UIApplication.shared.windowSafeAreaInsets.top
-        let screenHeight = UIScreen.main.bounds.height
-        return screenHeight - height - safeArea
+        if shouldUseIntrinsicHeight {
+            let height = presentedViewController.view.requiredHeight
+            let safeArea = UIApplication.shared.windowSafeAreaInsets.top
+            let screenHeight = UIScreen.main.bounds.height
+            return screenHeight - height - safeArea
+        }
+        return UIApplication.shared.windowSafeAreaInsets.top + 20
     }
+    
+    public var shouldUseIntrinsicHeight: Bool
     
     // MARK: Public Properties
     
@@ -74,9 +84,10 @@ open class ModalPresentationController: UIPresentationController {
     
     // MARK: Initializers
     
-    required public init(presentedViewController: UIViewController, presenting presentingViewController: UIViewController?, canTapToDismiss: Bool = true, canSwipeDownToDismiss: Bool = true) {
+    required public init(presentedViewController: UIViewController, presenting presentingViewController: UIViewController?, canTapToDismiss: Bool = true, canSwipeDownToDismiss: Bool = true, shouldUseIntrinsicHeight: Bool = false) {
         self.canTapToDismiss = canTapToDismiss
         self.canSwipeDownToDismiss = canSwipeDownToDismiss
+        self.shouldUseIntrinsicHeight = shouldUseIntrinsicHeight
         self.presentedCornerRadius = presentedViewController.view.layer.cornerRadius
         self.presentingCornerRadius = presentingViewController?.view.layer.cornerRadius ?? 0
         super.init(presentedViewController: presentedViewController, presenting: presentingViewController)

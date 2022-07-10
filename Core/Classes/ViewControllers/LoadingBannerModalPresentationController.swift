@@ -5,14 +5,14 @@ public final class LoadingBannerModalPresentationController: ModalPresentationCo
     private var bannerBackground = UIVisualEffectView(effect: UIBlurEffect(style: .dark))
     private var isLoading: Bool = false
     
-    public init(banner: UIView, presentedViewController: UIViewController, presenting presentingViewController: UIViewController?, canTapToDismiss: Bool = true, canSwipeDownToDismiss: Bool = true) {
+    public init(banner: UIView, presentedViewController: UIViewController, presenting presentingViewController: UIViewController?, canTapToDismiss: Bool = true, canSwipeDownToDismiss: Bool = true, shouldUseIntrinsicHeight: Bool = false) {
         self.banner = banner
-        super.init(presentedViewController: presentedViewController, presenting: presentingViewController, canTapToDismiss: canTapToDismiss, canSwipeDownToDismiss: canSwipeDownToDismiss)
+        super.init(presentedViewController: presentedViewController, presenting: presentingViewController, canTapToDismiss: canTapToDismiss, canSwipeDownToDismiss: canSwipeDownToDismiss, shouldUseIntrinsicHeight: shouldUseIntrinsicHeight)
         self.bannerBackground.isUserInteractionEnabled = false
     }
     
-    required public init(presentedViewController: UIViewController, presenting presentingViewController: UIViewController?, canTapToDismiss: Bool = true, canSwipeDownToDismiss: Bool = true) {
-        super.init(presentedViewController: presentedViewController, presenting: presentingViewController, canTapToDismiss: canTapToDismiss, canSwipeDownToDismiss: canSwipeDownToDismiss)
+    required public init(presentedViewController: UIViewController, presenting presentingViewController: UIViewController?, canTapToDismiss: Bool = true, canSwipeDownToDismiss: Bool = true, shouldUseIntrinsicHeight: Bool = false) {
+        super.init(presentedViewController: presentedViewController, presenting: presentingViewController, canTapToDismiss: canTapToDismiss, canSwipeDownToDismiss: canSwipeDownToDismiss, shouldUseIntrinsicHeight: shouldUseIntrinsicHeight)
     }
     
     public override var frameOfPresentedViewInContainerView: CGRect {

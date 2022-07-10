@@ -59,7 +59,11 @@ public extension UIView {
     var requiredHeight: CGFloat {
         return systemLayoutSizeFitting(UIView.layoutFittingCompressedSize).height
     }
-    
+
+    var requiredWidth: CGFloat {
+        return systemLayoutSizeFitting(UIView.layoutFittingCompressedSize).width
+    }
+
     func requiredWidth(fittingHeight height: CGFloat) -> CGFloat {
         return systemLayoutSizeFitting(CGSize(width: 0, height: height), withHorizontalFittingPriority: .fittingSizeLevel, verticalFittingPriority: .required).width
     }

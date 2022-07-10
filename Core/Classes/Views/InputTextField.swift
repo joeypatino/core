@@ -196,7 +196,7 @@ public final class InputTextField: UIView {
         headerStyle == .focused ? focusedHeaderOffset : unFocusedHeaderOffset
     }
     /// the backing view is used to display the border when the accessory view is in the expanded state
-    private lazy var accessoryBackingView = UIView(backgroundColor: .white)
+    private lazy var accessoryBackingView = UIView(backgroundColor: .clear)
     /// the accessory content view container
     private lazy var accessoryContentView = UIView(backgroundColor: .white)
     /// the height constraint for the accessory content view container
