@@ -43,6 +43,14 @@ public extension String {
         return String(self[..<toIndex])
     }
 
+    func substringTo(firstInstanceOf character: String) -> String {
+        let location = range(of: character).location
+        guard location != NSNotFound else {
+            return self
+        }
+        return substring(to: location)
+    }
+
     func substring(with r: Range<Int>) -> String {
         let startIndex = index(from: r.lowerBound)
         let endIndex = index(from: r.upperBound)

@@ -1,5 +1,27 @@
 import Foundation
 
+public extension Array where Element == String {
+    /// JSON Data from dictionary.
+    /// - Parameter prettify: set true to prettify data (default is false).
+    /// - Returns: JSON Data or nil
+    func jsonData(prettify: Bool = false) -> Data? {
+        guard JSONSerialization.isValidJSONObject(self) else {
+            return nil
+        }
+        let options = (prettify == true) ? JSONSerialization.WritingOptions.prettyPrinted : JSONSerialization
+            .WritingOptions()
+        return try? JSONSerialization.data(withJSONObject: self, options: options)
+    }
+    
+    /// JSON String from dictionary.
+    /// - Parameter prettify: set true to prettify string (default is false).
+    /// - Returns: JSON String or nil
+    func jsonString(prettify: Bool = false) -> String? {
+        guard let jsonData = jsonData(prettify: prettify) else { return nil }
+        return String(data: jsonData, encoding: .utf8)
+    }
+}
+
 public extension Array where Element == Dictionary<String, Any> {
     /// JSON Data from dictionary.
     /// - Parameter prettify: set true to prettify data (default is false).

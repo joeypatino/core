@@ -47,7 +47,7 @@ public final class VideoTimelineView: UIView {
     
     private func showTracks(_ composition: AVComposition) {
         let tracks:[AVCompositionTrack] = composition.tracks
-        print(tracks.map { track in
+        print(tracks.map { track -> [String: Any] in
             if !track.isEnabled { return [:] }
             let segments: [AVCompositionTrackSegment] = track.segments
             return ["track.trackID": track.trackID,

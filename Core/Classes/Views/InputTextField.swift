@@ -14,6 +14,7 @@ public protocol InputTextFieldDelegate: AnyObject {
     func textFieldDidBeginEditing(_ textField: InputTextField)
     func textFieldDidChange(_ textField: InputTextField)
     func textFieldDidEndEditing(_ textField: InputTextField)
+    func textFieldDidReturn(_ textField: InputTextField)
     func textField(_ textField: InputTextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool
     func textField(_ textField: InputTextField, didChangeFocus isFocused: Bool)
     func textField(_ textField: InputTextField, didUpdateValidation error: String?)
@@ -23,6 +24,7 @@ extension InputTextFieldDelegate {
     public func textFieldDidBeginEditing(_ textField: InputTextField) {}
     public func textFieldDidChange(_ textField: InputTextField) {}
     public func textFieldDidEndEditing(_ textField: InputTextField) {}
+    public func textFieldDidReturn(_ textField: InputTextField) {}
     public func textField(_ textField: InputTextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool { true }
     public func textField(_ textField: InputTextField, didChangeFocus isFocused: Bool) {}
     public func textField(_ textField: InputTextField, didUpdateValidation error: String?) {}
@@ -175,12 +177,38 @@ public final class InputTextField: UIView {
         get { textField.insets }
         set { textField.insets = newValue }
     }
+    
     /// the validators for this text input
     public var validators: [ValidatorType] = []
     
+    /// is paste enabled?
+    public var canPaste: Bool {
+        get { textField.canPaste }
+        set { textField.canPaste = newValue }
+    }
+    
+    /// is copy enabled?
+    public var canCopy: Bool {
+        get { textField.canCopy }
+        set { textField.canCopy = newValue }
+    }
+    
+    /// The beginning of the the text document
+    public var beginningOfDocument: UITextPosition { textField.beginningOfDocument }
+    
+    /// Text may have a selection, either zero-length (a caret) or ranged.  Editing operations are
+    /// always performed on the text from this selection.  nil corresponds to no selection
+    public var selectedTextRange: UITextRange? {
+        get { textField.selectedTextRange }
+        set { textField.selectedTextRange = newValue }
+    }
+    
+    // the current set of editing actions this control has taken
     private var editActions: InputTextFieldAction = []
+    
     /// tracks the first time we resign the keyboard
     private var didEdit: Bool = false
+    
     /// temporary invalidation state
     private var isMarkedInvalid: Bool = false
 
@@ -286,6 +314,14 @@ public final class InputTextField: UIView {
         textField.becomeFirstResponder()
     }
     
+    public func position(from position: UITextPosition, offset: Int) -> UITextPosition? {
+        textField.position(from: position, offset: offset)
+    }
+    
+    public func textRange(from fromPosition: UITextPosition, to toPosition: UITextPosition) -> UITextRange? {
+        textField.textRange(from: fromPosition, to: toPosition)
+    }
+
     public func setText(_ text: String) {
         self.text = text
         self.headerStyle = textField.text.orEmpty.isEmpty ? .unfocused : .focused
@@ -324,7 +360,6 @@ public final class InputTextField: UIView {
         NotificationCenter.default.addObserver(self, selector: #selector(textFieldDidChange(_:)), name: UITextField.textDidChangeNotification, object: textField)
         stack.alignment = .center
         stack.spacing = 14
-        stack.addArrangedSubview(Spacer(orientation: .horizonal(width: 0)))
         textField.textColor = textColor
         textField.font = font
         textField.delegate = self
@@ -347,7 +382,7 @@ public final class InputTextField: UIView {
 
         addAutoLayoutSubview(stack)
         stack.topAnchor.equalTo(topAnchor)
-        stack.trailingAnchor.equalTo(trailingAnchor).constant(-16)
+        stack.trailingAnchor.equalTo(trailingAnchor, priority: 999).constant(-16)
         stackHeightConstraint = stack.heightAnchor.equalToConstant(minimumHeight)
         
         addAutoLayoutSubview(header)
@@ -506,7 +541,7 @@ public final class InputTextField: UIView {
     private func updateValidationIfNeeded() {
         updateBorder()
         /// only notify regarding the validation error if we've ended the focus AND have edited the text
-        guard editActions.contains(.edit) else { return } //  && editActions.contains(.endFocus)
+        guard editActions.contains(.edit) else { return }
         delegate?.textField(self, didUpdateValidation: validationError())
     }
     
@@ -573,6 +608,7 @@ extension InputTextField: UITextFieldDelegate {
 
     public func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.resignFirstResponder()
+        delegate?.textFieldDidReturn(self)
         return true
     }
 }
@@ -594,9 +630,27 @@ extension InputTextField {
 }
 
 internal class TextField: UITextField {
+    public var canPaste: Bool = true
+    public var canCopy: Bool = true
+    
+    override func canPerformAction(_ action: Selector, withSender sender: Any?) -> Bool {
+        if action == #selector(paste(_:)) && !canPaste {
+            return false
+        }
+        if action == #selector(copy(_:)) && !canCopy {
+            return false
+        }
+        return super.canPerformAction(action, withSender: sender)
+    }
+    
+    override var canBecomeFirstResponder: Bool {
+        true
+    }
+    
     public var insets: UIEdgeInsets = .zero {
         didSet { setNeedsDisplay() }
     }
+    
     override func textRect(forBounds bounds: CGRect) -> CGRect {
         super.textRect(forBounds: bounds).inset(by: insets)
     }
