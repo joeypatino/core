@@ -150,6 +150,7 @@ public final class InputTextView: UIView {
         self.header = headerLabel
         self.header.text = header
         self.textView.text = defaultValue
+        self.unsecureText = defaultValue.orEmpty
         super.init(frame: .zero)
         self.placeholder = placeholder.orEmpty
         setup()

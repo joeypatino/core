@@ -96,6 +96,16 @@ open class InputField: UIView {
         set { textField.accessoryPresentationDirection = newValue }
     }
     
+    public var insets: UIEdgeInsets {
+        get { textField.insets }
+        set { textField.insets = newValue }
+    }
+    
+    private var textInsetLeft = NSLayoutConstraint()
+    private var textInsetTop = NSLayoutConstraint()
+    private var textInsetRight = NSLayoutConstraint()
+    private var textInsetBottom = NSLayoutConstraint()
+    
     private let footer = UILabel(font: .systemFont(ofSize: 12.0, weight: .regular), color: .lightGray)
     internal let textField: InputTextField
     
