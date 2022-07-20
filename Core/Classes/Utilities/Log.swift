@@ -98,8 +98,15 @@ public struct Console {
         _log(verbosity: .custom(level), args)
     }
     private func _log(verbosity: Console.Verbosity, _ args: [Any]) {
-        guard self.verbosity.contains(where: { $0 == verbosity })
-                && Console.verbosity.contains(where: { $0 == verbosity })
+        let localVerbosity: [Verbosity] = self.verbosity
+        var globalVerbosity: [Verbosity] = Console.verbosity
+        localVerbosity.forEach {
+            if case .custom(let id) = $0 {
+                globalVerbosity.append(.custom(id))
+            }
+        }
+        guard localVerbosity.contains(where: { $0 == verbosity })
+                && globalVerbosity.contains(where: { $0 == verbosity })
         else { return }
         
         let message = args.map { String(describing: $0) }.joined(separator: " ")

@@ -1,7 +1,7 @@
 import UIKit
 
 public extension UIViewController {
-    func presentModalPush<T>(_ presentationController: T, completion: (() -> Void)? = nil) where T: PushPresentationController {
+    func presentPopIn<T>(_ presentationController: T, completion: (() -> Void)? = nil) where T: PopInPresentationController {
         let viewController = presentationController.presentedViewController
         viewController.transitioningDelegate = presentationController
         viewController.modalPresentationStyle = .custom
@@ -9,10 +9,11 @@ public extension UIViewController {
     }
     
     @discardableResult
-    func presentModalPush<T>(_ viewController: UIViewController, canSwipeToDismiss: Bool = true, completion: (() -> Void)? = nil) -> T where T: PushPresentationController {
+    func presentPopIn<T>(_ viewController: UIViewController, canTapToDismiss: Bool = true, canSwipeToDismiss: Bool = true, completion: (() -> Void)? = nil) -> T where T: PopInPresentationController {
         let presentationController = T.init(presentedViewController: viewController,
                                             presenting: self,
-                                            canSwipeToDismiss: canSwipeToDismiss)
+                                            canTapToDismiss: canTapToDismiss,
+                                            canSwipeDownToDismiss: canSwipeToDismiss)
         viewController.transitioningDelegate = presentationController
         viewController.modalPresentationStyle = .custom
         present(viewController, animated: true, completion: completion)
@@ -20,15 +21,19 @@ public extension UIViewController {
     }
 }
 
-open class PushPresentationController: UIPresentationController {
+open class PopInPresentationController: UIPresentationController {
     public let background = UIView()
-    public var canSwipeToDismiss: Bool
+    private let dismissBackground = UIView()
+    public var canTapToDismiss: Bool
+    public var canSwipeDownToDismiss: Bool
     private let interactor = UIPercentDrivenInteractiveTransition()
     private var propertyAnimator: UIViewPropertyAnimator!
     private var isInteractive = false
     private var scrollView: UIScrollView? {
         presentedView as? UIScrollView ?? presentedView?.firstSubview(of: UIScrollView.self)
     }
+    private var presentedCornerRadius: CGFloat
+    private var presentingCornerRadius: CGFloat
     private var presented: UIViewController? {
         func lastViewController(_ viewController: UIViewController) -> UIViewController {
             if let navigationController = viewController as? UINavigationController {
@@ -54,44 +59,58 @@ open class PushPresentationController: UIPresentationController {
     
     public override var frameOfPresentedViewInContainerView: CGRect {
         guard let containerBounds = containerView?.bounds else { return .zero }
-        var frame = containerBounds
-        frame.size.height = (containerBounds.height)
-        frame.origin.y = containerBounds.height - frame.size.height
-        
-        return frame
+        return containerBounds.insetBy(dx: 15, dy: 60)
     }
     
     // MARK: Initializers
     
-    required public init(presentedViewController: UIViewController, presenting presentingViewController: UIViewController?, canSwipeToDismiss: Bool = true) {
-        self.canSwipeToDismiss = canSwipeToDismiss
+    required public init(presentedViewController: UIViewController, presenting presentingViewController: UIViewController?, canTapToDismiss: Bool = true, canSwipeDownToDismiss: Bool = true) {
+        self.canTapToDismiss = canTapToDismiss
+        self.canSwipeDownToDismiss = canSwipeDownToDismiss
+        self.presentedCornerRadius = presentedViewController.view.layer.cornerRadius
+        self.presentingCornerRadius = presentingViewController?.view.layer.cornerRadius ?? 0
         super.init(presentedViewController: presentedViewController, presenting: presentingViewController)
     }
     
     // MARK: Public Functions
     public override func presentationTransitionWillBegin() {
         guard let containerBounds = containerView?.bounds, let presentedView = presentedView else { return }
+        
+        presentingCornerRadius = presentingViewController.view.layer.cornerRadius
+        presentedCornerRadius = presented?.view.layer.cornerRadius ?? 0
         presented?.view.layer.masksToBounds = true
+        
+        presentingViewController.view.addSubview(background)
+        // Add a dimming view below the presented view controller.
+        background.backgroundColor = .black
+        background.frame = presentingViewController.view.bounds
+        background.alpha = 0
+
         // Configure the presented view.
         containerView?.addSubview(presentedView)
         presentedView.layoutIfNeeded()
         presentedView.frame = frameOfPresentedViewInContainerView
-        presentedView.frame.origin.x = containerBounds.width
+        presentedView.frame.origin.y = containerBounds.height
         presentedView.layer.masksToBounds = true
         presentedView.layer.cornerRadius = 20
-        
-        // Add a dimming view below the presented view controller.
-        background.backgroundColor = .black
-        background.frame = containerBounds
-        background.alpha = 0
-        containerView?.insertSubview(background, at: 0)
+
+        // Add a dismissing background to the container. using two backgrounds since
+        // using one was causing issues where background would not animate alpha (when it was
+        // presented as a second modal) and if background was added directly to presentingViewController
+        // then dissmissal gesture was not being triggered.. so now there's two backgrounds..
+        dismissBackground.backgroundColor = UIColor(white: 0, alpha: 0.25)
+        dismissBackground.frame = containerBounds
+        dismissBackground.alpha = 0.025
+        containerView?.insertSubview(dismissBackground, at: 0)
         
         // Add pan gesture recognizers for interactive dismissal.
         let panGesture = UIPanGestureRecognizer(target: self, action: #selector(handlePan(_:)))
-        panGesture.delegate = self
         presentedView.addGestureRecognizer(panGesture)
         scrollView?.panGestureRecognizer.addTarget(self, action: #selector(handlePan(_:)))
-
+        
+        // Add tap recognizer for dismissal.
+        if canTapToDismiss { dismissBackground.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(dismiss))) }
+        
         presentedViewController.transitionCoordinator?.animate(alongsideTransition: { [unowned self] _ in
             self.presentingViewController.view.layer.transform = self.calculatePerspectiveTransform()
             self.presentingViewController.view.layer.cornerRadius = 20
@@ -103,8 +122,8 @@ open class PushPresentationController: UIPresentationController {
     public override func dismissalTransitionWillBegin() {
         presentedViewController.transitionCoordinator?.animate(alongsideTransition: { [unowned self] _ in
             self.presentingViewController.view.layer.transform = CATransform3DIdentity
-            self.presentingViewController.view.layer.cornerRadius = 0
-            self.presented?.view.layer.cornerRadius = 0
+            self.presentingViewController.view.layer.cornerRadius = self.presentingCornerRadius
+            self.presented?.view.layer.cornerRadius = self.presentedCornerRadius
             self.background.alpha = 0
         })
     }
@@ -126,6 +145,11 @@ open class PushPresentationController: UIPresentationController {
         }
     }
     
+    public func updatePresentedLayout(animated flag: Bool = true) {
+        let animations:() -> Void = { self.presentedViewController.view.frame = self.frameOfPresentedViewInContainerView }
+        UIView.animate(withDuration: flag ? 0.5 : 0, delay: 0, options: [.curveEaseInOut], animations: animations)
+    }
+    
     open func canDismiss() -> Bool {
         true
     }
@@ -137,7 +161,7 @@ open class PushPresentationController: UIPresentationController {
         var contentTransform:CATransform3D = CATransform3DIdentity
         contentTransform.m34 = CGFloat(-1/eyePosition)
         contentTransform = CATransform3DTranslate(contentTransform, 0, 0, -2)
-        return contentTransform
+        return CATransform3DTranslate(contentTransform, 0, -60, 0)
     }
     
     @objc private func dismiss() {
@@ -151,15 +175,15 @@ open class PushPresentationController: UIPresentationController {
         
         limitScrollView(gesture)
         
-        let percent = gesture.translation(in: containerView).x / containerView.bounds.width
+        let percent = gesture.translation(in: containerView).y / containerView.bounds.height
         switch gesture.state {
         case .began:
-            if !presentedViewController.isBeingDismissed && scrollView?.contentOffset.x ?? 0 <= 0 {
+            if !presentedViewController.isBeingDismissed && scrollView?.contentOffset.y ?? 0 <= 0 {
                 isInteractive = true
                 presentedViewController.dismiss(animated: true)
             }
         case .changed:
-            if canSwipeToDismiss {
+            if canSwipeDownToDismiss {
                 interactor.update(percent)
             } else {
                 interactor.update(abs(1.0 - pow(1.5, percent)))
@@ -168,8 +192,8 @@ open class PushPresentationController: UIPresentationController {
             interactor.cancel()
             isInteractive = false
         case .ended:
-            if canSwipeToDismiss {
-                let velocity = gesture.velocity(in: nil).x
+            if canSwipeDownToDismiss {
+                let velocity = gesture.velocity(in: nil).y
                 interactor.completionSpeed = 0.9
                 if percent > 0.3 || velocity > 1600 {
                     interactor.finish()
@@ -190,27 +214,13 @@ open class PushPresentationController: UIPresentationController {
         guard let scrollView = scrollView else { return }
         if interactor.percentComplete > 0 {
             // Don't let the scroll view scroll while dismissing.
-            scrollView.contentOffset.x = -scrollView.adjustedContentInset.left
+            scrollView.contentOffset.y = -scrollView.adjustedContentInset.top
         }
     }
 }
 
-extension PushPresentationController: UIGestureRecognizerDelegate {
-    public func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
-        false
-    }
-    
-    public func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
-        let touchLocation = touch.location(in: gestureRecognizer.view)
-        guard let view = gestureRecognizer.view?.hitTest(touchLocation, with: nil) else { return true }
-        let location = view.convert(touchLocation, from: nil)
-        let isInBoundsAndIsControl = view.frame.contains(location) && (view is UIControl)
-        return !isInBoundsAndIsControl
-    }
-}
-
 // MARK: UIViewControllerAnimatedTransitioning
-extension PushPresentationController: UIViewControllerAnimatedTransitioning {
+extension PopInPresentationController: UIViewControllerAnimatedTransitioning {
     public func transitionDuration(using transitionContext: UIViewControllerContextTransitioning?) -> TimeInterval {
         0.6
     }
@@ -227,7 +237,7 @@ extension PushPresentationController: UIViewControllerAnimatedTransitioning {
             if self.presentedViewController.isBeingPresented {
                 transitionContext.view(forKey: .to)?.frame = self.frameOfPresentedViewInContainerView
             } else {
-                transitionContext.view(forKey: .from)?.frame.origin.x = transitionContext.containerView.frame.maxX
+                transitionContext.view(forKey: .from)?.frame.origin.y = transitionContext.containerView.frame.maxY
             }
         }
         propertyAnimator.addCompletion { _ in
@@ -238,7 +248,7 @@ extension PushPresentationController: UIViewControllerAnimatedTransitioning {
 }
 
 // MARK: UIViewControllerTransitioningDelegate
-extension PushPresentationController: UIViewControllerTransitioningDelegate {
+extension PopInPresentationController: UIViewControllerTransitioningDelegate {
     public func presentationController(forPresented presented: UIViewController, presenting: UIViewController?, source: UIViewController) -> UIPresentationController? {
         self
     }
