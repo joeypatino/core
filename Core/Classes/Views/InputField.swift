@@ -162,6 +162,11 @@ open class InputField: UIView {
         textField.resignFirstResponder()
     }
 
+    @discardableResult
+    open override func becomeFirstResponder() -> Bool {
+        textField.becomeFirstResponder()
+    }
+    
     public override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
         if textField.point(inside: point, with: event) { return true }
         else { return super.point(inside: point, with: event) }
