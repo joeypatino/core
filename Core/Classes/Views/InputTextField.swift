@@ -203,6 +203,9 @@ public final class InputTextField: UIView {
         set { textField.selectedTextRange = newValue }
     }
     
+    // the text field
+    public let textField = TextField()
+    
     // the current set of editing actions this control has taken
     private var editActions: InputTextFieldAction = []
     
@@ -230,7 +233,7 @@ public final class InputTextField: UIView {
     /// the height constraint for the accessory content view container
     private lazy var accessoryViewConstraint = NSLayoutConstraint()
     
-    private let textField = TextField()
+
     private let header: UILabel
     private let stack = UIStackView(axis: .horizontal)
     private var borderStyle: FocusStyle = .unfocused {
@@ -629,11 +632,11 @@ extension InputTextField {
     }
 }
 
-internal class TextField: UITextField {
+public final class TextField: UITextField {
     public var canPaste: Bool = true
     public var canCopy: Bool = true
     
-    override func canPerformAction(_ action: Selector, withSender sender: Any?) -> Bool {
+    public override func canPerformAction(_ action: Selector, withSender sender: Any?) -> Bool {
         if action == #selector(paste(_:)) && !canPaste {
             return false
         }
@@ -643,7 +646,7 @@ internal class TextField: UITextField {
         return super.canPerformAction(action, withSender: sender)
     }
     
-    override var canBecomeFirstResponder: Bool {
+    public override var canBecomeFirstResponder: Bool {
         true
     }
     
@@ -651,11 +654,11 @@ internal class TextField: UITextField {
         didSet { setNeedsDisplay() }
     }
     
-    override func textRect(forBounds bounds: CGRect) -> CGRect {
+    public override func textRect(forBounds bounds: CGRect) -> CGRect {
         super.textRect(forBounds: bounds).inset(by: insets)
     }
     
-    override func editingRect(forBounds bounds: CGRect) -> CGRect {
+    public override func editingRect(forBounds bounds: CGRect) -> CGRect {
         super.editingRect(forBounds: bounds).inset(by: insets)
     }
 }

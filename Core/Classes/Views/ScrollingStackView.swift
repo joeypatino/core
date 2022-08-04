@@ -143,4 +143,23 @@ public extension StackView {
         }
         addArrangedSubview(stack)
     }
+    
+    func addArrangedSubview(_ views: [UIView], leadingMargin leading: CGFloat = 0, trailingMargin trailing: CGFloat = 0) {
+        let stack = UIStackView()
+        switch axis {
+        case .horizontal:
+            stack.axis = .vertical
+            stack.addArrangedSubview(Spacer(orientation: .vertical(height: leading)))
+            stack.addArrangedSubview(UIStackView(views, axis: .vertical, alignment: .fill, distribution: .fill, spacing: 6))
+            stack.addArrangedSubview(Spacer(orientation: .vertical(height: trailing)))
+        case .vertical:
+            stack.axis = .horizontal
+            stack.addArrangedSubview(Spacer(orientation: .horizonal(width: leading)))
+            stack.addArrangedSubview(UIStackView(views, axis: .horizontal, alignment: .fill, distribution: .fill, spacing: 6))
+            stack.addArrangedSubview(Spacer(orientation: .horizonal(width: trailing)))
+        @unknown default:
+            break
+        }
+        addArrangedSubview(stack)
+    }
 }

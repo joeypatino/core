@@ -3,6 +3,7 @@ import Combine
 
 open class InputField: UIView {
     @Published public var text: String = ""
+    @Published public var error: String = ""
     
     public weak var delegate: InputTextFieldDelegate? {
         get { textField.delegate }
@@ -197,5 +198,12 @@ extension InputField: InputTextFieldDelegate {
     }
     public func textFieldDidEndEditing(_ textField: InputTextField) {
         text = textField.text
+    }
+    public func textField(_ textField: InputTextField, didUpdateValidation error: String?) {
+        guard let error = error else {
+            self.error = ""
+            return
+        }
+        self.error = error
     }
 }
