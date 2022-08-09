@@ -12,6 +12,8 @@ public class ImageCropScrollView: UIScrollView {
             contentSize = imageView.frame.size
             contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
             updateLayout()
+            zoomScale = zoomScaleWithNoWhiteSpaces()
+            minimumZoomScale = zoomScaleWithNoWhiteSpaces()
         }
     }
     private var gridView = UIView(backgroundColor: .clear)
@@ -34,6 +36,7 @@ public class ImageCropScrollView: UIScrollView {
         alwaysBounceVertical = true
         bouncesZoom = true
         decelerationRate = UIScrollView.DecelerationRate.fast
+        contentInsetAdjustmentBehavior = .never
         delegate = self
         maximumZoomScale = 5.0
         
@@ -41,11 +44,21 @@ public class ImageCropScrollView: UIScrollView {
         gridView.isHidden = true
         gridView.isUserInteractionEnabled = false
         addSubview(gridView)
+        
+        let zoomGesture = UITapGestureRecognizer(target: self, action: #selector(zoomGesture(_:)))
+        zoomGesture.numberOfTapsRequired = 2
+        addGestureRecognizer(zoomGesture)
     }
     
     private func layout() {
         addSubview(imageView)
         addSubview(gridView)
+    }
+    
+    @objc private func zoomGesture(_ sender: UITapGestureRecognizer) {
+        if (zoomScale == minimumZoomScale) { setZoomScale(maximumZoomScale, animated: true) }
+        else if (zoomScale == maximumZoomScale)  { setZoomScale(maximumZoomScale - (2.0 * minimumZoomScale), animated: true) }
+        else { setZoomScale(minimumZoomScale, animated: true) }
     }
     
     private func updateLayout() {
@@ -57,7 +70,7 @@ public class ImageCropScrollView: UIScrollView {
     }
     
     private func zoom() {
-        if (zoomScale <= 1.0) { setZoomScale(zoomScaleWithNoWhiteSpaces(), animated: true) }
+        if (zoomScale < zoomScaleWithNoWhiteSpaces()) { setZoomScale(zoomScaleWithNoWhiteSpaces(), animated: true) }
         else { setZoomScale(minimumZoomScale, animated: true) }
         updateLayout()
     }
@@ -105,12 +118,21 @@ extension ImageCropScrollView: UIScrollViewDelegate {
         updateLayout()
     }
     
+    public func scrollViewDidEndZooming(_ scrollView: UIScrollView, with view: UIView?, atScale scale: CGFloat) {
+        updateLayout()
+    }
+    
     public func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
         gridView.isHidden = false
     }
     
+    public func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+        updateLayout()
+    }
+    
     public func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
         gridView.isHidden = true
+        updateLayout()
     }
     
     public func scrollViewDidScroll(_ scrollView: UIScrollView) {

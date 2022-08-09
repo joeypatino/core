@@ -164,6 +164,8 @@
 		D41FF58A2850EAF0006B2688 /* CompositionCameraViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D41FF5892850EAF0006B2688 /* CompositionCameraViewController.swift */; };
 		D41FF58E2852002F006B2688 /* CATransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = D41FF58D2852002F006B2688 /* CATransaction.swift */; };
 		D41FF5902852AF6C006B2688 /* Vibration.swift in Sources */ = {isa = PBXBuildFile; fileRef = D41FF58F2852AF6C006B2688 /* Vibration.swift */; };
+		D463B94128A2D31D001A769D /* ImageCropper.swift in Sources */ = {isa = PBXBuildFile; fileRef = D463B93F28A2D31D001A769D /* ImageCropper.swift */; };
+		D463B94228A2D31D001A769D /* ImageCropScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D463B94028A2D31D001A769D /* ImageCropScrollView.swift */; };
 		D4ACCB0D284D04BB00DC0425 /* CaptureButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4ACCB0C284D04BB00DC0425 /* CaptureButton.swift */; };
 		D4ACCB0F284D04EF00DC0425 /* RoundButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4ACCB0E284D04EF00DC0425 /* RoundButton.swift */; };
 		D4ACCB11284D059900DC0425 /* CGRect.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4ACCB10284D059900DC0425 /* CGRect.swift */; };
@@ -417,6 +419,8 @@
 		D41FF5892850EAF0006B2688 /* CompositionCameraViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompositionCameraViewController.swift; sourceTree = "<group>"; };
 		D41FF58D2852002F006B2688 /* CATransaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CATransaction.swift; sourceTree = "<group>"; };
 		D41FF58F2852AF6C006B2688 /* Vibration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Vibration.swift; sourceTree = "<group>"; };
+		D463B93F28A2D31D001A769D /* ImageCropper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageCropper.swift; sourceTree = "<group>"; };
+		D463B94028A2D31D001A769D /* ImageCropScrollView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageCropScrollView.swift; sourceTree = "<group>"; };
 		D4ACCB0C284D04BB00DC0425 /* CaptureButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureButton.swift; sourceTree = "<group>"; };
 		D4ACCB0E284D04EF00DC0425 /* RoundButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundButton.swift; sourceTree = "<group>"; };
 		D4ACCB10284D059900DC0425 /* CGRect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CGRect.swift; sourceTree = "<group>"; };
@@ -826,6 +830,15 @@
 			path = "Playground/Pods/Target Support Files/Core";
 			sourceTree = "<group>";
 		};
+		D463B93E28A2D31D001A769D /* ImageCropper */ = {
+			isa = PBXGroup;
+			children = (
+				D463B93F28A2D31D001A769D /* ImageCropper.swift */,
+				D463B94028A2D31D001A769D /* ImageCropScrollView.swift */,
+			);
+			path = ImageCropper;
+			sourceTree = "<group>";
+		};
 		D4ACCB12284D11C700DC0425 /* VideoTrimmer */ = {
 			isa = PBXGroup;
 			children = (
@@ -917,6 +930,7 @@
 		E9B6678FFA41F89ABF5E4D5C1C27DB41 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				D463B93E28A2D31D001A769D /* ImageCropper */,
 				D4DEE1702853684A00E56202 /* WaveformView */,
 				D41FF5842850D89C006B2688 /* VideoTimelineView */,
 				D4ACCB12284D11C700DC0425 /* VideoTrimmer */,
@@ -1374,12 +1388,14 @@
 				F623C0F6A6F0262A0C9C304F4FC6D84A /* String+CGContext.swift in Sources */,
 				D4DEE1762853684A00E56202 /* WaveformRenderOperation.swift in Sources */,
 				ED998D968D3383492BF348028299275B /* TextView.swift in Sources */,
+				D463B94228A2D31D001A769D /* ImageCropScrollView.swift in Sources */,
 				91D8AF8818D78FF3F1361189BE08DAF5 /* UIApplication.swift in Sources */,
 				6DFBD0BCFB0284D74BB01CC0FED51F87 /* UIBarButtonItem.swift in Sources */,
 				C6FB0715FC8F46617229151D0228843B /* UIBezierPath.swift in Sources */,
 				5ECFFF092B5BD60DB864AD10979CB856 /* UIButton.swift in Sources */,
 				B1CB1881F9ECEFC85573A866BAFE462A /* UIColor.swift in Sources */,
 				D4ACCB25284D429000DC0425 /* VideoPlayerViewController.swift in Sources */,
+				D463B94128A2D31D001A769D /* ImageCropper.swift in Sources */,
 				D41FF58E2852002F006B2688 /* CATransaction.swift in Sources */,
 				57BBD5FFE328463F987AF5F07DE783C9 /* UIDevice.swift in Sources */,
 				6AEE997EF73D7B7EA18DC85C802AE3C4 /* UIDeviceOrientation.swift in Sources */,
