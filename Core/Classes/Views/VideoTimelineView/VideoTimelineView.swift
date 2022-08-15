@@ -66,14 +66,14 @@ public final class VideoTimelineView: UIView {
     public func jumpToStart() {
         DispatchQueue.main.asyncAfter(delay: 0.35) {
             self.selectedIndexPath = IndexPath(row: 0, section: 0)
-            guard !self.composition.layers.isEmpty else { return }
+            guard !self.composition.videoLayers.isEmpty else { return }
             self.collection.scrollToItem(at: self.selectedIndexPath, at: .left, animated: true)
         }
     }
     
     public func updateCurrentTime(_ time: CMTime) {
         var offset = CMTime.zero
-        let sequenced = composition.layers.map { layer -> CMTimeRange in
+        let sequenced = composition.videoLayers.map { layer -> CMTimeRange in
             let time = layer.timeRange
             let range = CMTimeRange(start: offset, duration: time.duration)
             offset = CMTimeAdd(offset, time.duration)
@@ -102,7 +102,7 @@ extension VideoTimelineView {
             if indexPath.row > visibleIndexPaths.last!.row { scrollPosition = .right }
             else if indexPath.row < visibleIndexPaths.first!.row { scrollPosition = .left }
             UIView.animate(withDuration: 0.3) {
-                guard !self.composition.layers.isEmpty else { return }
+                guard !self.composition.videoLayers.isEmpty else { return }
                 self.collection.scrollToItem(at: indexPath, at: scrollPosition, animated: false)
             }
         }
@@ -165,7 +165,7 @@ extension VideoTimelineView: UICollectionViewDropDelegate {
 
 extension VideoTimelineView: UICollectionViewDelegate {
     public func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let layers = composition.layers
+        let layers = composition.videoLayers
         let layer = layers[indexPath.row]
         let asset = layer.asset
         delegate?.view(self, didSelectAsset: asset)
@@ -174,12 +174,12 @@ extension VideoTimelineView: UICollectionViewDelegate {
 
 extension VideoTimelineView: UICollectionViewDataSource {
     public func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        composition.layers.count
+        composition.videoLayers.count
     }
     
     public func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: VideoTimelineCell.self), for: indexPath) as? VideoTimelineCell else { preconditionFailure() }
-        let layers = self.composition.layers
+        let layers = self.composition.videoLayers
         let layer = layers[indexPath.row]
         let asset = layer.asset
         if indexPath == selectedIndexPath {

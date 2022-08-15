@@ -1,11 +1,20 @@
 PODS:
-  - Core (0.1.0):
+  - Core (0.2.6):
+    - MTTransitions
     - VideoLab
   - FBSnapshotTestCase (2.1.4):
     - FBSnapshotTestCase/SwiftSupport (= 2.1.4)
   - FBSnapshotTestCase/Core (2.1.4)
   - FBSnapshotTestCase/SwiftSupport (2.1.4):
     - FBSnapshotTestCase/Core
+  - MetalPetal (1.24.2):
+    - MetalPetal/Core (= 1.24.2)
+  - MetalPetal/Core (1.24.2)
+  - MetalPetal/Swift (1.24.2):
+    - MetalPetal/Core
+  - MTTransitions (1.6.5):
+    - MetalPetal
+    - MetalPetal/Swift
   - VideoLab (0.0.1)
 
 DEPENDENCIES:
@@ -15,6 +24,8 @@ DEPENDENCIES:
 SPEC REPOS:
   trunk:
     - FBSnapshotTestCase
+    - MetalPetal
+    - MTTransitions
     - VideoLab
 
 EXTERNAL SOURCES:
@@ -22,10 +33,12 @@ EXTERNAL SOURCES:
     :path: "../"
 
 SPEC CHECKSUMS:
-  Core: dcd4c80bd72eb153aea1c517f8dd9edbfa4fb127
+  Core: 713c95347513af72915a610b29ab135bb02bb0b4
   FBSnapshotTestCase: 094f9f314decbabe373b87cc339bea235a63e07a
+  MetalPetal: 063cb7f12c011a22fd311a355a4bd05302fc0de4
+  MTTransitions: f4818ba485abc477545af4ee483c00b717dfd76e
   VideoLab: b073f9e63b9625b2783d658a543969f559e506c1
 
-PODFILE CHECKSUM: 70ee49583c4f5aae6e559cfe274a892286e72eb5
+PODFILE CHECKSUM: 6c09480cff5fe2bb9271467f75b088dca01f7883
 
-COCOAPODS: 1.11.2
+COCOAPODS: 1.11.3

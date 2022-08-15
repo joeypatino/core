@@ -22,5 +22,8 @@ Core is a collection iOS User interface elements and extensions to speed up your
   s.pod_target_xcconfig = { 'PRODUCT_BUNDLE_IDENTIFIER': 'com.joeypatino.core' }
   
   s.resources = ['Core/Localizable.strings']
-  s.dependency 'VideoLab'
+  s.dependency 'VFCabbage'
+  #s.dependency 'VideoLab'
+  #s.dependency 'MTTransitions'
+  #s.dependency 'MetalPetal'
 end

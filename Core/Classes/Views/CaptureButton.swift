@@ -72,6 +72,9 @@ public final class RingView: UIView {
     public var unfilledColor: UIColor {
         didSet { rings.forEach { ring in ring.color = color }; unfilledRing.strokeColor = unfilledColor.cgColor }
     }
+    public var centerColor: UIColor {
+        didSet { centerRing.fillColor = centerColor.cgColor }
+    }
     public var width: CGFloat {
         didSet { rings.forEach { ring in ring.width = width }; unfilledRing.lineWidth = width * 2 }
     }
@@ -85,9 +88,14 @@ public final class RingView: UIView {
     
     private var rings: [RingSegmentView] = []
     private let unfilledRing = CAShapeLayer()
-    public init(color: UIColor = UIColor.red.withAlphaComponent(0.7), unfilledColor: UIColor = UIColor.red.withAlphaComponent(0.2), width: CGFloat = 10.0, duration: TimeInterval) {
+    private let centerRing = CAShapeLayer()
+    public init(color: UIColor = UIColor.red.withAlphaComponent(0.7),
+                unfilledColor: UIColor = UIColor.white,
+                centerColor: UIColor = UIColor.white,
+                width: CGFloat = 4.0, duration: TimeInterval) {
         self.color = color
         self.unfilledColor = unfilledColor
+        self.centerColor = unfilledColor
         self.width = width
         self.duration = duration
         super.init(frame: .zero)
@@ -106,18 +114,28 @@ public final class RingView: UIView {
         unfilledRing.position = bounds.center
         unfilledRing.bounds = bounds
         unfilledRing.cornerRadius = bounds.width / 2
+        
+        centerRing.anchorPoint = CGPoint(x: 0.5, y: 0.5)
+        centerRing.path = UIBezierPath(roundedRect: bounds.insetBy(dx: 2, dy: 2), cornerRadius: bounds.size.width / 2).cgPath
+        centerRing.position = bounds.center
+        centerRing.bounds = bounds
+        centerRing.cornerRadius = bounds.width / 2
     }
     
     private func setup() {
         isUserInteractionEnabled = false
-        unfilledRing.lineWidth = width * 2
-        unfilledRing.fillColor = nil
+        unfilledRing.lineWidth = width
+        unfilledRing.fillColor = UIColor.clear.cgColor
         unfilledRing.strokeColor = unfilledColor.cgColor
         unfilledRing.anchorPoint = CGPoint(x: 0.5, y: 0.5)
+
+        centerRing.fillColor = centerColor.cgColor
+        centerRing.anchorPoint = CGPoint(x: 0.5, y: 0.5)
     }
     
     private func layout() {
         heightAnchor.equalTo(widthAnchor)
+        layer.addSublayer(centerRing)
         layer.addSublayer(unfilledRing)
     }
     
@@ -258,21 +276,21 @@ public final class RingSegmentView: UIView {
         super.layoutSubviews()
         ring.position = bounds.center
         ring.bounds = .init(origin: bounds.origin, size: bounds.size)
-        ring.path = UIBezierPath(roundedRect: ring.bounds.insetBy(dx: -width*1.5, dy: -width*1.5), cornerRadius: ring.bounds.size.width / 2).cgPath
+        ring.path = UIBezierPath(roundedRect: ring.bounds.insetBy(dx: -width, dy: -width), cornerRadius: ring.bounds.size.width / 2).cgPath
         ring.cornerRadius = bounds.width / 2
         
         endMarker.position = bounds.center
         endMarker.bounds = bounds
-        endMarker.path = UIBezierPath(roundedRect: bounds.insetBy(dx: -width*1.5, dy: -width*1.5), cornerRadius: bounds.size.width / 2).cgPath
+        endMarker.path = UIBezierPath(roundedRect: bounds.insetBy(dx: -width, dy: -width), cornerRadius: bounds.size.width / 2).cgPath
         endMarker.cornerRadius = bounds.width / 2
     }
     
     private func setup() {
         endMarker.strokeStart = 0.0
         endMarker.strokeEnd = 0.0
-        endMarker.lineWidth = width
+        endMarker.lineWidth = width*1.5
         endMarker.fillColor = nil
-        endMarker.strokeColor = UIColor.white.cgColor
+        endMarker.strokeColor = UIColor.white.darker().cgColor
         endMarker.anchorPoint = CGPoint(x: 0.5, y: 0.5)
         endMarker.actions = ["strokeStart": NSNull(), "strokeEnd": NSNull()]
         ring.strokeStart = strokeFromValue

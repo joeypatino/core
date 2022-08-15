@@ -1,8 +1,10 @@
 import UIKit
 
-public protocol StackView {
+public protocol StackView: UIView {
     var axis: NSLayoutConstraint.Axis { get }
+    var arrangedSubviews: [UIView] { get }
     func addArrangedSubview(_ view: UIView)
+    func setCustomSpacing(_ spacing: CGFloat, after arrangedSubview: UIView)
 }
 
 extension ScrollingStackView: StackView {}
@@ -161,5 +163,22 @@ public extension StackView {
             break
         }
         addArrangedSubview(stack)
+    }
+}
+
+public extension StackView {
+    func setSpacing(_ spacing: CGFloat, after arrangedSubview: UIView) {
+        guard arrangedSubview.superview == self else {
+            // we are not an arranged view of the stack view.
+            // lets try to see if we're a decendent view
+            if let directArrangedSubview = arrangedSubview.ancestorView(where: { parent in
+                self.arrangedSubviews.any(matching: { $0 == parent })
+            }) {
+                setCustomSpacing(spacing, after: directArrangedSubview)
+            }
+            return
+        }
+        // normal configuration
+        setCustomSpacing(spacing, after: arrangedSubview)
     }
 }

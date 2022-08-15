@@ -1,36 +1,52 @@
-import VideoLab
 import AVKit
+import VFCabbage
 
 /// Composition represents the entire video composition. It contains all of the video
-/// clips (layers) and properties about them.
+/// clips (videoLayers) and properties about them.
 public class Composition: Codable {
-    public var renderSize = CGSize(width: 720, height: 1280)
-    public var playerItem: AVPlayerItem { videoLab.makePlayerItem() }
-    public var imageGenerator: AVAssetImageGenerator { videoLab.makeImageGenerator() }
-    public private(set) var layers: [Layer]
-    public private(set) var audioLayers: [Layer]
-    
-    private var videoLab: VideoLab
-    private let renderComposition: RenderComposition
-    public init(layers: [Layer] = []) {
-        self.layers = layers
-        self.audioLayers = []
-        self.renderComposition = RenderComposition()
-        self.videoLab = VideoLab(renderComposition: renderComposition)
+    public var renderSize: CGSize
+    public var playerItem: AVPlayerItem {
+        CompositionGenerator(timeline: timeline).buildPlayerItem()
+    }
+    public var imageGenerator: AVAssetImageGenerator {
+        CompositionGenerator(timeline: timeline).buildImageGenerator()
+    }
+    public private(set) var videoLayers: [Layer] {
+        didSet { timeline.videoChannel = videoLayers.map { $0.asset.source.trackItem } }
+    }
+    public private(set) var audioLayers: [Layer] {
+        didSet { timeline.audioChannel = audioLayers.map { $0.asset.source.trackItem } }
     }
     
+    private let timeline = Timeline()
+    
+    public init(videoLayers: [Layer] = [], audioLayers: [Layer] = [], renderSize: CGSize = CGSize(width: 1080, height: 1920)) {
+        self.videoLayers = videoLayers
+        self.audioLayers = audioLayers
+        self.renderSize = renderSize
+        timeline.renderSize = renderSize
+        timeline.videoChannel = videoLayers.map { $0.asset.source.trackItem }
+        timeline.audioChannel = audioLayers.map { $0.asset.source.trackItem }
+        
+        do {
+            try Timeline.reloadVideoStartTime(providers: timeline.videoChannel)
+        } catch {
+            print("Error", error)
+        }
+    }
+
     public func append(layerWithAsset asset: Asset) {
         defer {
-            renderComposition.addLayer(with: asset.asset)
-            videoLab = VideoLab(renderComposition: renderComposition)
+            didUpdateVideoLayers()
+            didUpdateAudioLayers()
         }
         asset.timeRange = CMTimeRange(start: CMTime.zero, duration: asset.duration)
         let timeRange = asset.timeRange
-        layers.append(Layer(asset: asset, timeRange: timeRange))
+        videoLayers.append(Layer(asset: asset, timeRange: timeRange))
     }
     
     public func insert(layerWithAsset asset: Asset, at index: Int) {
-        insert(Layer(asset: Asset(url: asset.url)), at: index)
+        insert(Layer(asset: asset), at: index)
     }
     
     public func append(layerWithUrl url: URL) {
@@ -45,58 +61,52 @@ public class Composition: Codable {
     
     public func append(_ layer: Layer) {
         defer {
-            renderComposition.addLayer(with: layer.asset.asset)
-            videoLab = VideoLab(renderComposition: renderComposition)
+            didUpdateVideoLayers()
+            didUpdateAudioLayers()
         }
         var timeRange = layer.asset.timeRange
-        if let lastLayer = layers.last {
+        if let lastLayer = videoLayers.last {
             timeRange.start = CMTimeRangeGetEnd(lastLayer.asset.timeRange)
             layer.asset.timeRange = timeRange
-            layers.append(layer)
+            videoLayers.append(layer)
         } else {
             timeRange.start = .zero
             layer.asset.timeRange = timeRange
-            layers.append(layer)
+            videoLayers.append(layer)
         }
     }
     
     public func insert(_ layer: Layer, at index: Int) {
         defer {
-            renderComposition.insertLayer(with: layer.asset.asset, at: index)
-            videoLab = VideoLab(renderComposition: renderComposition)
+            didUpdateVideoLayers()
+            didUpdateAudioLayers()
         }
-        layers.insert(layer, at: index)
-        sequence()
-    }
-    
-    public func setAudio(layerWithAsset asset: Asset, timeRange: CMTimeRange) {
-        let trimmedAsset = asset
-        trimmedAsset.trim(timeRange)
-        let layer = Layer(asset: trimmedAsset)
-        audioLayers.append(layer)
-        renderComposition.addLayer(RenderLayer(asset: layer.asset.asset))
+        videoLayers.insert(layer, at: index)
     }
     
     @discardableResult
     public func exchange(layerAt sourceIndex: Int, with destinationIndex: Int) -> Bool {
-        guard layers.count-1 >= sourceIndex else { return false }
-        
+        guard videoLayers.count-1 >= sourceIndex else { return false }
         var sindex = sourceIndex
-        let dindex = destinationIndex
-
-        sequence()
-        // grab a copy of the source layer
-        let layer = layers[sindex]
-        // insert it first
-        insert(layer, at: dindex)
+        var dindex = destinationIndex
+        
+        // the layer we're moving
+        let layer = videoLayers[sindex]
+        
         // update the destination index if needed
+        if dindex >= sindex { dindex += 1 }
+        
+        // insert the layer to the destination
+        insert(layer, at: dindex)
+        
+        // update the source index if needed
         if sindex >= dindex { sindex += 1 }
-        // then remove it
+        
+        // remove the original source layer
         if let _ = remove(layerAt: sindex) {
-            sequence()
             return true
         }
-        // failure, revert insertion
+        // on failure revert insertion
         remove(layerAt: dindex)
         
         return false
@@ -105,80 +115,105 @@ public class Composition: Codable {
     @discardableResult
     public func remove(layerAt index: Int) -> Layer? {
         defer {
-            renderComposition.removeLayer(at: index)
-            videoLab = VideoLab(renderComposition: renderComposition)
+            didUpdateVideoLayers()
+            didUpdateAudioLayers()
         }
-        if layers.isEmpty { return nil }
-        let layer = layers.remove(at: index)
-        sequence()
+        if videoLayers.isEmpty { return nil }
+        let layer = videoLayers.remove(at: index)
         return layer
     }
     
-    private func sequence() {
-        for i in 0..<layers.count {
-            let layer = layers[i]
-            layer.timeRange = CMTimeRange(start: .zero, duration: layer.asset.duration)
-        }
-
-        let staringIdx = 1
-        let endingIdx = layers.count
-        var previousLayer = layers[0]
-        var timeRange = previousLayer.timeRange
-        timeRange.start = CMTime.zero
-        previousLayer.timeRange = timeRange
-
-        for i in staringIdx..<endingIdx {
-            let layer = layers[i]
-            timeRange = layer.timeRange
-            timeRange.start = CMTimeRangeGetEnd(previousLayer.timeRange)
-            layer.timeRange = timeRange
-            previousLayer = layer
-        }
-        //print(layers.map { ($0.timeRange.start.seconds, $0.timeRange.end.seconds, $0.timeRange.duration.seconds, $0.asset.mediaType) })
-    }
+    // MARK: Private
     
-    public func startTime(forAsset asset: Asset) -> CMTime {
-        timeRange(forAsset: asset).start
-    }
-
-    public func timeRange(forAsset asset: Asset) -> CMTimeRange {
-        guard let index = layers.map({ $0.asset }).firstIndex(of: asset) else { return .zero }
-        let sequenced = sequencedAssets()
-        return sequenced[index]
-    }
-    
-    private func sequencedAssets(types: [AVMediaType] = [.video]) -> [CMTimeRange] {
-        let assets = layers.map { $0.asset }.filter { types.contains($0.mediaType) }
-        var offset = CMTime.zero
-        return assets.map { asset -> CMTimeRange in
-            let time = asset.timeRange
-            let range = CMTimeRange(start: offset, duration: time.duration)
-            offset = CMTimeAdd(offset, time.duration)
-            return range
+    private func didUpdateVideoLayers() {
+        do {
+            try Timeline.reloadVideoStartTime(providers: timeline.videoChannel)
+        } catch {
+            print("Error", error)
         }
     }
     
+    private func didUpdateAudioLayers() {
+        do {
+            try Timeline.reloadVideoStartTime(providers: timeline.videoChannel)
+        } catch {
+            print("Error", error)
+        }
+    }
+    
+//    public func setAudio(layerWithAsset asset: Asset, timeRange: CMTimeRange) {
+//        let trimmedAsset = asset
+//        trimmedAsset.trim(timeRange)
+//        let layer = Layer(asset: trimmedAsset)
+//        audioLayers.append(layer)
+//        renderComposition.addLayer(RenderLayer(asset: layer.asset.asset))
+//    }
+//
+//    private func sequence() {
+//        for i in 0..<videoLayers.count {
+//            let layer = videoLayers[i]
+//            layer.timeRange = CMTimeRange(start: .zero, duration: layer.asset.duration)
+//        }
+//
+//        let staringIdx = 1
+//        let endingIdx = videoLayers.count
+//        var previousLayer = videoLayers[0]
+//        var timeRange = previousLayer.timeRange
+//        timeRange.start = CMTime.zero
+//        previousLayer.timeRange = timeRange
+//
+//        for i in staringIdx..<endingIdx {
+//            let layer = videoLayers[i]
+//            timeRange = layer.timeRange
+//            timeRange.start = CMTimeRangeGetEnd(previousLayer.timeRange)
+//            layer.timeRange = timeRange
+//            previousLayer = layer
+//        }
+//        //print(videoLayers.map { ($0.timeRange.start.seconds, $0.timeRange.end.seconds, $0.timeRange.duration.seconds, $0.asset.mediaType) })
+//    }
+//
+//    public func startTime(forAsset asset: Asset) -> CMTime {
+//        timeRange(forAsset: asset).start
+//    }
+//
+//    public func timeRange(forAsset asset: Asset) -> CMTimeRange {
+//        guard let index = videoLayers.map({ $0.asset }).firstIndex(of: asset) else { return .zero }
+//        let sequenced = sequencedAssets()
+//        return sequenced[index]
+//    }
+//
+//    private func sequencedAssets(types: [AVMediaType] = [.video]) -> [CMTimeRange] {
+//        let assets = videoLayers.map { $0.asset }.filter { types.contains($0.mediaType) }
+//        var offset = CMTime.zero
+//        return assets.map { asset -> CMTimeRange in
+//            let time = asset.timeRange
+//            let range = CMTimeRange(start: offset, duration: time.duration)
+//            offset = CMTimeAdd(offset, time.duration)
+//            return range
+//        }
+//    }
+
     // Coding
     public enum CodingKeys: String, CodingKey {
         case renderSize
-        case layers
+        case videoLayers
         case audioLayers
     }
     
     required public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
-        renderComposition = RenderComposition()
-        videoLab = VideoLab(renderComposition: renderComposition)
         renderSize = try values.decode(CGSize.self, forKey: .renderSize)
-        layers = try values.decode([Layer].self, forKey: .layers)
+        videoLayers = try values.decode([Layer].self, forKey: .videoLayers)
         audioLayers = try values.decode([Layer].self, forKey: .audioLayers)
-        layers.forEach { renderComposition.addLayer(with: $0.asset.asset )}
-        audioLayers.forEach { renderComposition.addLayer(with: $0.asset.asset )}
+        timeline.renderSize = renderSize
+        timeline.videoChannel = videoLayers.map { $0.asset.source.trackItem }
+        timeline.audioChannel = audioLayers.map { $0.asset.source.trackItem }
     }
     
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(renderSize, forKey: .renderSize)
-        try container.encode(layers, forKey: .layers)
+        try container.encode(videoLayers, forKey: .videoLayers)
+        try container.encode(audioLayers, forKey: .audioLayers)
     }
 }

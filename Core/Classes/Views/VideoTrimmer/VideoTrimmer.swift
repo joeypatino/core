@@ -694,7 +694,7 @@ import AVFoundation
         if left < 0 {
             left = -inset
         }
-        
+        if thumbnails.isEmpty { right = bounds.width }
         if left.isNaN { left = 0 }
         if right.isNaN { right = bounds.width }
         
