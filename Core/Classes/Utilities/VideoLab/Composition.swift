@@ -40,9 +40,7 @@ public class Composition: Codable {
             didUpdateVideoLayers()
             didUpdateAudioLayers()
         }
-        asset.timeRange = CMTimeRange(start: CMTime.zero, duration: asset.duration)
-        let timeRange = asset.timeRange
-        videoLayers.append(Layer(asset: asset, timeRange: timeRange))
+        videoLayers.append(Layer(asset: asset, timeRange: asset.timeRange))
     }
     
     public func insert(layerWithAsset asset: Asset, at index: Int) {
