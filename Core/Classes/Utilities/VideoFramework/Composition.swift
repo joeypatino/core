@@ -28,11 +28,7 @@ public class Composition: Codable {
         timeline.videoChannel = videoLayers.map { $0.asset.source.trackItem }
         timeline.audioChannel = audioLayers.map { $0.asset.source.trackItem }
         
-        do {
-            try Timeline.reloadVideoStartTime(providers: timeline.videoChannel)
-        } catch {
-            print("Error", error)
-        }
+        didUpdateVideoLayers()
     }
 
     public func append(layerWithAsset asset: Asset) {
@@ -154,6 +150,8 @@ public class Composition: Codable {
         timeline.renderSize = renderSize
         timeline.videoChannel = videoLayers.map { $0.asset.source.trackItem }
         timeline.audioChannel = audioLayers.map { $0.asset.source.trackItem }
+        
+        didUpdateVideoLayers()
     }
     
     public func encode(to encoder: Encoder) throws {

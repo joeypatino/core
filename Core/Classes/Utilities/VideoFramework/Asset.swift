@@ -49,7 +49,7 @@ public enum Asset: Codable {
             return asset.mediaType
         }
     }
-    
+    public var timeRangeInTimeline: CMTimeRange { source.trackItem.timeRange }
     public func thumbnail(size: CGSize) async throws -> UIImage {
         switch self {
         case .localFile(let asset):

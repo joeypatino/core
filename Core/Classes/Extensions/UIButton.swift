@@ -61,3 +61,10 @@ public extension UIButton {
         }
     }
 }
+
+public extension UIButton {
+    convenience init(tintColor: UIColor) {
+        self.init(frame: .zero)
+        self.tintColor = tintColor
+    }
+}

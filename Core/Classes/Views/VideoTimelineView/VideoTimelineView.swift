@@ -8,6 +8,11 @@ public protocol VideoTimelineViewDelegate: AnyObject {
 
 public final class VideoTimelineView: UIView {
     public weak var delegate: VideoTimelineViewDelegate?
+    public var isEditing: Bool = false {
+        didSet { collection.visibleCells.forEach { ($0 as? VideoTimelineCell)?.isAnimating = isEditing } }
+    }
+    
+    private lazy var longPressGesture = UILongPressGestureRecognizer(target: self, action: #selector(reorderGesture(_:)))
     private let collection = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
     private var avComposition: AVComposition {
         composition.imageGenerator.asset as! AVComposition
@@ -29,12 +34,16 @@ public final class VideoTimelineView: UIView {
     }
     
     public override var intrinsicContentSize: CGSize {
-        return CGSize(width: UIView.noIntrinsicMetric, height: 80)
+        CGSize(width: UIView.noIntrinsicMetric, height: 90 + insets.verticalLength)
     }
     
     private func setup() {
         setupCollectionView()
         setLayerCornerRadius(6.0, maskCorners: .allCorners)
+        
+        longPressGesture.delaysTouchesBegan = true
+        longPressGesture.minimumPressDuration = 0.2
+        collection.addGestureRecognizer(longPressGesture)
     }
     
     private func layout() {
@@ -43,24 +52,6 @@ public final class VideoTimelineView: UIView {
     
     private func update() {
         collection.reloadData()
-    }
-    
-    private func showTracks(_ composition: AVComposition) {
-        let tracks:[AVCompositionTrack] = composition.tracks
-        print(tracks.map { track -> [String: Any] in
-            if !track.isEnabled { return [:] }
-            let segments: [AVCompositionTrackSegment] = track.segments
-            return ["track.trackID": track.trackID,
-                    "track.mediaType": track.mediaType,
-                    "track.start": track.timeRange.start.value,
-                    "track.duration": track.timeRange.duration.value,
-                    "segments": segments.map { segment in
-                ["segment.sourceTrackID": segment.sourceTrackID,
-                 "segment.sourceURL": segment.sourceURL?.lastPathComponent ?? "--",
-                 "segment.source.start": segment.timeMapping.source.start.value,
-                 "segment.source.duration": segment.timeMapping.source.duration.value]
-            }]
-        }.jsonString(prettify: true) ?? "[]")
     }
     
     public func jumpToStart() {
@@ -90,6 +81,16 @@ public final class VideoTimelineView: UIView {
             follow(newIndexPath)
         }
     }
+    
+    @objc private func reorderGesture(_ gesture: UILongPressGestureRecognizer) {
+        switch(gesture.state) {
+        case .began:
+            Vibration.heavy.vibrate()
+            isEditing = true
+        default:
+            break
+        }
+    }
 }
 
 extension VideoTimelineView {
@@ -106,6 +107,7 @@ extension VideoTimelineView {
                 self.collection.scrollToItem(at: indexPath, at: scrollPosition, animated: false)
             }
         }
+        
         (collection.collectionViewLayout as! UICollectionViewFlowLayout).scrollDirection = .horizontal
         collection.register(VideoTimelineCell.self, forCellWithReuseIdentifier: String(describing: VideoTimelineCell.self))
         collection.backgroundColor = .clear
@@ -114,20 +116,31 @@ extension VideoTimelineView {
         collection.dropDelegate = self
         collection.dragInteractionEnabled = true
         collection.dragDelegate = self
+        // hack!
+        collection.gestureRecognizers?.forEach {
+            ($0 as? UILongPressGestureRecognizer)?.minimumPressDuration = 0.1
+            //($0 as? UILongPressGestureRecognizer)?.addTarget(self, action: #selector(reorderGesture(_:)))
+        }
         collection.reloadData()
     }
 }
 
 extension VideoTimelineView: UICollectionViewDragDelegate {
     public func collectionView(_ collectionView: UICollectionView, itemsForBeginning session: UIDragSession, at indexPath: IndexPath) -> [UIDragItem] {
-        guard let cell = collectionView.cellForItem(at: indexPath) as? VideoTimelineCell else { return [] }
-        guard let image = cell.getImage() else {
+        guard let cell = collectionView.cellForItem(at: indexPath) as? VideoTimelineCell else {
             return []
         }
-        
-        let item = NSItemProvider(object: image)
-        let dragItem = UIDragItem(itemProvider: item)
-        return [dragItem]
+        guard let image = cell.getImage()?.scale(factor: 1.2) else {
+            return []
+        }
+
+        return [UIDragItem(itemProvider: NSItemProvider(object: image))]
+    }
+    
+    public func collectionView(_ collectionView: UICollectionView, dragPreviewParametersForItemAt indexPath: IndexPath) -> UIDragPreviewParameters? {
+        let params = UIDragPreviewParameters()
+        params.backgroundColor = .clear
+        return params
     }
 }
 
@@ -135,29 +148,31 @@ extension VideoTimelineView: UICollectionViewDropDelegate {
     public func collectionView(_ collectionView: UICollectionView, canHandle session: UIDropSession) -> Bool {
         true
     }
-    
+
     public func collectionView(_ collectionView: UICollectionView, performDropWith coordinator: UICollectionViewDropCoordinator) {
         guard let destinationIndexPath = coordinator.destinationIndexPath else {
             return
         }
-        
+
         coordinator.items.forEach { dropItem in
             guard let sourceIndexPath = dropItem.sourceIndexPath else {
                 return
             }
-            
+
             collectionView.performBatchUpdates({
                 if composition.exchange(layerAt: sourceIndexPath.row, with: destinationIndexPath.row) {
                     collectionView.deleteItems(at: [sourceIndexPath])
                     collectionView.insertItems(at: [destinationIndexPath])
                 }
             }, completion: { _ in
+                if self.selectedIndexPath == sourceIndexPath { self.selectedIndexPath = destinationIndexPath }
+                collectionView.reloadItems(at: [sourceIndexPath, destinationIndexPath])
                 self.delegate?.view(self, didEditComposition: self.composition)
                 coordinator.drop(dropItem.dragItem, toItemAt: destinationIndexPath)
             })
         }
     }
-    
+
     public func collectionView(_ collectionView: UICollectionView, dropSessionDidUpdate session: UIDropSession, withDestinationIndexPath destinationIndexPath: IndexPath? ) -> UICollectionViewDropProposal {
         return UICollectionViewDropProposal(operation: .move, intent: .insertAtDestinationIndexPath)
     }
@@ -179,29 +194,40 @@ extension VideoTimelineView: UICollectionViewDataSource {
     
     public func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: VideoTimelineCell.self), for: indexPath) as? VideoTimelineCell else { preconditionFailure() }
-        let layers = self.composition.videoLayers
+        let layers = composition.videoLayers
         let layer = layers[indexPath.row]
         let asset = layer.asset
-        if indexPath == selectedIndexPath {
-            cell.setBorder(.white, width: 1.0)
-        } else {
-            cell.setBorder(.white, width: 0.0)
+        cell.isAnimating = isEditing
+        cell.hasFocus = indexPath == selectedIndexPath
+        cell.setDuration(asset.duration)
+        cell.onDelete = { [weak self] in
+            guard let self = self else { return }
+            self.deleteItem(atIndexPath: indexPath)
         }
-        cell.setDuration(CMTimeGetSeconds(asset.duration))
-        Task { cell.setImage((try? await asset.thumbnail(size: .init(width: 150, height: 150))) ?? UIImage()) }
+        Task { cell.setImage((try? await asset.thumbnail(size: .init(width: 46, height: 74))) ?? UIImage()) }
         return cell
+    }
+    
+    private func deleteItem(atIndexPath indexPath: IndexPath) {
+        collection.performBatchUpdates({
+            if composition.remove(layerAt: indexPath.row) != nil {
+                collection.deleteItems(at: [indexPath])
+            }
+        }, completion: { _ in
+            self.delegate?.view(self, didEditComposition: self.composition)
+        })
     }
 }
 
 extension VideoTimelineView: UICollectionViewDelegateFlowLayout {
     private var insets: UIEdgeInsets { .init(top: 12, left: 0, bottom: 12, right: 0) }
+    private var interitemSpacing: CGFloat { 18.0 }
     public func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        let height = collectionView.bounds.height - insets.verticalLength
-        return .init(width: height, height: height)
+        return .init(width: 62, height: 90)
     }
     public func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets { insets }
     public func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat { insets.top }
-    public func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat { insets.right }
+    public func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat { interitemSpacing }
     public func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize { .zero }
     public func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForFooterInSection section: Int) -> CGSize { .zero }
 }

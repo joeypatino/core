@@ -56,8 +56,7 @@ public class CompositionCameraViewController: UIViewController {
         capture.addTarget(self, action: #selector(onCaptureButtonEditingDidBegin(_:)), for: .editingDidBegin)
         capture.addTarget(self, action: #selector(onCaptureButtonEditingDidEnd(_:)), for: .editingDidEnd)
 
-        let delete = UIButton()
-        delete.tintColor = .white
+        let delete = UIButton(tintColor: .white)
         delete.setImage(UIImage(systemName: "delete.left")?.scale(factor: 2, renderingMode: .alwaysTemplate), for: .normal)
         view.addAutoLayoutSubview(delete)
         delete.widthAnchor.equalToConstant(100)

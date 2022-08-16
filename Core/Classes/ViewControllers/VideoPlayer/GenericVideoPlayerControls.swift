@@ -101,28 +101,25 @@ public final class GenericVideoPlayerControls: UIView, VideoPlayerControls {
     private let container = UIView(backgroundColor: UIColor(white: 0, alpha: 0.3))
     
     private lazy var playPauseButton: UIButton = {
-        let btn = UIButton(type: .system)
+        let btn = UIButton(tintColor: .white)
         let icon = UIImage(systemName: "play.fill")?.withRenderingMode(.alwaysTemplate)
         btn.setImage(icon, for: .normal)
-        btn.tintColor = .white
         btn.addTarget(self, action: #selector(playPausePress(_:)), for: .touchUpInside)
         return btn
     }()
     
     private lazy var forwardButton: UIButton = {
-        let btn = UIButton(type: .system)
+        let btn = UIButton(tintColor: .white)
         let icon = UIImage(systemName: "forward.fill")?.withRenderingMode(.alwaysTemplate)
         btn.setImage(icon, for: .normal)
-        btn.tintColor = .white
         btn.addTarget(self, action: #selector(forwardPress(_:)), for: .touchUpInside)
         return btn
     }()
     
     private lazy var rewindButton: UIButton = {
-        let btn = UIButton(type: .system)
+        let btn = UIButton(tintColor: .white)
         let icon = UIImage(systemName: "backward.fill")?.withRenderingMode(.alwaysTemplate)
         btn.setImage(icon, for: .normal)
-        btn.tintColor = .white
         btn.addTarget(self, action: #selector(rewindPress(_:)), for: .touchUpInside)
         return btn
     }()

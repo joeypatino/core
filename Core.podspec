@@ -23,7 +23,4 @@ Core is a collection iOS User interface elements and extensions to speed up your
   
   s.resources = ['Core/Localizable.strings']
   s.dependency 'VFCabbage'
-  #s.dependency 'VideoLab'
-  #s.dependency 'MTTransitions'
-  #s.dependency 'MetalPetal'
 end

@@ -1,5 +1,6 @@
 import UIKit
 import AVKit
+import Combine
 
 public protocol VideoPlayerControls: UIView {
     var player: AVPlayer? { get set }
@@ -32,7 +33,7 @@ open class VideoPlayerViewController: UIViewController {
         get { playerViewController.videoGravity }
         set { playerViewController.videoGravity = newValue }
     }
-
+    @Published public var isPlaying: Bool = false
     public var playbackCompletionAction: PlaybackCompletionAction = .stop
     public var player: AVPlayer
     public var playbackComplete: (CMTime) -> Void = { _ in }
@@ -46,7 +47,8 @@ open class VideoPlayerViewController: UIViewController {
         }
     }
     
-    private var lastProgress: CMTime = .zero
+    private var lastProgress: CMTime = .invalid
+    private var lastDuration: CMTime = .invalid
     private var asset: AVAsset
     private var timeObserver: Any?
     private var status: AVPlayerItem.Status {
@@ -99,14 +101,12 @@ open class VideoPlayerViewController: UIViewController {
         player.addObserver(self, forKeyPath: #keyPath(AVPlayer.timeControlStatus), options: [.new], context: nil)
         timeObserver = player.addPeriodicTimeObserver(forInterval: CMTime(value: 1, timescale: 30), queue: .main) { [weak self] progress in
             guard let self = self else { return }
-            if progress != .zero {
-                self.lastProgress = progress
-            }
-            
-            if let duration = self.player.currentItem?.duration {
-                self.controls.timeAndDuration = (self.player.currentTime(), duration)
-                self.timeAndDurationObserver(self.lastProgress, duration)
-            }
+            guard let duration = self.player.currentItem?.duration else { return }
+            if self.lastDuration == duration && self.lastProgress == progress { return }
+            self.lastDuration = duration
+            self.lastProgress = progress
+            self.controls.timeAndDuration = (self.player.currentTime(), duration)
+            self.timeAndDurationObserver(self.lastProgress, duration)
         }
         
         playerViewController.player = player
@@ -118,6 +118,12 @@ open class VideoPlayerViewController: UIViewController {
     private func layout() {
         addChildViewController(playerViewController) { $0.embed(in: self.view) }
         controls.embed(in: view, usingSafeAreaLayoutGuides: false)
+    }
+    
+    public func setLayerCornerRadius(_ radius: CGFloat, maskCorners: UIView.UICornerMask = .allCorners) {
+        view.clipsToBounds = true
+        view.setLayerCornerRadius(radius, maskCorners: maskCorners)
+        playerViewController.view.setLayerCornerRadius(radius, maskCorners: maskCorners)
     }
     
     public func play() {
@@ -147,6 +153,7 @@ open class VideoPlayerViewController: UIViewController {
     public override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         if keyPath == #keyPath(AVPlayer.rate) {
             DispatchQueue.main.async { self.controls.playbackRate = self.player.rate }
+            DispatchQueue.main.async { self.isPlaying = self.player.rate != 0.0 }
         } else if keyPath == #keyPath(AVPlayer.timeControlStatus) {
             DispatchQueue.main.async { self.timeControlStatus = self.player.timeControlStatus }
         } else if keyPath == #keyPath(AVPlayerItem.status) {
