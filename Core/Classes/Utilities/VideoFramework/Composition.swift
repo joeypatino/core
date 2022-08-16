@@ -138,58 +138,6 @@ public class Composition: Codable {
             print("Error", error)
         }
     }
-    
-//    public func setAudio(layerWithAsset asset: Asset, timeRange: CMTimeRange) {
-//        let trimmedAsset = asset
-//        trimmedAsset.trim(timeRange)
-//        let layer = Layer(asset: trimmedAsset)
-//        audioLayers.append(layer)
-//        renderComposition.addLayer(RenderLayer(asset: layer.asset.asset))
-//    }
-//
-//    private func sequence() {
-//        for i in 0..<videoLayers.count {
-//            let layer = videoLayers[i]
-//            layer.timeRange = CMTimeRange(start: .zero, duration: layer.asset.duration)
-//        }
-//
-//        let staringIdx = 1
-//        let endingIdx = videoLayers.count
-//        var previousLayer = videoLayers[0]
-//        var timeRange = previousLayer.timeRange
-//        timeRange.start = CMTime.zero
-//        previousLayer.timeRange = timeRange
-//
-//        for i in staringIdx..<endingIdx {
-//            let layer = videoLayers[i]
-//            timeRange = layer.timeRange
-//            timeRange.start = CMTimeRangeGetEnd(previousLayer.timeRange)
-//            layer.timeRange = timeRange
-//            previousLayer = layer
-//        }
-//        //print(videoLayers.map { ($0.timeRange.start.seconds, $0.timeRange.end.seconds, $0.timeRange.duration.seconds, $0.asset.mediaType) })
-//    }
-//
-//    public func startTime(forAsset asset: Asset) -> CMTime {
-//        timeRange(forAsset: asset).start
-//    }
-//
-//    public func timeRange(forAsset asset: Asset) -> CMTimeRange {
-//        guard let index = videoLayers.map({ $0.asset }).firstIndex(of: asset) else { return .zero }
-//        let sequenced = sequencedAssets()
-//        return sequenced[index]
-//    }
-//
-//    private func sequencedAssets(types: [AVMediaType] = [.video]) -> [CMTimeRange] {
-//        let assets = videoLayers.map { $0.asset }.filter { types.contains($0.mediaType) }
-//        var offset = CMTime.zero
-//        return assets.map { asset -> CMTimeRange in
-//            let time = asset.timeRange
-//            let range = CMTimeRange(start: offset, duration: time.duration)
-//            offset = CMTimeAdd(offset, time.duration)
-//            return range
-//        }
-//    }
 
     // Coding
     public enum CodingKeys: String, CodingKey {
