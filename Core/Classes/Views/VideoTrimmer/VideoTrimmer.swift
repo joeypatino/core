@@ -163,6 +163,7 @@ import AVFoundation
     }
     
     // yes if the user is zoomed in
+    public var canZoomedIn = true
     private(set) var isZoomedIn = false
     private(set) var zoomedInRange: CMTimeRange = .zero
     
@@ -189,7 +190,12 @@ import AVFoundation
         get { thumbView.borderColor }
         set { thumbView.borderColor = newValue }
     }
-    
+
+    public var thumbBackgroundColor: UIColor {
+        get { thumbView.thumbBackgroundColor }
+        set { thumbView.thumbBackgroundColor = newValue }
+    }
+
     // the range that's currently visible: could be less than "range" when zoomed in
     public var visibleRange: CMTimeRange  {
         return isZoomedIn == true ? zoomedInRange : range
@@ -250,8 +256,8 @@ import AVFoundation
         
         thumbnailClipView.clipsToBounds = true
         thumbnailTrackView.clipsToBounds = true
-        thumbnailLeadingCoverView.backgroundColor = UIColor(white: 0, alpha: 0.75)
-        thumbnailTrailingCoverView.backgroundColor = UIColor(white: 0, alpha: 0.75)
+        thumbnailLeadingCoverView.backgroundColor = UIColor(white: 0, alpha: 0.5)
+        thumbnailTrailingCoverView.backgroundColor = UIColor(white: 0, alpha: 0.5)
         
         leadingThumbRest.backgroundColor = thumbRestColor
         trailingThumbRest.backgroundColor = thumbRestColor
@@ -391,7 +397,7 @@ import AVFoundation
     
     private func startZoomWaitTimer() {
         stopZoomWaitTimer()
-        guard isZoomedIn == false else {return}
+        guard isZoomedIn == false && canZoomedIn else {return}
         zoomWaitTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false, block: { [weak self] _ in
             guard let self = self else {return}
             self.stopZoomWaitTimer()
@@ -411,7 +417,7 @@ import AVFoundation
     }
     
     private func zoomIfNeeded() {
-        guard isZoomedIn == false else {return}
+        guard isZoomedIn == false && canZoomedIn else {return}
         
         let size = bounds.size
         let inset = thumbView.chevronWidth + horizontalInset
@@ -676,7 +682,7 @@ import AVFoundation
     // MARK: - UIView
     
     public override var intrinsicContentSize: CGSize {
-        return CGSize(width: UIView.noIntrinsicMetric, height: 50)
+        return CGSize(width: UIView.noIntrinsicMetric, height: 78)
     }
     
     public override func layoutSubviews() {
@@ -709,7 +715,7 @@ import AVFoundation
         let coverOffset = thumbnailOffset - horizontalInset
         let coverStartOffset = (isZoomedIn == false ? inset : 0)
         
-        let thumbnailRect = rect.insetBy(dx: horizontalInset - thumbnailOffset, dy: thumbView.edgeHeight)
+        let thumbnailRect = rect.insetBy(dx: horizontalInset - thumbnailOffset, dy: 0)
         thumbnailClipView.frame = rect
         thumbnailWrapperView.frame = thumbnailRect
         thumbnailTrackView.frame = CGRect(origin: .zero, size: CGSize(width: thumbnailRect.width - (isZoomedToEnd == false ? inset : 0), height: thumbnailRect.height))

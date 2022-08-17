@@ -7,17 +7,30 @@ public protocol VideoTimelineViewDelegate: AnyObject {
 }
 
 public final class VideoTimelineView: UIView {
+    static let UnExpandedCellIndexPath = IndexPath(row: -1, section: 0)
+    static let DefaultSelectedCellIndexPath = IndexPath(row: 0, section: 0)
+    
     public weak var delegate: VideoTimelineViewDelegate?
     public var isEditing: Bool = false {
         didSet { collection.visibleCells.forEach { ($0 as? VideoTimelineCell)?.isAnimating = isEditing } }
     }
     
     private lazy var longPressGesture = UILongPressGestureRecognizer(target: self, action: #selector(reorderGesture(_:)))
-    private let collection = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
+    private lazy var flowLayout = FlowLayout(scrollDirection: .horizontal)
+    private lazy var collection = UICollectionView(frame: .zero, collectionViewLayout: flowLayout)
     private var avComposition: AVComposition {
         composition.imageGenerator.asset as! AVComposition
     }
-    private var selectedIndexPath = IndexPath(row: 0, section: 0)
+    private var selectedIndexPath = VideoTimelineView.DefaultSelectedCellIndexPath
+    private var expandedIndexPath = VideoTimelineView.UnExpandedCellIndexPath {
+        didSet {
+            flowLayout.expandedIndexPath = expandedIndexPath
+            longPressGesture.isEnabled = !isExpanded
+            collection.dragInteractionEnabled = !isExpanded
+            collection.isScrollEnabled = !isExpanded
+        }
+    }
+    private var isExpanded: Bool { expandedIndexPath.row >= 0 }
     private var follow: (IndexPath) -> Void = { _ in }
     public var composition: Composition {
         didSet { update() }
@@ -34,14 +47,14 @@ public final class VideoTimelineView: UIView {
     }
     
     public override var intrinsicContentSize: CGSize {
-        CGSize(width: UIView.noIntrinsicMetric, height: 90 + insets.verticalLength)
+        CGSize(width: UIView.noIntrinsicMetric, height: collapsedCellSize.height + insets.verticalLength)
     }
     
     private func setup() {
         setupCollectionView()
         setLayerCornerRadius(6.0, maskCorners: .allCorners)
-        
-        longPressGesture.delaysTouchesBegan = true
+        collection.contentInset.left = 32
+        collection.contentInset.right = 32
         longPressGesture.minimumPressDuration = 0.2
         collection.addGestureRecognizer(longPressGesture)
     }
@@ -75,11 +88,74 @@ public final class VideoTimelineView: UIView {
         let previousIndexPath = selectedIndexPath
         selectedIndexPath = newIndexPath
         if newIndexPath != previousIndexPath { Vibration.light.vibrate() }
-        collection.reloadItems(at: [previousIndexPath, newIndexPath].compactMap { $0 })
+        if expandedIndexPath.row < 0 { collection.reloadItems(at: [previousIndexPath, newIndexPath].compactMap { $0 }) }
         let visibleIndexPaths = collection.indexPathsForVisibleItems.sorted()
         if !visibleIndexPaths.contains(selectedIndexPath), !visibleIndexPaths.isEmpty {
             follow(newIndexPath)
         }
+    }
+
+    public func expandItem(forAsset asset: Asset) {
+        // first...
+        // remove the old image generator from any currently expanded cell
+        if let cell = expandedCell() { cell.imageGenerator = nil }
+        
+        // then get the index for the selected asset
+        guard let idx = composition.videoLayers.firstIndex(where: { $0.asset == asset }) else {
+            return
+        }
+        
+        // if this asset is currently being trimmed, then collapse it and bail
+        guard expandedIndexPath.row != idx else {
+            collapseItems()
+            return
+        }
+        
+        // we have a new expanded cell. store it and update the collection layout
+        expandedIndexPath = IndexPath(row: idx, section: 0)
+        UIView.animate(withDuration: 0.4,
+                       delay: 0,
+                       usingSpringWithDamping: 1.0,
+                       initialSpringVelocity: 0,
+                       options: .curveEaseInOut,
+                       animations: {
+            self.flowLayout.invalidateLayout()
+            self.collection.layoutIfNeeded()
+            self.collection.scrollToItem(at: self.expandedIndexPath, at: .centeredHorizontally, animated: true)
+        },
+                       completion: { _ in
+            // after the layout is updated, show the trimmer control
+            self.showTrimmer(forAsset: asset)
+        })
+    }
+    
+    public func collapseItems() {
+        // if we're not expanded then bail
+        guard isExpanded else { return }
+        
+        // clear the image generator for the current cell
+        if let cell = expandedCell() { cell.imageGenerator = nil }
+        
+        // reset the expanded cell indexpath
+        expandedIndexPath = VideoTimelineView.UnExpandedCellIndexPath
+        
+        // update the collection layout
+        collection.performBatchUpdates({}) { _ in }
+    }
+    
+    private func showTrimmer(forAsset asset: Asset) {
+        // if we're not expanded then bail
+        guard isExpanded else { return }
+        guard let cell = expandedCell() else { return }
+        
+        // create and store the image thumbnail image generator for the timeline track
+        cell.imageGenerator = AVAssetImageGenerator.create(from: composition.videoLayers.map { $0.trackItem }, renderSize: collapsedCellSize)
+    }
+    
+    private func expandedCell() -> VideoTimelineCell? {
+        guard isExpanded else { return nil }
+        guard let cell = collection.cellForItem(at: expandedIndexPath) as? VideoTimelineCell else { return nil }
+        return cell
     }
     
     @objc private func reorderGesture(_ gesture: UILongPressGestureRecognizer) {
@@ -107,8 +183,7 @@ extension VideoTimelineView {
                 self.collection.scrollToItem(at: indexPath, at: scrollPosition, animated: false)
             }
         }
-        
-        (collection.collectionViewLayout as! UICollectionViewFlowLayout).scrollDirection = .horizontal
+
         collection.register(VideoTimelineCell.self, forCellWithReuseIdentifier: String(describing: VideoTimelineCell.self))
         collection.backgroundColor = .clear
         collection.delegate = self
@@ -116,11 +191,6 @@ extension VideoTimelineView {
         collection.dropDelegate = self
         collection.dragInteractionEnabled = true
         collection.dragDelegate = self
-        // hack!
-        collection.gestureRecognizers?.forEach {
-            ($0 as? UILongPressGestureRecognizer)?.minimumPressDuration = 0.1
-            //($0 as? UILongPressGestureRecognizer)?.addTarget(self, action: #selector(reorderGesture(_:)))
-        }
         collection.reloadData()
     }
 }
@@ -130,7 +200,7 @@ extension VideoTimelineView: UICollectionViewDragDelegate {
         guard let cell = collectionView.cellForItem(at: indexPath) as? VideoTimelineCell else {
             return []
         }
-        guard let image = cell.getImage()?.scale(factor: 1.2) else {
+        guard let image = cell.image?.scale(factor: 1.2) else {
             return []
         }
 
@@ -204,7 +274,13 @@ extension VideoTimelineView: UICollectionViewDataSource {
             guard let self = self else { return }
             self.deleteItem(atIndexPath: indexPath)
         }
-        Task { cell.setImage((try? await asset.thumbnail(size: .init(width: 46, height: 74))) ?? UIImage()) }
+        Task {
+            do {
+                cell.image = try await asset.thumbnail(size: collapsedCellSize)
+            } catch {
+                print("Error", error)
+            }
+        }
         return cell
     }
     
@@ -221,13 +297,58 @@ extension VideoTimelineView: UICollectionViewDataSource {
 
 extension VideoTimelineView: UICollectionViewDelegateFlowLayout {
     private var insets: UIEdgeInsets { .init(top: 12, left: 0, bottom: 12, right: 0) }
-    private var interitemSpacing: CGFloat { 18.0 }
+    private var interitemSpacing: CGFloat { 8.0 }
+    private var expandedInteritemSpacing: CGFloat { 0.0 }
+    private var expandedCellSize: CGSize { .init(width: collection.bounds.inset(by: .init(top: 0, left: 32, bottom: 0, right: 32)).width, height: collapsedCellSize.height) }
+    private var collapsedCellSize: CGSize { .init(width: 72, height: 90) }
     public func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        return .init(width: 62, height: 90)
+        indexPath == expandedIndexPath ? expandedCellSize : collapsedCellSize
     }
     public func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets { insets }
     public func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat { insets.top }
-    public func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat { interitemSpacing }
+    public func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
+        expandedIndexPath.row == -1 ? interitemSpacing : expandedInteritemSpacing
+    }
     public func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize { .zero }
     public func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForFooterInSection section: Int) -> CGSize { .zero }
+}
+
+internal class FlowLayout: UICollectionViewFlowLayout {
+    public var expandedIndexPath = IndexPath(row: -1, section: 0)
+    public init(scrollDirection: UICollectionView.ScrollDirection) {
+        super.init()
+        self.scrollDirection = scrollDirection
+        NotificationCenter.default.addObserver(self, selector: #selector(handleOrientationChange(_:)), name: UIDevice.orientationDidChangeNotification, object: nil)
+    }
+    
+    required public init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+    
+    // MARK: - Attributes
+    
+    override func layoutAttributesForElements(in rect: CGRect) -> [UICollectionViewLayoutAttributes]? {
+        super.layoutAttributesForElements(in: rect)
+    }
+    
+    override func layoutAttributesForItem(at indexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
+        super.layoutAttributesForItem(at: indexPath)
+    }
+    
+    override func initialLayoutAttributesForAppearingItem(at itemIndexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
+        let attributes = super.initialLayoutAttributesForAppearingItem(at: itemIndexPath)
+        attributes?.alpha = 1
+        if expandedIndexPath.row == itemIndexPath.row {
+            attributes?.zIndex = 100
+        }
+        return attributes
+    }
+    
+    @objc private func handleOrientationChange(_ notification: Notification) {
+        invalidateLayout()
+    }
 }

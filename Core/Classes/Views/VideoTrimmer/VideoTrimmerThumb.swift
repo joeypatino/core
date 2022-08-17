@@ -12,21 +12,27 @@ public final class VideoTrimmerThumb: UIView {
     public var borderColor: UIColor = UIColor.systemYellow {
         didSet { updateColor() }
     }
-    
+    public var thumbBackgroundColor: UIColor = UIColor.systemYellow {
+        didSet { updateColor() }
+    }
     public let leadingGrabber = UIControl()
     public let trailingGrabber = UIControl()
     
 	private var isActive = false
-    private var leadingChevronImageView = UIImageView(image: UIImage(systemName: "line.3.horizontal")?.rotated(by: .degrees(90))?.withRenderingMode(.alwaysTemplate))
-    private var trailingChevronView = UIImageView(image: UIImage(systemName: "line.3.horizontal")?.rotated(by: .degrees(90))?.withRenderingMode(.alwaysTemplate))
+    private let path = UIBezierPath(roundedRect: .init(origin: .zero, size: .init(width: 12, height: 48)), cornerRadius: 12)
+    private lazy var leadingChevronImageView = UIImageView(image: CAShapeLayer(bezierPath: path, fillColor: UIColor(hex: "#7EDD9C")).image())
+    private lazy var trailingChevronView = UIImageView(image: CAShapeLayer(bezierPath: path, fillColor: UIColor(hex: "#7EDD9C")).image())
 
     private let wrapperView = UIView()
     private let leadingView = UIView()
     private let trailingView = UIView()
     private let topView = UIView()
     private let bottomView = UIView()
-
-    public let chevronWidth = CGFloat(22)
+    
+    private let leftView = LeftRoundedView()
+    private let rightView = RightRoundedView()
+    
+    public let chevronWidth = CGFloat(14)
     public let edgeHeight = CGFloat(4)
 
 	// MARK: - Input
@@ -36,10 +42,14 @@ public final class VideoTrimmerThumb: UIView {
 
 	// MARK: - Private
 	private func updateColor() {
-		leadingView.backgroundColor = borderColor
-		trailingView.backgroundColor = borderColor
+		leadingView.backgroundColor = thumbBackgroundColor
+		trailingView.backgroundColor = thumbBackgroundColor
+        
 		topView.backgroundColor = borderColor
 		bottomView.backgroundColor = borderColor
+        
+        leftView.color = borderColor
+        rightView.color = borderColor
 	}
 
 	private func setup() {
@@ -53,8 +63,8 @@ public final class VideoTrimmerThumb: UIView {
 		leadingChevronImageView.tintAdjustmentMode = .normal
 		trailingChevronView.tintAdjustmentMode = .normal
 
-        leadingView.setLayerCornerRadius(6.0, maskCorners: [.topLeftCorner, .bottomLeftCorner])
-        trailingView.setLayerCornerRadius(6.0, maskCorners: [.topRightCorner, .bottomRightCorner])
+        leadingView.setLayerCornerRadius(4.0, maskCorners: .allCorners)
+        trailingView.setLayerCornerRadius(4.0, maskCorners: .allCorners)
 
 		leadingView.addSubview(leadingChevronImageView)
 		trailingView.addSubview(trailingChevronView)
@@ -63,11 +73,15 @@ public final class VideoTrimmerThumb: UIView {
         wrapperView.layer.shadowOffset = .zero
         wrapperView.layer.shadowRadius = 2
         wrapperView.layer.shadowOpacity = 0.25
-
-		wrapperView.addSubview(leadingView)
-		wrapperView.addSubview(trailingView)
+        
 		wrapperView.addSubview(topView)
 		wrapperView.addSubview(bottomView)
+
+        wrapperView.addSubview(leftView)
+        wrapperView.addSubview(rightView)
+        wrapperView.addSubview(leadingView)
+        wrapperView.addSubview(trailingView)
+        
 		addSubview(wrapperView)
 
 		wrapperView.addSubview(leadingGrabber)
@@ -81,24 +95,47 @@ public final class VideoTrimmerThumb: UIView {
     public override func layoutSubviews() {
 		super.layoutSubviews()
 
-		let size = bounds.size
-
+		var size = bounds.size
 		wrapperView.frame = CGRect(origin: .zero, size: size)
+        
+        size = bounds.insetBy(dx: 0, dy: 25).size
+        let offset = ((bounds.height - size.height) / 2)
+        let leadingFrame = CGRect(x: 0, y: offset, width: chevronWidth, height: size.height)
+        let trailingFrame = CGRect(x: bounds.width - chevronWidth, y: offset, width: chevronWidth, height: size.height)
+        
+		topView.frame = CGRect(x: chevronWidth,
+                               y: 0,
+                               width: bounds.width - chevronWidth * 2,
+                               height: edgeHeight)
+		bottomView.frame = CGRect(x: chevronWidth,
+                                  y: bounds.height - edgeHeight,
+                                  width: bounds.width - chevronWidth * 2,
+                                  height: edgeHeight)
 
-		leadingView.frame = CGRect(x: 0, y: 0, width: chevronWidth, height: bounds.height)
-		trailingView.frame = CGRect(x: bounds.width - chevronWidth, y: 0, width: chevronWidth, height: bounds.height)
-		topView.frame = CGRect(x: chevronWidth, y: 0, width: bounds.width - chevronWidth * 2, height: edgeHeight)
-		bottomView.frame = CGRect(x: chevronWidth, y: bounds.height - edgeHeight, width: bounds.width - chevronWidth * 2, height: edgeHeight)
+        leftView.frame = CGRect(x: 5,// half left side width
+                                y: 0,
+                                width: leftView.intrinsicContentSize.width,
+                                height: bounds.height)
+        rightView.frame = CGRect(x: bounds.width - chevronWidth,
+                                 y: 0,
+                                 width: rightView.intrinsicContentSize.width,
+                                 height: bounds.height)
 
-		let chevronHorizontalInset = CGFloat(6)
-		let chevronVerticalInset = CGFloat(12)
-		let chevronFrame = CGRect(x: chevronHorizontalInset, y: chevronVerticalInset, width: chevronWidth - chevronHorizontalInset * 2, height: size.height - chevronVerticalInset * 2)
+		let chevronHorizontalInset = CGFloat(5)
+		let chevronVerticalInset = CGFloat(7)
+		let chevronFrame = CGRect(x: chevronHorizontalInset,
+                                  y: chevronVerticalInset,
+                                  width: chevronWidth - chevronHorizontalInset * 2,
+                                  height: size.height - chevronVerticalInset * 2)
+
+        leadingView.frame = leadingFrame
+        trailingView.frame = trailingFrame
 
 		leadingChevronImageView.frame = chevronFrame
 		trailingChevronView.frame = chevronFrame
 
-		leadingGrabber.frame = leadingView.frame
-		trailingGrabber.frame = trailingView.frame
+		leadingGrabber.frame = leadingFrame
+		trailingGrabber.frame = trailingFrame
 	}
 
 	override init(frame: CGRect) {
@@ -112,3 +149,95 @@ public final class VideoTrimmerThumb: UIView {
 	}
 }
 
+private class LeftRoundedView: UIView {
+    public var color: UIColor = .white
+    public init() {
+        super.init(frame: .zero)
+        backgroundColor = .clear
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override func draw(_ rect: CGRect) {
+        let rectanglePath = UIBezierPath()
+        rectanglePath.move(to: CGPoint(x: 8.11, y: 2))
+        rectanglePath.addLine(to: CGPoint(x: 259.89, y: 2))
+        rectanglePath.addCurve(to: CGPoint(x: 263.32, y: 2.26), controlPoint1: CGPoint(x: 261.65, y: 2), controlPoint2: CGPoint(x: 262.53, y: 2))
+        rectanglePath.addLine(to: CGPoint(x: 263.47, y: 2.29))
+        rectanglePath.addCurve(to: CGPoint(x: 265.7, y: 4.46), controlPoint1: CGPoint(x: 264.51, y: 2.66), controlPoint2: CGPoint(x: 265.32, y: 3.45))
+        rectanglePath.addCurve(to: CGPoint(x: 266, y: 7.96), controlPoint1: CGPoint(x: 266, y: 5.38), controlPoint2: CGPoint(x: 266, y: 6.24))
+        rectanglePath.addLine(to: CGPoint(x: 266, y: 72.04))
+        rectanglePath.addCurve(to: CGPoint(x: 265.74, y: 75.39), controlPoint1: CGPoint(x: 266, y: 73.76), controlPoint2: CGPoint(x: 266, y: 74.62))
+        rectanglePath.addLine(to: CGPoint(x: 265.7, y: 75.54))
+        rectanglePath.addCurve(to: CGPoint(x: 263.47, y: 77.71), controlPoint1: CGPoint(x: 265.32, y: 76.55), controlPoint2: CGPoint(x: 264.51, y: 77.34))
+        rectanglePath.addCurve(to: CGPoint(x: 259.89, y: 78), controlPoint1: CGPoint(x: 262.53, y: 78), controlPoint2: CGPoint(x: 261.65, y: 78))
+        rectanglePath.addLine(to: CGPoint(x: 8.11, y: 78))
+        rectanglePath.addCurve(to: CGPoint(x: 4.68, y: 77.74), controlPoint1: CGPoint(x: 6.35, y: 78), controlPoint2: CGPoint(x: 5.47, y: 78))
+        rectanglePath.addLine(to: CGPoint(x: 4.53, y: 77.71))
+        rectanglePath.addCurve(to: CGPoint(x: 2.3, y: 75.54), controlPoint1: CGPoint(x: 3.49, y: 77.34), controlPoint2: CGPoint(x: 2.68, y: 76.55))
+        rectanglePath.addCurve(to: CGPoint(x: 2, y: 72.04), controlPoint1: CGPoint(x: 2, y: 74.62), controlPoint2: CGPoint(x: 2, y: 73.76))
+        rectanglePath.addLine(to: CGPoint(x: 2, y: 7.96))
+        rectanglePath.addCurve(to: CGPoint(x: 2.26, y: 4.61), controlPoint1: CGPoint(x: 2, y: 6.24), controlPoint2: CGPoint(x: 2, y: 5.38))
+        rectanglePath.addLine(to: CGPoint(x: 2.3, y: 4.46))
+        rectanglePath.addCurve(to: CGPoint(x: 4.53, y: 2.29), controlPoint1: CGPoint(x: 2.68, y: 3.45), controlPoint2: CGPoint(x: 3.49, y: 2.66))
+        rectanglePath.addCurve(to: CGPoint(x: 8.11, y: 2), controlPoint1: CGPoint(x: 5.47, y: 2), controlPoint2: CGPoint(x: 6.35, y: 2))
+        rectanglePath.close()
+        UIColor.white.setStroke()
+        rectanglePath.lineWidth = 4
+        rectanglePath.lineJoinStyle = .round
+        rectanglePath.stroke()
+    }
+    
+    override var intrinsicContentSize: CGSize {
+        .init(width: 10, height: UIView.noIntrinsicMetric)
+    }
+}
+
+
+private class RightRoundedView: UIView {
+    public var color: UIColor = .white
+    public init() {
+        super.init(frame: .zero)
+        backgroundColor = .clear
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override func draw(_ rect: CGRect) {
+        let rectanglePath = UIBezierPath()
+        rectanglePath.move(to: CGPoint(x: -249.89, y: 2))
+        rectanglePath.addLine(to: CGPoint(x: 1.89, y: 2))
+        rectanglePath.addCurve(to: CGPoint(x: 5.32, y: 2.26), controlPoint1: CGPoint(x: 3.65, y: 2), controlPoint2: CGPoint(x: 4.53, y: 2))
+        rectanglePath.addLine(to: CGPoint(x: 5.47, y: 2.29))
+        rectanglePath.addCurve(to: CGPoint(x: 7.7, y: 4.46), controlPoint1: CGPoint(x: 6.51, y: 2.66), controlPoint2: CGPoint(x: 7.32, y: 3.45))
+        rectanglePath.addCurve(to: CGPoint(x: 8, y: 7.96), controlPoint1: CGPoint(x: 8, y: 5.38), controlPoint2: CGPoint(x: 8, y: 6.24))
+        rectanglePath.addLine(to: CGPoint(x: 8, y: 72.04))
+        rectanglePath.addCurve(to: CGPoint(x: 7.74, y: 75.39), controlPoint1: CGPoint(x: 8, y: 73.76), controlPoint2: CGPoint(x: 8, y: 74.62))
+        rectanglePath.addLine(to: CGPoint(x: 7.7, y: 75.54))
+        rectanglePath.addCurve(to: CGPoint(x: 5.47, y: 77.71), controlPoint1: CGPoint(x: 7.32, y: 76.55), controlPoint2: CGPoint(x: 6.51, y: 77.34))
+        rectanglePath.addCurve(to: CGPoint(x: 1.89, y: 78), controlPoint1: CGPoint(x: 4.53, y: 78), controlPoint2: CGPoint(x: 3.65, y: 78))
+        rectanglePath.addLine(to: CGPoint(x: -249.89, y: 78))
+        rectanglePath.addCurve(to: CGPoint(x: -253.32, y: 77.74), controlPoint1: CGPoint(x: -251.65, y: 78), controlPoint2: CGPoint(x: -252.53, y: 78))
+        rectanglePath.addLine(to: CGPoint(x: -253.47, y: 77.71))
+        rectanglePath.addCurve(to: CGPoint(x: -255.7, y: 75.54), controlPoint1: CGPoint(x: -254.51, y: 77.34), controlPoint2: CGPoint(x: -255.32, y: 76.55))
+        rectanglePath.addCurve(to: CGPoint(x: -256, y: 72.04), controlPoint1: CGPoint(x: -256, y: 74.62), controlPoint2: CGPoint(x: -256, y: 73.76))
+        rectanglePath.addLine(to: CGPoint(x: -256, y: 7.96))
+        rectanglePath.addCurve(to: CGPoint(x: -255.74, y: 4.61), controlPoint1: CGPoint(x: -256, y: 6.24), controlPoint2: CGPoint(x: -256, y: 5.38))
+        rectanglePath.addLine(to: CGPoint(x: -255.7, y: 4.46))
+        rectanglePath.addCurve(to: CGPoint(x: -253.47, y: 2.29), controlPoint1: CGPoint(x: -255.32, y: 3.45), controlPoint2: CGPoint(x: -254.51, y: 2.66))
+        rectanglePath.addCurve(to: CGPoint(x: -249.89, y: 2), controlPoint1: CGPoint(x: -252.53, y: 2), controlPoint2: CGPoint(x: -251.65, y: 2))
+        rectanglePath.close()
+        UIColor.white.setStroke()
+        rectanglePath.lineWidth = 4
+        rectanglePath.lineJoinStyle = .round
+        rectanglePath.stroke()
+    }
+    
+    override var intrinsicContentSize: CGSize {
+        .init(width: 10, height: UIView.noIntrinsicMetric)
+    }
+}

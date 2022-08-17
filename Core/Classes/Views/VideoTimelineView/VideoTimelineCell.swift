@@ -23,8 +23,17 @@ public final class VideoTimelineCell: UICollectionViewCell {
     }
     
     public var onDelete:() -> Void = {}
+    public var image: UIImage? { didSet { thumb.image = image } }
+    public var imageGenerator: AVAssetImageGenerator? {
+        didSet {
+            trim.imageGenerator = imageGenerator
+            trim.isHidden = imageGenerator == nil
+        }
+    }
+    private let trim = VideoTrimmer()
     private let container = UIView()
-    private let image = UIImageView(contentMode: .scaleAspectFill)
+    private let thumbstrip = UIImageView(contentMode: .scaleAspectFill)
+    private let thumb = UIImageView(contentMode: .scaleAspectFill)
     private let duration = UILabel(font: .systemFont(ofSize: 12.0, weight: .medium), color: .white, alignment: .center)
     private let delete = SmallButton(insets: .init(width: 15, height: 15))
 
@@ -51,7 +60,7 @@ public final class VideoTimelineCell: UICollectionViewCell {
     
     public override func prepareForReuse() {
         super.prepareForReuse()
-        setImage(UIImage())
+        //image = nil   // FIXME: can not nil out the image?
         hasFocus = false
         isAnimating = false
     }
@@ -60,6 +69,12 @@ public final class VideoTimelineCell: UICollectionViewCell {
         selectedBackgroundView = SelectedVideoTimelineCell()
         container.clipsToBounds = true
         container.setLayerCornerRadius(8, maskCorners: .allCorners)
+        trim.isVisible = false
+        trim.horizontalInset = .zero
+        trim.canZoomedIn = false
+        trim.borderColor = .white
+        trim.thumbBackgroundColor = .white
+        trim.progressIndicatorMode = .alwaysHidden
         
         delete.clipsToBounds = true
         delete.setLayerCornerRadius(10, maskCorners: .allCorners)
@@ -68,8 +83,9 @@ public final class VideoTimelineCell: UICollectionViewCell {
     }
     
     private func layout() {
-        container.embed(in: contentView, inset: .init(top: 10, left: 0, bottom: 0, right: 10))
-        image.embed(in: container)
+        container.embed(in: contentView, inset: .init(top: 10, left: 10, bottom: 0, right: 10))
+        thumb.embed(in: container)
+        trim.embed(in: contentView, inset: .init(top: 10, left: 0, bottom: 0, right: 0))
         
         container.addAutoLayoutSubview(duration)
         duration.bottomAnchor.equalTo(container.bottomAnchor).constant(-4)
@@ -85,15 +101,7 @@ public final class VideoTimelineCell: UICollectionViewCell {
     public func setDuration(_ duration: CMTime) {
         self.duration.text = duration.humanReadable
     }
-    
-    public func setImage(_ image: UIImage) {
-        self.image.image = image
-    }
-
-    public func getImage() -> UIImage? {
-        self.image.image
-    }
-    
+        
     @objc private func onDeleteAction(_ sender: UIButton) {
         onDelete()
     }
