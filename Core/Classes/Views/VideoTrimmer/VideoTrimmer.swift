@@ -9,6 +9,15 @@
 import UIKit
 import AVFoundation
 
+public enum VideoTrimmerEvent {
+    case didBeginTrimming
+    case selectedRangeChanged
+    case didEndTrimming
+    case didBeginScrubbing
+    case progressChanged
+    case didEndScrubbing
+}
+
 // Controls that allows trimming a range and scrubbing a progress indicator
 @IBDesignable public final class VideoTrimmer: UIControl {
     
@@ -216,6 +225,7 @@ import AVFoundation
     private (set) var trailingGestureRecognizer: UILongPressGestureRecognizer!
     private (set) var progressGestureRecognizer: UILongPressGestureRecognizer!
     private (set) var thumbnailInteractionGestureRecognizer: UILongPressGestureRecognizer!
+    private (set) var tapGestureRecognizer: UITapGestureRecognizer!
     
     // private stuff
     private var grabberOffset = CGFloat(0)
@@ -289,9 +299,14 @@ import AVFoundation
         trailingGestureRecognizer.minimumPressDuration = 0
         thumbView.trailingGrabber.addGestureRecognizer(trailingGestureRecognizer)
         
+        tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(thumbnailsTapped(_:)))
+        tapGestureRecognizer.numberOfTapsRequired = 1
+        thumbView.addGestureRecognizer(tapGestureRecognizer)
+        
         progressGestureRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(progressGrabberPanned(_:)))
         progressGestureRecognizer.allowableMovement = CGFloat.greatestFiniteMagnitude
         progressGestureRecognizer.minimumPressDuration = 0
+        progressGestureRecognizer.require(toFail: tapGestureRecognizer)
         progressGestureRecognizer.require(toFail: leadingGestureRecognizer)
         progressGestureRecognizer.require(toFail: trailingGestureRecognizer)
         progressIndicatorControl.addGestureRecognizer(progressGestureRecognizer)
@@ -299,6 +314,7 @@ import AVFoundation
         thumbnailInteractionGestureRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(thumbnailPanned(_:)))
         thumbnailInteractionGestureRecognizer.allowableMovement = CGFloat.greatestFiniteMagnitude
         thumbnailInteractionGestureRecognizer.minimumPressDuration = 0
+        thumbnailInteractionGestureRecognizer.require(toFail: tapGestureRecognizer)
         thumbnailInteractionGestureRecognizer.require(toFail: leadingGestureRecognizer)
         thumbnailInteractionGestureRecognizer.require(toFail: trailingGestureRecognizer)
         thumbView.addGestureRecognizer(thumbnailInteractionGestureRecognizer)
@@ -679,6 +695,10 @@ import AVFoundation
         }
     }
     
+    @objc private func thumbnailsTapped(_ sender: UITapGestureRecognizer) {
+        sendActions(for: .touchUpInside)
+    }
+    
     // MARK: - UIView
     
     public override var intrinsicContentSize: CGSize {
@@ -726,7 +746,7 @@ import AVFoundation
         trailingThumbRest.frame = CGRect(x: thumbnailRect.width - inset, y: 0, width: inset, height: thumbnailRect.height)
         
         if progressIndicator.alpha > 0 {
-            let progressWidth = CGFloat(6)
+            let progressWidth = CGFloat(3)
             let progressIndicatorOffset = locationForTime(progress)
             let progressLeft = min(max(thumbView.frame.minX + inset, progressIndicatorOffset - progressWidth * 0.5), thumbView.frame.maxX - inset - progressWidth)
             progressIndicator.frame = CGRect(x: progressLeft, y: thumbnailRect.minY, width: progressWidth, height: thumbnailRect.height).insetBy(dx: 0, dy: -8)

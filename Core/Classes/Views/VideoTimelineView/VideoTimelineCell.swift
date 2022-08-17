@@ -23,6 +23,8 @@ public final class VideoTimelineCell: UICollectionViewCell {
     }
     
     public var onDelete:() -> Void = {}
+    public var onCollapse:() -> Void = {}
+    public var onTrimEvent: (VideoTrimmerEvent, VideoTrimmer) -> Void = { _, _ in }
     public var image: UIImage? { didSet { thumb.image = image } }
     public var imageGenerator: AVAssetImageGenerator? {
         didSet {
@@ -30,13 +32,14 @@ public final class VideoTimelineCell: UICollectionViewCell {
             trim.isHidden = imageGenerator == nil
         }
     }
-    private let trim = VideoTrimmer()
+    public let trim = VideoTrimmer()
     private let container = UIView()
     private let thumbstrip = UIImageView(contentMode: .scaleAspectFill)
     private let thumb = UIImageView(contentMode: .scaleAspectFill)
     private let duration = UILabel(font: .systemFont(ofSize: 12.0, weight: .medium), color: .white, alignment: .center)
     private let delete = SmallButton(insets: .init(width: 15, height: 15))
-
+    private lazy var tapGesture = UITapGestureRecognizer(target: self, action: #selector(onCollapseAction(_:)))
+    
     public var isAnimating: Bool = false {
         didSet {
             delete.isVisible = isAnimating
@@ -74,7 +77,14 @@ public final class VideoTimelineCell: UICollectionViewCell {
         trim.canZoomedIn = false
         trim.borderColor = .white
         trim.thumbBackgroundColor = .white
-        trim.progressIndicatorMode = .alwaysHidden
+        trim.addTarget(self, action: #selector(onCollapseAction(_:)), for: .touchUpInside)
+        
+        trim.addTarget(self, action: #selector(didBeginTrimming(_:)), for: VideoTrimmer.didBeginScrubbing)
+        trim.addTarget(self, action: #selector(selectedRangeChanged(_:)), for: VideoTrimmer.selectedRangeChanged)
+        trim.addTarget(self, action: #selector(didEndTrimming(_:)), for: VideoTrimmer.didEndTrimming)
+        trim.addTarget(self, action: #selector(didBeginScrubbing(_:)), for: VideoTrimmer.didBeginScrubbing)
+        trim.addTarget(self, action: #selector(progressChanged(_:)), for: VideoTrimmer.progressChanged)
+        trim.addTarget(self, action: #selector(didEndScrubbing(_:)), for: VideoTrimmer.didEndScrubbing)
         
         delete.clipsToBounds = true
         delete.setLayerCornerRadius(10, maskCorners: .allCorners)
@@ -104,5 +114,33 @@ public final class VideoTimelineCell: UICollectionViewCell {
         
     @objc private func onDeleteAction(_ sender: UIButton) {
         onDelete()
+    }
+    
+    @objc private func onCollapseAction(_ sender: UIControl) {
+        onCollapse()
+    }
+    
+    @objc private func didBeginTrimming(_ sender: UIControl) {
+        onTrimEvent(.didBeginTrimming, trim)
+    }
+    
+    @objc private func selectedRangeChanged(_ sender: UIControl) {
+        onTrimEvent(.selectedRangeChanged, trim)
+    }
+    
+    @objc private func didEndTrimming(_ sender: UIControl) {
+        onTrimEvent(.didEndTrimming, trim)
+    }
+    
+    @objc private func didBeginScrubbing(_ sender: UIControl) {
+        onTrimEvent(.didBeginScrubbing, trim)
+    }
+    
+    @objc private func progressChanged(_ sender: UIControl) {
+        onTrimEvent(.progressChanged, trim)
+    }
+    
+    @objc private func didEndScrubbing(_ sender: UIControl) {
+        onTrimEvent(.didEndScrubbing, trim)
     }
 }

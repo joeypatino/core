@@ -4,6 +4,24 @@ import AVKit
 public protocol VideoTimelineViewDelegate: AnyObject {
     func view(_ videoTimeline: VideoTimelineView, didEditComposition composition: Composition)
     func view(_ videoTimeline: VideoTimelineView, didSelectAsset asset: Asset)
+    
+    func view(_ videoTimeline: VideoTimelineView, didStartTrimming asset: Asset, selectedTimeRange timeRange: CMTimeRange, selectedTime: CMTime)
+    func view(_ videoTimeline: VideoTimelineView, didContinueTrimming asset: Asset, selectedTimeRange timeRange: CMTimeRange, selectedTime: CMTime)
+    func view(_ videoTimeline: VideoTimelineView, didEndTrimming asset: Asset, selectedTimeRange timeRange: CMTimeRange, selectedTime: CMTime)
+    
+    func view(_ videoTimeline: VideoTimelineView, didStartScrubbing asset: Asset, selectedTimeRange timeRange: CMTimeRange, selectedTime: CMTime)
+    func view(_ videoTimeline: VideoTimelineView, didContinueScrubbing asset: Asset, selectedTimeRange timeRange: CMTimeRange, selectedTime: CMTime)
+    func view(_ videoTimeline: VideoTimelineView, didEndScrubbing asset: Asset, selectedTimeRange timeRange: CMTimeRange, selectedTime: CMTime)
+}
+
+extension VideoTimelineViewDelegate {
+    public func view(_ videoTimeline: VideoTimelineView, didStartTrimming asset: Asset, selectedTimeRange timeRange: CMTimeRange, selectedTime: CMTime) {}
+    public func view(_ videoTimeline: VideoTimelineView, didContinueTrimming asset: Asset, selectedTimeRange timeRange: CMTimeRange, selectedTime: CMTime) {}
+    public func view(_ videoTimeline: VideoTimelineView, didEndTrimming asset: Asset, selectedTimeRange timeRange: CMTimeRange, selectedTime: CMTime) {}
+    
+    public func view(_ videoTimeline: VideoTimelineView, didStartScrubbing asset: Asset, selectedTimeRange timeRange: CMTimeRange, selectedTime: CMTime) {}
+    public func view(_ videoTimeline: VideoTimelineView, didContinueScrubbing asset: Asset, selectedTimeRange timeRange: CMTimeRange, selectedTime: CMTime) {}
+    public func view(_ videoTimeline: VideoTimelineView, didEndScrubbing asset: Asset, selectedTimeRange timeRange: CMTimeRange, selectedTime: CMTime) {}
 }
 
 public final class VideoTimelineView: UIView {
@@ -12,7 +30,10 @@ public final class VideoTimelineView: UIView {
     
     public weak var delegate: VideoTimelineViewDelegate?
     public var isEditing: Bool = false {
-        didSet { collection.visibleCells.forEach { ($0 as? VideoTimelineCell)?.isAnimating = isEditing } }
+        didSet {
+            collection.visibleCells.forEach { ($0 as? VideoTimelineCell)?.isAnimating = isEditing }
+            if !isEditing { collapseItems() }
+        }
     }
     
     private lazy var longPressGesture = UILongPressGestureRecognizer(target: self, action: #selector(reorderGesture(_:)))
@@ -87,8 +108,9 @@ public final class VideoTimelineView: UIView {
         let newIndexPath = IndexPath(row: idx, section: 0)
         let previousIndexPath = selectedIndexPath
         selectedIndexPath = newIndexPath
+        guard !isExpanded else { return }
         if newIndexPath != previousIndexPath { Vibration.light.vibrate() }
-        if expandedIndexPath.row < 0 { collection.reloadItems(at: [previousIndexPath, newIndexPath].compactMap { $0 }) }
+        collection.reloadItems(at: [previousIndexPath, newIndexPath].compactMap { $0 })
         let visibleIndexPaths = collection.indexPathsForVisibleItems.sorted()
         if !visibleIndexPaths.contains(selectedIndexPath), !visibleIndexPaths.isEmpty {
             follow(newIndexPath)
@@ -133,9 +155,13 @@ public final class VideoTimelineView: UIView {
         // if we're not expanded then bail
         guard isExpanded else { return }
         
-        // clear the image generator for the current cell
-        if let cell = expandedCell() { cell.imageGenerator = nil }
-        
+        if let cell = expandedCell() {
+            // clear the image generator for the current cell
+            cell.imageGenerator = nil
+            // remove the observers for this cells trim control
+            stopTrimControlObservers(forCell: cell)
+        }
+                
         // reset the expanded cell indexpath
         expandedIndexPath = VideoTimelineView.UnExpandedCellIndexPath
         
@@ -150,12 +176,51 @@ public final class VideoTimelineView: UIView {
         
         // create and store the image thumbnail image generator for the timeline track
         cell.imageGenerator = AVAssetImageGenerator.create(from: composition.videoLayers.map { $0.trackItem }, renderSize: collapsedCellSize)
+        
+        // 4800 / 600 + 3000 / 600 == 13seconds
+        //cell.trim.range = CMTimeRange(start: asset.source.trackItem.startTime, duration: asset.source.trackItem.timeRange.duration)
+        print(cell.trim.range.debugDescription)
+        
+        // check
+        cell.trim.selectedRange = asset.source.resource.selectedTimeRange
+        print(cell.trim.selectedRange.debugDescription)
+        
+        //cell.imageGenerator = AVAssetImageGenerator.create(from: [asset.source.trackItem], renderSize: collapsedCellSize)
+        
+        // setup the observers for this cells trim control
+        startTrimControlObservers(forCell: cell, withAsset: asset)
     }
     
     private func expandedCell() -> VideoTimelineCell? {
         guard isExpanded else { return nil }
         guard let cell = collection.cellForItem(at: expandedIndexPath) as? VideoTimelineCell else { return nil }
         return cell
+    }
+    
+    private func startTrimControlObservers(forCell cell: VideoTimelineCell, withAsset asset: Asset) {
+        cell.onTrimEvent = { [weak self] event, trim in
+            guard let self = self else { return }
+            switch event {
+                
+            case .didBeginTrimming:
+                self.delegate?.view(self, didStartTrimming: asset, selectedTimeRange: trim.selectedRange, selectedTime: trim.selectedTime)
+            case .selectedRangeChanged:
+                self.delegate?.view(self, didContinueTrimming: asset, selectedTimeRange: trim.selectedRange, selectedTime: trim.selectedTime)
+            case .didEndTrimming:
+                self.delegate?.view(self, didEndTrimming: asset, selectedTimeRange: trim.selectedRange, selectedTime: trim.selectedTime)
+
+            case .didBeginScrubbing:
+                self.delegate?.view(self, didStartScrubbing: asset, selectedTimeRange: trim.selectedRange, selectedTime: trim.progress)
+            case .progressChanged:
+                self.delegate?.view(self, didContinueScrubbing: asset, selectedTimeRange: trim.selectedRange, selectedTime: trim.progress)
+            case .didEndScrubbing:
+                self.delegate?.view(self, didEndScrubbing: asset, selectedTimeRange: trim.selectedRange, selectedTime: trim.progress)
+            }
+        }
+    }
+    
+    private func stopTrimControlObservers(forCell cell: VideoTimelineCell) {
+        cell.onTrimEvent = { _, _ in }
     }
     
     @objc private func reorderGesture(_ gesture: UILongPressGestureRecognizer) {
@@ -262,6 +327,14 @@ extension VideoTimelineView: UICollectionViewDataSource {
         composition.videoLayers.count
     }
     
+    public func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+        
+    }
+    
+    public func collectionView(_ collectionView: UICollectionView, didEndDisplaying cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+        
+    }
+    
     public func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: VideoTimelineCell.self), for: indexPath) as? VideoTimelineCell else { preconditionFailure() }
         let layers = composition.videoLayers
@@ -273,6 +346,10 @@ extension VideoTimelineView: UICollectionViewDataSource {
         cell.onDelete = { [weak self] in
             guard let self = self else { return }
             self.deleteItem(atIndexPath: indexPath)
+        }
+        cell.onCollapse = { [weak self] in
+            guard let self = self else { return }
+            self.collapseItems()
         }
         Task {
             do {
@@ -350,5 +427,15 @@ internal class FlowLayout: UICollectionViewFlowLayout {
     
     @objc private func handleOrientationChange(_ notification: Notification) {
         invalidateLayout()
+    }
+}
+
+extension CMTime: CustomStringConvertible, CustomDebugStringConvertible {
+    public var description: String {
+        debugDescription
+    }
+    
+    public var debugDescription: String {
+        "\(seconds)"
     }
 }
