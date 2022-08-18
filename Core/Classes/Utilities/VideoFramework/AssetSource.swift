@@ -16,7 +16,7 @@ public class AssetSource {
         resource = AVAssetTrackResource(asset: asset)
         trackItem = TrackItem(resource: resource)
         trackItem.videoConfiguration.contentMode = .aspectFit
-        trackItem.videoTransition = CrossDissolveTransition(duration: AssetSource.DEFAULT_TRANSITION_DURATION)
+        //trackItem.videoTransition = CrossDissolveTransition(duration: AssetSource.DEFAULT_TRANSITION_DURATION)
         trackItem.audioTransition = FadeInOutAudioTransition(duration: AssetSource.DEFAULT_TRANSITION_DURATION)
         resource.prepare(completion: { _, _ in })
     }
@@ -25,7 +25,7 @@ public class AssetSource {
         resource = PHAssetImageResource(asset: asset, duration: Asset.DEFAULT_PHOTO_DURATION)
         trackItem = TrackItem(resource: resource)
         trackItem.videoConfiguration.contentMode = .aspectFit
-        trackItem.videoTransition = CrossDissolveTransition(duration: AssetSource.DEFAULT_TRANSITION_DURATION)
+        //trackItem.videoTransition = CrossDissolveTransition(duration: AssetSource.DEFAULT_TRANSITION_DURATION)
         resource.prepare(completion: { _, _ in })
     }
 }

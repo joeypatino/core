@@ -10,7 +10,7 @@ public extension CMTime {
 }
 
 public extension CMTime {
-    static var oneFrame: CMTime {
-        CMTime(seconds: 1, preferredTimescale: 30)
+    static var frame: CMTime {
+        CMTime(value: 1, timescale: 60)
     }
 }

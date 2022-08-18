@@ -344,7 +344,7 @@ public enum VideoTrimmerEvent {
         var times = Array<NSValue>()
         
         // we add some extra thumbnails as padding
-        for index in -3..<numberOfThumbnails + 6 {
+        for index in 0..<numberOfThumbnails {
             let time = CMTimeAdd(visibleRange.start, CMTime(seconds: thumbnailDuration * Double(index), preferredTimescale: asset.duration.timescale * 2))
             guard CMTimeCompare(time, .zero) != -1 else {continue}
             times.append(NSValue(time: time))
@@ -713,17 +713,12 @@ public enum VideoTrimmerEvent {
         var left = locationForTime(selectedRange.start) - inset
         var right = locationForTime(selectedRange.end) + inset
         
-        if right > bounds.width {
-            right = bounds.width + inset * 2
-        }
-        
-        if left < 0 {
-            left = -inset
-        }
-        if thumbnails.isEmpty { right = bounds.width }
+        if right > bounds.width { right = bounds.width + inset * 2 }
+        if left < 0 { left = 0 }
         if left.isNaN { left = 0 }
         if right.isNaN { right = bounds.width }
-        
+        if thumbnails.isEmpty { right = bounds.width }
+
         let rect = CGRect(origin: .zero, size: size)
         shadowView.frame = rect
         wrapperView.frame = rect

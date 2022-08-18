@@ -174,21 +174,54 @@ public final class VideoTimelineView: UIView {
         guard isExpanded else { return }
         guard let cell = expandedCell() else { return }
         
-        // create and store the image thumbnail image generator for the timeline track
-        cell.imageGenerator = AVAssetImageGenerator.create(from: composition.videoLayers.map { $0.trackItem }, renderSize: collapsedCellSize)
-        
-        // 4800 / 600 + 3000 / 600 == 13seconds
-        //cell.trim.range = CMTimeRange(start: asset.source.trackItem.startTime, duration: asset.source.trackItem.timeRange.duration)
-        print(cell.trim.range.debugDescription)
-        
-        // check
-        cell.trim.selectedRange = asset.source.resource.selectedTimeRange
-        print(cell.trim.selectedRange.debugDescription)
-        
-        //cell.imageGenerator = AVAssetImageGenerator.create(from: [asset.source.trackItem], renderSize: collapsedCellSize)
-        
         // setup the observers for this cells trim control
         startTrimControlObservers(forCell: cell, withAsset: asset)
+        
+        // create and store the image thumbnail image generator for the timeline track
+        let size = CGSize(width: collapsedCellSize.width * UIScreen.main.scale, height: collapsedCellSize.height * UIScreen.main.scale)
+        cell.imageGenerator = AVAssetImageGenerator.create(from: [asset.source.trackItem], renderSize: size)
+
+        print("[TimeRange] \(asset.timeRange.debugDescription)")
+        print("[TimeRangeInTimeline] \(asset.timeRangeInTimeline.debugDescription)")
+
+        DispatchQueue.main.async {
+            cell.trim.range = asset.timeRange
+            // this changes after we edit, which messes things up in the trimmer.. how make this work?
+            //
+            // maybe the better way is to just copy the asset and create a new editor when the user enter this "trimming" mode.
+            // at this point we'd need to create (or update) the video player
+            // create  a new composition / timeline, with only the single Asset (copy)
+            // we could then disable the transitions on that Asset copy to make editing easier..
+            // use that Asset to generate the imageGenerator
+            // and then go from there..
+            
+            /// ** Steps **
+            /// create a datasource for this control.. its becoming too complicated
+            /// datasource can ask for "view mode" or "data provider" or whatever
+            /// this ViewModel will hold the MutableAsset, Composition & ImageGenerator
+            /// ** retain these ViewModels somewhere else. This lets us keep editing state
+            /// but also revert if needed.
+            ///
+            /// also create a Mode enum for this class
+            /// case trimming, case previewing
+            /// on Mode enum associated value will be the IndexPath of the expanded cell
+            /// ** (Remove the Custom CollectionViewLayout)
+            ///
+            /// Additional changes..
+            /// Progress and SelectionRange times will now all be based to a .zero start time
+            /// All of these calculation will be done inside the ViewModel (Protocol based!).
+            /// so that this class should not be responsible for any CMTime calculations
+            ///
+            /// At the conclusion, this class will be resposible for manaaging the presentiion of
+            /// Assets in a CollectionView & responding to touches in order to expand / collapse the UI.
+            /// That's it!
+            ///
+            print("[Range] \(cell.trim.range.debugDescription)")
+            DispatchQueue.main.async {
+                //cell.trim.selectedRange = asset.source.resource.selectedTimeRange
+                print("[SelectedRange] \(cell.trim.selectedRange.debugDescription)")
+            }
+        }
     }
     
     private func expandedCell() -> VideoTimelineCell? {
@@ -199,22 +232,36 @@ public final class VideoTimelineView: UIView {
     
     private func startTrimControlObservers(forCell cell: VideoTimelineCell, withAsset asset: Asset) {
         cell.onTrimEvent = { [weak self] event, trim in
+            func insetTimeRange(_ timeRange: CMTimeRange) -> CMTimeRange {
+                CMTimeRange(start: CMTimeAdd(timeRange.start, .frame), duration: CMTimeSubtract(timeRange.duration, CMTimeMultiply(.frame, multiplier: 2)))
+            }
+            func clampTime(_ time: CMTime, toRange: CMTimeRange) -> CMTime {
+                CMTimeMinimum(CMTimeMaximum(time, insetRange.start), insetRange.end)
+            }
+            let insetRange = insetTimeRange(CMTimeRange(start: asset.source.trackItem.startTime, duration: asset.source.trackItem.duration))
+            let progress = clampTime(trim.progress, toRange: insetRange)
+
+            func adjustedTrimSelectionTime(_ selectedTime: CMTime) -> CMTime {
+                return clampTime(selectedTime, toRange: insetRange)
+            }
+
+            //print("[SELECTED_TIME] \(trim.selectedTime.debugDescription)\n[RANGE] \(trim.selectedRange.debugDescription)\n[PROGRESS] \(progress.debugDescription)\n[INSET_RANGE]\(insetRange.debugDescription)")
             guard let self = self else { return }
             switch event {
                 
             case .didBeginTrimming:
-                self.delegate?.view(self, didStartTrimming: asset, selectedTimeRange: trim.selectedRange, selectedTime: trim.selectedTime)
+                self.delegate?.view(self, didStartTrimming: asset, selectedTimeRange: trim.selectedRange, selectedTime: adjustedTrimSelectionTime(trim.selectedTime))
             case .selectedRangeChanged:
-                self.delegate?.view(self, didContinueTrimming: asset, selectedTimeRange: trim.selectedRange, selectedTime: trim.selectedTime)
+                self.delegate?.view(self, didContinueTrimming: asset, selectedTimeRange: trim.selectedRange, selectedTime: adjustedTrimSelectionTime(trim.selectedTime))
             case .didEndTrimming:
-                self.delegate?.view(self, didEndTrimming: asset, selectedTimeRange: trim.selectedRange, selectedTime: trim.selectedTime)
+                self.delegate?.view(self, didEndTrimming: asset, selectedTimeRange: trim.selectedRange, selectedTime: adjustedTrimSelectionTime(trim.selectedTime))
 
             case .didBeginScrubbing:
-                self.delegate?.view(self, didStartScrubbing: asset, selectedTimeRange: trim.selectedRange, selectedTime: trim.progress)
+                self.delegate?.view(self, didStartScrubbing: asset, selectedTimeRange: trim.selectedRange, selectedTime: progress)
             case .progressChanged:
-                self.delegate?.view(self, didContinueScrubbing: asset, selectedTimeRange: trim.selectedRange, selectedTime: trim.progress)
+                self.delegate?.view(self, didContinueScrubbing: asset, selectedTimeRange: trim.selectedRange, selectedTime: progress)
             case .didEndScrubbing:
-                self.delegate?.view(self, didEndScrubbing: asset, selectedTimeRange: trim.selectedRange, selectedTime: trim.progress)
+                self.delegate?.view(self, didEndScrubbing: asset, selectedTimeRange: trim.selectedRange, selectedTime: progress)
             }
         }
     }

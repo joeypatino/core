@@ -79,7 +79,7 @@ public final class VideoTimelineCell: UICollectionViewCell {
         trim.thumbBackgroundColor = .white
         trim.addTarget(self, action: #selector(onCollapseAction(_:)), for: .touchUpInside)
         
-        trim.addTarget(self, action: #selector(didBeginTrimming(_:)), for: VideoTrimmer.didBeginScrubbing)
+        trim.addTarget(self, action: #selector(didBeginTrimming(_:)), for: VideoTrimmer.didBeginTrimming)
         trim.addTarget(self, action: #selector(selectedRangeChanged(_:)), for: VideoTrimmer.selectedRangeChanged)
         trim.addTarget(self, action: #selector(didEndTrimming(_:)), for: VideoTrimmer.didEndTrimming)
         trim.addTarget(self, action: #selector(didBeginScrubbing(_:)), for: VideoTrimmer.didBeginScrubbing)
