@@ -1,8 +1,8 @@
 import UIKit
 import AVFoundation
 
-public final class VideoTimelineCell: UICollectionViewCell {
-    private class SelectedVideoTimelineCell: UIView {
+public final class AssetTimelineCell: UICollectionViewCell {
+    private class SelectedAssetTimelineCell: UIView {
         init() {
             super.init(frame: .zero)
             setup()
@@ -29,7 +29,7 @@ public final class VideoTimelineCell: UICollectionViewCell {
     public var imageGenerator: AVAssetImageGenerator? {
         didSet {
             trim.imageGenerator = imageGenerator
-            trim.isHidden = imageGenerator == nil
+            imageGenerator == nil ? trim.fadeOut(duration: 0.1) : trim.fadeIn(duration: 0.1)
         }
     }
     public let trim = VideoTrimmer()
@@ -69,10 +69,10 @@ public final class VideoTimelineCell: UICollectionViewCell {
     }
     
     private func setup() {
-        selectedBackgroundView = SelectedVideoTimelineCell()
+        selectedBackgroundView = SelectedAssetTimelineCell()
         container.clipsToBounds = true
         container.setLayerCornerRadius(8, maskCorners: .allCorners)
-        trim.isVisible = false
+        trim.alpha = 0
         trim.horizontalInset = .zero
         trim.canZoomedIn = false
         trim.borderColor = .white

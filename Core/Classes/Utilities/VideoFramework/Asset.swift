@@ -105,6 +105,18 @@ public enum Asset: Codable {
     }
 }
 
+// MARK: - ""NSCopying"" support
+extension Asset {
+    public func duplicate() -> Asset {
+        switch self {
+        case .localFile(let asset):
+            return type(of: self).init(url: asset.url)
+        case .photoLibrary(let asset):
+            return type(of: self).init(asset: asset.asset)
+        }
+    }
+}
+
 public struct LocalFileAsset: Codable {
     public let type: Asset.Kind
     public let url: URL
