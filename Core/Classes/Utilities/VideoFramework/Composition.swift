@@ -43,6 +43,10 @@ public class Composition: Codable {
         insert(Layer(asset: asset), at: index)
     }
     
+    public func insertAudio(layerWithAsset asset: Asset, at index: Int) {
+        insertAudio(Layer(asset: asset), at: index)
+    }
+    
     public func append(layerWithUrl url: URL) {
         let asset = Asset(url: url)
         append(layerWithAsset: asset)
@@ -76,6 +80,14 @@ public class Composition: Codable {
             didUpdateAudioLayers()
         }
         videoLayers.insert(layer, at: index)
+    }
+    
+    public func insertAudio(_ layer: Layer, at index: Int) {
+        defer {
+            didUpdateVideoLayers()
+            didUpdateAudioLayers()
+        }
+        audioLayers.insert(layer, at: index)
     }
     
     @discardableResult
@@ -115,6 +127,22 @@ public class Composition: Codable {
         if videoLayers.isEmpty { return nil }
         let layer = videoLayers.remove(at: index)
         return layer
+    }
+
+    @discardableResult
+    public func removeAudio(layerAt index: Int) -> Layer? {
+        defer {
+            didUpdateVideoLayers()
+            didUpdateAudioLayers()
+        }
+        if audioLayers.isEmpty { return nil }
+        let layer = audioLayers.remove(at: index)
+        return layer
+    }
+    
+    public func reload() {
+        didUpdateVideoLayers()
+        didUpdateAudioLayers()
     }
     
     // MARK: Private

@@ -63,7 +63,7 @@ public final class AssetTimelineCell: UICollectionViewCell {
     
     public override func prepareForReuse() {
         super.prepareForReuse()
-        //image = nil   // FIXME: can not nil out the image?
+        image = nil
         hasFocus = false
         isAnimating = false
     }

@@ -5,6 +5,9 @@ public protocol AssetViewModel: AnyObject {
     /// the asset we are managing
     var asset: Asset { get }
     
+    /// the edited asset we are managing
+    var editedAsset: Asset { get }
+
     /// an image generator that wil return thumbnail images for this asset. It must be prepared to
     /// return images based on the `timeRange` (.zero based startTime!)
     var imageGenerator: AVAssetImageGenerator { get }
@@ -18,6 +21,11 @@ public protocol AssetViewModel: AnyObject {
     
     // the selected time range of the asset, in relative time range scale (i.e. based on .zero start time)
     var selectedTimeRange: CMTimeRange { get set }
+    
+    // an av player item representing the edited asset
+    func playerItem(size: CGSize) -> AVPlayerItem?
+    
+    func thumbnail(size: CGSize) async throws -> UIImage
 }
 
 extension AssetViewModel {
@@ -26,12 +34,6 @@ extension AssetViewModel {
     
     /// the real start time of the asset, in relation its position in the timeline
     var startTime: CMTime { timeRangeInTimeline.start }
-    
-    // given a progress amount in relative time (relative to this asset),
-    // returns the adjusted progress within the entire timeline
-    func adjustedProgress(_ time: CMTime) -> CMTime {
-        CMTimeAdd(time, asset.source.trackItem.startTime)
-    }
 }
 
 public protocol AssetTimelineViewDataSource: AnyObject {
@@ -40,6 +42,7 @@ public protocol AssetTimelineViewDataSource: AnyObject {
 
 public protocol AssetTimelineViewDelegate: AnyObject {
     func viewDidEditAssets(_ assetTimeline: AssetTimelineView)
+    func view(_ assetTimeline: AssetTimelineView, didChangeDisplayMode mode: AssetTimelineView.DisplayMode)
     func view(_ assetTimeline: AssetTimelineView, didSelectAsset asset: Asset)
     func view(_ assetTimeline: AssetTimelineView, deleteAssetAtIndex index: Int) -> Bool
     func view(_ assetTimeline: AssetTimelineView, exchangeAssetAtIndex sourceIndex: Int, withAssetAtIndex destinationIndex: Int) -> Bool
@@ -54,6 +57,7 @@ public protocol AssetTimelineViewDelegate: AnyObject {
 }
 
 extension AssetTimelineViewDelegate {
+    public func view(_ assetTimeline: AssetTimelineView, didChangeDisplayMode mode: AssetTimelineView.DisplayMode) {}
     public func view(_ assetTimeline: AssetTimelineView, didSelectAsset asset: Asset) { }
     public func view(_ assetTimeline: AssetTimelineView, deleteAssetAtIndex index: Int) -> Bool { false }
     public func view(_ assetTimeline: AssetTimelineView, exchangeAssetAtIndex sourceIndex: Int, withAssetAtIndex destinationIndex: Int) -> Bool { false }
@@ -85,6 +89,7 @@ public final class AssetTimelineView: UIView {
     }
     public var mode: AssetTimelineView.DisplayMode = .thumbs {
         didSet {
+            if case .thumbs = oldValue, case .thumbs = mode { return }
             switch oldValue {
             case .trim(let trimmingIndexPath):
                 updateMode(previousTrimmingIndexPath: trimmingIndexPath)
@@ -176,29 +181,45 @@ public final class AssetTimelineView: UIView {
     }
     
     public func updateCurrentTime(_ time: CMTime) {
-        var offset = CMTime.zero
-        let sequenced = assets.map { asset -> CMTimeRange in
-            let time = asset.timeRange
-            let range = CMTimeRange(start: offset, duration: time.duration)
-            offset = CMTimeAdd(offset, time.duration)
-            return range
-        }
-        guard let idx = sequenced.firstIndex(where: { $0.containsTime(time) }) else { return }
-        let newIndexPath = IndexPath(row: idx, section: 0)
-        let previousIndexPath = selectedIndexPath
-        selectedIndexPath = newIndexPath
-        guard !isExpanded else { return }
-        if newIndexPath != previousIndexPath { Vibration.light.vibrate() }
-        collection.reloadItems(at: [previousIndexPath, newIndexPath].compactMap { $0 })
-        let visibleIndexPaths = collection.indexPathsForVisibleItems.sorted()
-        if !visibleIndexPaths.contains(selectedIndexPath), !visibleIndexPaths.isEmpty {
-            follow(newIndexPath)
+        switch mode {
+        case .thumbs:
+            var offset = CMTime.zero
+            let sequenced = assets.map { asset -> CMTimeRange in
+                let time = asset.timeRange
+                let range = CMTimeRange(start: offset, duration: time.duration)
+                offset = CMTimeAdd(offset, time.duration)
+                return range
+            }
+            guard let idx = sequenced.firstIndex(where: { $0.containsTime(time) }) else { return }
+            let newIndexPath = IndexPath(row: idx, section: 0)
+            let previousIndexPath = selectedIndexPath
+            selectedIndexPath = newIndexPath
+            guard !isExpanded else { return }
+            if newIndexPath != previousIndexPath { Vibration.light.vibrate() }
+            
+            if let cell = collection.cellForItem(at: previousIndexPath) as? AssetTimelineCell {
+                cell.hasFocus = false
+            }
+            if let cell = collection.cellForItem(at: newIndexPath) as? AssetTimelineCell {
+                cell.hasFocus = true
+            }
+            
+            let visibleIndexPaths = collection.indexPathsForVisibleItems.sorted()
+            if !visibleIndexPaths.contains(selectedIndexPath), !visibleIndexPaths.isEmpty {
+                follow(newIndexPath)
+            }
+        case .trim(let indexPath):
+            guard let cell = expandedCell() else { return }
+            let viewModel = assetViewModels[indexPath.row]
+            let start = viewModel.selectedTimeRange.start
+            cell.trim.progress = CMTimeAdd(time, start)
         }
     }
 
     // MARK: Expansion
     
     private func updateMode(previousTrimmingIndexPath: IndexPath) {
+        delegate?.view(self, didChangeDisplayMode: mode)
         switch mode {
         case .thumbs:
             collapseItems(previousTrimmingIndexPath)
@@ -270,29 +291,30 @@ public final class AssetTimelineView: UIView {
         startTrimControlObservers(forCell: cell, withViewModel: viewModel)
         // set the image generator to supply some pretty thumbnails
         cell.imageGenerator = viewModel.imageGenerator
-        
-        //DispatchQueue.main.async {
-        //    cell.trim.selectedRange = viewModel.selectedTimeRange
-        //}
+
+        DispatchQueue.main.async {
+            UIView.performWithoutAnimation {
+                let start = viewModel.selectedTimeRange.start.seconds
+                let end = viewModel.selectedTimeRange.end.seconds
+                cell.trim.selectedRange = CMTimeRange(start: CMTime(seconds: start, preferredTimescale: 600),
+                                                      end: CMTime(seconds: end, preferredTimescale: 600))
+                cell.trim.range = CMTimeRange(start: .zero, duration: viewModel.duration)
+            }
+        }
     }
     
     private func startTrimControlObservers(forCell cell: AssetTimelineCell, withViewModel viewModel: AssetViewModel) {
         cell.onTrimEvent = { [weak self] event, trim in
-            let progress = viewModel.adjustedProgress(trim.progress)
-            func adjustedTrimSelectionTime(_ selectedTime: CMTime) -> CMTime {
-                return viewModel.adjustedProgress(selectedTime)
-            }
+            let progress = trim.progress
             
             guard let self = self else { return }
             switch event {
-                
             case .didBeginTrimming:
-                self.delegate?.view(self, didStartTrimming: viewModel.asset, selectedTimeRange: trim.selectedRange, selectedTime: adjustedTrimSelectionTime(trim.selectedTime))
+                self.delegate?.view(self, didStartTrimming: viewModel.asset, selectedTimeRange: trim.selectedRange, selectedTime: trim.selectedTime)
             case .selectedRangeChanged:
-                self.delegate?.view(self, didContinueTrimming: viewModel.asset, selectedTimeRange: trim.selectedRange, selectedTime: adjustedTrimSelectionTime(trim.selectedTime))
+                self.delegate?.view(self, didContinueTrimming: viewModel.asset, selectedTimeRange: trim.selectedRange, selectedTime: trim.selectedTime)
             case .didEndTrimming:
-                self.delegate?.view(self, didEndTrimming: viewModel.asset, selectedTimeRange: trim.selectedRange, selectedTime: adjustedTrimSelectionTime(trim.selectedTime))
-                
+                self.delegate?.view(self, didEndTrimming: viewModel.asset, selectedTimeRange: trim.selectedRange, selectedTime: trim.selectedTime)
             case .didBeginScrubbing:
                 self.delegate?.view(self, didStartScrubbing: viewModel.asset, selectedTimeRange: trim.selectedRange, selectedTime: progress)
             case .progressChanged:
@@ -316,7 +338,6 @@ public final class AssetTimelineView: UIView {
     private func remove(assetAt index: Int) -> Bool {
         delegate?.view(self, deleteAssetAtIndex: index) ?? false
     }
-
     
     // MARK: Actions
     
@@ -407,7 +428,14 @@ extension AssetTimelineView: UICollectionViewDataSource {
     }
     
     public func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
-        
+        guard let cell = cell as? AssetTimelineCell else { return }
+        let viewModel = assetViewModels[indexPath.row]
+        Task {
+            let image = try await viewModel.thumbnail(size: collapsedCellSize)
+            DispatchQueue.main.async {
+                cell.image = image
+            }
+        }
     }
     
     public func collectionView(_ collectionView: UICollectionView, didEndDisplaying cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
@@ -416,10 +444,10 @@ extension AssetTimelineView: UICollectionViewDataSource {
     
     public func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: AssetTimelineCell.self), for: indexPath) as? AssetTimelineCell else { preconditionFailure() }
-        let asset = assets[indexPath.row]
+        let viewModel = assetViewModels[indexPath.row]
         cell.isAnimating = isEditing
         cell.hasFocus = indexPath == selectedIndexPath
-        cell.setDuration(asset.duration)
+        cell.setDuration(viewModel.editedAsset.duration)
         cell.onDelete = { [weak self] in
             guard let self = self else { return }
             self.deleteItem(atIndexPath: indexPath)
@@ -428,13 +456,7 @@ extension AssetTimelineView: UICollectionViewDataSource {
             guard let self = self else { return }
             self.mode = .thumbs
         }
-        Task {
-            do {
-                cell.image = try await asset.thumbnail(size: collapsedCellSize)
-            } catch {
-                print("Error", error)
-            }
-        }
+
         return cell
     }
     

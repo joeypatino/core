@@ -105,10 +105,7 @@ public enum VideoTrimmerEvent {
             let duration = imageGenerator?.asset.duration ?? .zero
             range = CMTimeRange(start: .zero, duration: duration)
             selectedRange = range
-            thumbnails.removeAll()
-            thumbnailTrackView.removeSubviews()
-            lastKnownViewSizeForThumbnailGeneration = .zero
-            setNeedsLayout()
+            setNeedsRegenerateThumbnails()
         }
     }
     
@@ -318,6 +315,13 @@ public enum VideoTrimmerEvent {
         thumbnailInteractionGestureRecognizer.require(toFail: leadingGestureRecognizer)
         thumbnailInteractionGestureRecognizer.require(toFail: trailingGestureRecognizer)
         thumbView.addGestureRecognizer(thumbnailInteractionGestureRecognizer)
+    }
+    
+    private func setNeedsRegenerateThumbnails() {
+        thumbnails.removeAll()
+        thumbnailTrackView.removeSubviews()
+        lastKnownViewSizeForThumbnailGeneration = .zero
+        setNeedsLayout()
     }
     
     private func regenerateThumbnailsIfNeeded() {

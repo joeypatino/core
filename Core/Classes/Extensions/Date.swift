@@ -997,3 +997,47 @@ public extension Date {
         self = date
     }
 }
+
+
+public extension Date {
+    func timeAgoDisplay() -> String {
+        let formatter = RelativeDateTimeFormatter()
+        formatter.unitsStyle = .short
+        return formatter.localizedString(for: self, relativeTo: Date())
+    }
+    
+    func timeAgo() -> String {
+        let secondsAgo = Int(Date().timeIntervalSince(self))
+        let minute = 60
+        let hour = 60 * minute
+        let day = 24 * hour
+        let week = 7 * day
+        let month = 4 * week
+        var shouldPluralize = false
+        let quotient: Int
+        let unit: String
+        if secondsAgo < minute {
+            quotient = secondsAgo
+            unit = "sec"
+        } else if secondsAgo < hour {
+            quotient = secondsAgo / minute
+            unit = "min"
+            shouldPluralize = true
+        } else if secondsAgo < day {
+            quotient = secondsAgo / hour
+            unit = "h"
+        } else if secondsAgo < week {
+            quotient = secondsAgo / day
+            unit = "day"
+            shouldPluralize = true
+        } else if secondsAgo < month {
+            quotient = secondsAgo / week
+            unit = "w"
+        } else {
+            quotient = secondsAgo / month
+            unit = "month"
+            shouldPluralize = true
+        }
+        return "\(quotient)\(unit)\(quotient == 1 ? "" : shouldPluralize ? "s" : "")"
+    }
+}

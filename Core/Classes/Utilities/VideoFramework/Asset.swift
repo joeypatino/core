@@ -7,6 +7,9 @@ public enum Asset: Codable {
     case localFile(LocalFileAsset)
     case photoLibrary(PhotosLibraryAsset)
     
+    public var identifier: String {
+        source.trackItem.identifier
+    }
     public var source: AssetSource {
         switch self {
         case .localFile(let asset):
