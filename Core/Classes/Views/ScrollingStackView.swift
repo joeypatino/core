@@ -5,6 +5,7 @@ public protocol StackView: UIView {
     var arrangedSubviews: [UIView] { get }
     func addArrangedSubview(_ view: UIView)
     func setCustomSpacing(_ spacing: CGFloat, after arrangedSubview: UIView)
+    func safelyRemoveArrangedSubviews()
 }
 
 extension ScrollingStackView: StackView {}
@@ -180,5 +181,11 @@ public extension StackView {
         }
         // normal configuration
         setCustomSpacing(spacing, after: arrangedSubview)
+    }
+}
+
+public extension ScrollingStackView {
+    func safelyRemoveArrangedSubviews() {
+        stackView.safelyRemoveArrangedSubviews()
     }
 }

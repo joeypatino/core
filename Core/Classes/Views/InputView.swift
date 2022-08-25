@@ -3,7 +3,8 @@ import Combine
 
 open class InputView: UIView {
     @Published public var text: String = ""
-
+    @Published public var error: String = ""
+    
     public var font: UIFont {
         get { textView.font }
         set { textView.font = newValue }
@@ -83,7 +84,11 @@ open class InputView: UIView {
         get { textView.minimumHeight }
         set { textView.minimumHeight = newValue }
     }
-    
+    public var validators: [ValidatorType] {
+        get { textView.validators }
+        set { textView.validators = newValue }
+    }
+
     private let footer = UILabel(font: .systemFont(ofSize: 12.0, weight: .regular), color: .lightGray)
     internal let textView: InputTextView
     
@@ -118,6 +123,42 @@ open class InputView: UIView {
         footer.trailingAnchor.equalTo(trailingAnchor)
         footer.bottomAnchor.equalTo(bottomAnchor)
     }
+    
+    public func setText(_ text: String?) {
+        textView.setText(text.orEmpty)
+    }
+
+    public override var isFirstResponder: Bool {
+        textView.isFirstResponder
+    }
+
+    @discardableResult
+    public override func resignFirstResponder() -> Bool {
+        textView.resignFirstResponder()
+    }
+
+    @discardableResult
+    open override func becomeFirstResponder() -> Bool {
+        textView.becomeFirstResponder()
+    }
+    
+    /// Invalidates the text input control and configures the visual state. The delegate may also
+    /// be called `textInput(_:didUpdateValidation:)` depending on the current editing state
+    public func invalidate() {
+        textView.invalidate()
+    }
+    
+    /// Clears the validation state of the text input control and re-configures the visual state.
+    /// The delegate may also be called `textInput(_:didUpdateValidation:)` depending on the current editing state
+    public func clearInvalidation() {
+        textView.clearInvalidation()
+    }
+    
+    /// Triggers the delegate callback `textInput(_:didUpdateValidation:)` with the current validation
+    /// error (if any) by running the currently configured valiation objects for this text input control.
+    public func updateValidation() {
+        textView.updateValidation()
+    }
 }
 
 extension InputView: InputTextViewDelegate {
@@ -127,5 +168,13 @@ extension InputView: InputTextViewDelegate {
     
     public func textViewDidEndEditing(_ textView: InputTextView) {
         text = textView.text
+    }
+    
+    public func textView(_ textView: InputTextView, didUpdateValidation error: String?) {
+        guard let error = error else {
+            self.error = ""
+            return
+        }
+        self.error = error
     }
 }

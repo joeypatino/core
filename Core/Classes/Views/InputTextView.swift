@@ -1,15 +1,29 @@
 import UIKit
 
+// actions that occur during interaction with the InputTextView
+struct InputTextViewAction: OptionSet {
+    let rawValue: Int
+
+    static let didFocus = InputTextViewAction(rawValue: 1 << 0)
+    static let endFocus = InputTextViewAction(rawValue: 1 << 1)
+    static let edit     = InputTextViewAction(rawValue: 1 << 2)
+}
+
+
 public protocol InputTextViewDelegate: AnyObject {
     func textViewDidBeginEditing(_ textView: InputTextView)
     func textViewDidChange(_ textView: InputTextView)
     func textViewDidEndEditing(_ textView: InputTextView)
+    func textView(_ textView: InputTextView, didChangeFocus isFocused: Bool)
+    func textView(_ textView: InputTextView, didUpdateValidation error: String?)
 }
 
 extension InputTextViewDelegate {
     public func textViewDidBeginEditing(_ textView: InputTextView) {}
     public func textViewDidChange(_ textView: InputTextView) {}
     public func textViewDidEndEditing(_ textView: InputTextView) {}
+    public func textView(_ textView: InputTextView, didChangeFocus isFocused: Bool) {}
+    public func textView(_ textView: InputTextView, didUpdateValidation error: String?) {}
 }
 
 public final class InputTextView: UIView {
@@ -86,6 +100,9 @@ public final class InputTextView: UIView {
         set { textView.returnKeyType = newValue }
     }
     
+    /// the validators for this text input
+    public var validators: [ValidatorType] = []
+
     private var unsecureText = ""
     private let textView = TextView()
     private let header: UILabel
@@ -133,6 +150,9 @@ public final class InputTextView: UIView {
     }
     private var focusedHeaderOffset: CGPoint = .init(x: 16, y: 12)
     private var unFocusedHeaderOffset: CGPoint = .init(x: 16, y: 20)
+    private var borderColor: UIColor {
+        borderStyle == .focused ? focusedBorderColor : unFocusedBorderColor
+    }
     private var borderWidth: CGFloat {
         borderStyle == .focused ? focusedBorderWidth : unFocusedBorderWidth
     }
@@ -146,6 +166,15 @@ public final class InputTextView: UIView {
         didSet { updateHeader() }
     }
     
+    // the current set of editing actions this control has taken
+    private var editActions: InputTextViewAction = []
+    
+    /// tracks the first time we resign the keyboard
+    private var didEdit: Bool = false
+    
+    /// temporary invalidation state
+    private var isMarkedInvalid: Bool = false
+
     public init(headerLabel: UILabel = UILabel(), header: String? = nil, placeholder: String? = nil, defaultValue: String? = nil) {
         self.header = headerLabel
         self.header.text = header
@@ -226,7 +255,9 @@ public final class InputTextView: UIView {
     private func updateBorder() {
         layer.borderWidth = borderWidth
         layer.cornerRadius = borderRadius
-        layer.borderColor = borderStyle == .focused ? focusedBorderColor.cgColor : unFocusedBorderColor.cgColor
+        layer.borderColor = (isInvalid() || isMarkedInvalid)
+        ? UIColor(hex: "#BA2639").cgColor
+        : borderColor.cgColor
     }
     
     private func updateHeader() {
@@ -254,6 +285,7 @@ public final class InputTextView: UIView {
         self.text = unsecureText.masked
         self.headerStyle = textView.text.orEmpty.isEmpty ? .unfocused : .focused
         self.delegate?.textViewDidChange(self)
+        self.updateValidationIfNeeded()
     }
     
     public func addAccessoryView(_ view: UIView) {
@@ -280,6 +312,9 @@ public final class InputTextView: UIView {
 
 extension InputTextView: UITextViewDelegate {
     public func textViewDidBeginEditing(_ textView: UITextView) {
+        isMarkedInvalid = false
+        setIsFocusedIfAllowed(true)
+
         delegate?.textViewDidBeginEditing(self)
         self.borderStyle = .focused
         self.headerStyle = .focused
@@ -287,6 +322,9 @@ extension InputTextView: UITextViewDelegate {
         UIView.animate(withDuration: 0.35, delay: 0, options: [], animations: animations)
     }
     public func textViewDidEndEditing(_ textView: UITextView) {
+        if textView.text?.isEmpty == false { didEdit = true }
+        setIsFocusedIfAllowed(false)
+
         delegate?.textViewDidEndEditing(self)
         self.borderStyle = .unfocused
         self.headerStyle = textView.text.orEmpty.isEmpty ? .unfocused : .focused
@@ -294,8 +332,10 @@ extension InputTextView: UITextViewDelegate {
         UIView.animate(withDuration: 0.35, delay: 0, options: [], animations: animations)
     }
     public func textViewDidChange(_ textView: UITextView) {
+        editActions.insert(.edit)
         if isSecureTextEntry { textView.text = unsecureText.masked }
         delegate?.textViewDidChange(self)
+        updateValidationIfNeeded()
     }
     public func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
         guard text == "\n" else {
@@ -304,6 +344,63 @@ extension InputTextView: UITextViewDelegate {
         }
         textView.resignFirstResponder()
         return false
+    }
+}
+
+extension InputTextView {
+    private func updateValidationIfNeeded() {
+        updateBorder()
+        /// only notify regarding the validation error if we've ended the focus AND have edited the text
+        guard editActions.contains(.edit) else { return }
+        delegate?.textView(self, didUpdateValidation: validationError())
+    }
+    
+    private func validationError() -> String? {
+        let validators = validators
+        return validators.filter { !$0.isValid(textView.text ?? "") }.first?.validationHint
+    }
+    
+    private func isInvalid() -> Bool {
+        guard didEdit else { return false }
+        let failedValidators = validators.filter { !$0.isValid(textView.text ?? "") }
+        if let _ = failedValidators.first?.validationHint {
+            return true
+        }
+        return false
+    }
+    
+    private func setIsFocusedIfAllowed(_ focused: Bool, animated: Bool = true) {
+        if focused {
+            // if we've not yet edited the text, then pretend we did not perform this focus / unfocus event
+            // this logic will prevent the validation delegate callback from being triggered unless an edit actually occurs
+            if !editActions.contains(.edit) { editActions.remove(.endFocus) }
+        } else {
+            editActions.insert(.endFocus)
+        }
+        delegate?.textView(self, didChangeFocus: focused)
+        updateValidationIfNeeded()
+    }
+    
+    /// Invalidates the text input control and configures the visual state. The delegate may also
+    /// be called `textInput(_:didUpdateValidation:)` depending on the current editing state
+    public func invalidate() {
+        guard !isMarkedInvalid else { return }
+        isMarkedInvalid = true
+        updateValidationIfNeeded()
+    }
+    
+    /// Clears the validation state of the text input control and re-configures the visual state.
+    /// The delegate may also be called `textInput(_:didUpdateValidation:)` depending on the current editing state
+    public func clearInvalidation() {
+        guard isMarkedInvalid else { return }
+        isMarkedInvalid = false
+        updateValidationIfNeeded()
+    }
+    
+    /// Triggers the delegate callback `textInput(_:didUpdateValidation:)` with the current validation
+    /// error (if any) by running the currently configured valiation objects for this text input control.
+    public func updateValidation() {
+        delegate?.textView(self, didUpdateValidation: validationError())
     }
 }
 
@@ -318,30 +415,3 @@ extension String {
         String(repeating: "*", count: count)
     }
 }
-
-
-//    public var focusedBorderColor: UIColor {
-//        get { textField.focusedBorderColor }
-//        set { textField.focusedBorderColor = newValue }
-//    }
-//    public var focusedHeaderFont: UIFont {
-//        get { textField.focusedHeaderFont }
-//        set { textField.focusedHeaderFont = newValue }
-//    }
-//    public var focusedBorderWidth: CGFloat {
-//        get { textField.focusedBorderWidth }
-//        set { textField.focusedBorderWidth = newValue }
-//    }
-//
-//    public var unFocusedBorderColor: UIColor {
-//        get { textField.unFocusedBorderColor }
-//        set { textField.unFocusedBorderColor = newValue }
-//    }
-//    public var unFocusedHeaderFont: UIFont {
-//        get { textField.unFocusedHeaderFont }
-//        set { textField.unFocusedHeaderFont = newValue }
-//    }
-//    public var unFocusedBorderWidth: CGFloat {
-//        get { textField.unFocusedBorderWidth }
-//        set { textField.unFocusedBorderWidth = newValue }
-//    }
