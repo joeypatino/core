@@ -9,17 +9,16 @@
 import UIKit
 import AVFoundation
 
-public enum VideoTrimmerEvent {
-    case didBeginTrimming
-    case selectedRangeChanged
-    case didEndTrimming
-    case didBeginScrubbing
-    case progressChanged
-    case didEndScrubbing
-}
-
 // Controls that allows trimming a range and scrubbing a progress indicator
 @IBDesignable public final class VideoTrimmer: UIControl {
+    public enum Event {
+        case didBeginTrimming
+        case selectedRangeChanged
+        case didEndTrimming
+        case didBeginScrubbing
+        case progressChanged
+        case didEndScrubbing
+    }
     
     // events for changing selectedRange ("trimming")
     static let didBeginTrimming = UIControl.Event(rawValue:     0b00000001 << 24)
@@ -54,10 +53,7 @@ public enum VideoTrimmerEvent {
     // this is set to 16, so that you can have the control fullscreen (and have it
     // edge-to-edge when zooming in)
     @IBInspectable var horizontalInset: CGFloat = 16 {
-        didSet {
-            guard horizontalInset != oldValue else {return}
-            setNeedsLayout()
-        }
+        didSet { setNeedsLayout() }
     }
     
     // the asset to use
@@ -338,7 +334,7 @@ public enum VideoTrimmerEvent {
         let transform = track.preferredTransform
         let fixedSize = naturalSize.applyingVideoTransform(transform)
         
-        let height = size.height - thumbView.edgeHeight * 2
+        let height = size.height - thumbView.handleInsetWidth * 2
         thumbnailSize = CGSize(width: height / fixedSize.height * fixedSize.width, height: height)
         let thumbCount = ceil(size.width / thumbnailSize.width)
         let numberOfThumbnails = Int(thumbCount.isNaN ? 0 : thumbCount)
@@ -392,7 +388,7 @@ public enum VideoTrimmerEvent {
     
     private func timeForLocation(_ x: CGFloat) -> CMTime {
         let size = bounds.size
-        let inset = thumbView.chevronWidth + horizontalInset
+        let inset = thumbView.handleWidth + horizontalInset
         let offset = x - inset
         
         let availableWidth = size.width - inset * 2
@@ -404,16 +400,22 @@ public enum VideoTrimmerEvent {
     }
     
     private func locationForTime(_ time: CMTime) -> CGFloat {
-        let size = bounds.size
-        let inset = thumbView.chevronWidth + horizontalInset
-        let availableWidth = size.width - inset * 2
-        
         let offset = CMTimeSubtract(time, visibleRange.start)
         let visibleDurationInSeconds = CGFloat(visibleRange.duration.seconds)
-        let ratio = visibleDurationInSeconds != 0 ? availableWidth / visibleDurationInSeconds : 0
+        guard visibleDurationInSeconds > 0 else { return 0 }
+        let ratio = contentSize.width / visibleDurationInSeconds
         let location = CGFloat(offset.seconds) * ratio
-        return SnapToDevicePixels(location) + inset
+        return SnapToDevicePixels(location) + contentInset.left
     }
+    
+    private var contentSize: CGSize {
+        let size = bounds.size
+        let inset = thumbView.handleWidth + horizontalInset
+        let availableWidth = size.width - (inset * 2)
+        return CGSize(width: availableWidth, height: size.height)
+    }
+    
+    private lazy var contentInset: UIEdgeInsets = .init(top: 0, left: thumbView.handleWidth + horizontalInset, bottom: 0, right: -(thumbView.handleWidth + horizontalInset))
     
     private func startZoomWaitTimer() {
         stopZoomWaitTimer()
@@ -440,7 +442,7 @@ public enum VideoTrimmerEvent {
         guard isZoomedIn == false && canZoomedIn else {return}
         
         let size = bounds.size
-        let inset = thumbView.chevronWidth + horizontalInset
+        let inset = thumbView.handleWidth + horizontalInset
         let availableWidth = size.width - inset * 2
         let newDuration = CGFloat(range.duration.seconds > 4 ?  2.0 : range.duration.seconds * 0.5)
         
@@ -587,7 +589,7 @@ public enum VideoTrimmerEvent {
         switch sender.state {
         case .began:
             trimmingState = .leading
-            grabberOffset = thumbView.chevronWidth - sender.location(in: thumbView.leadingGrabber).x
+            grabberOffset = thumbView.handleWidth - sender.location(in: thumbView.leadingGrabber).x
             
             startPanning()
             
@@ -709,19 +711,28 @@ public enum VideoTrimmerEvent {
         return CGSize(width: UIView.noIntrinsicMetric, height: 78)
     }
     
+    private var maxTimeLocation: CGFloat {
+        contentInset.left + contentSize.width
+    }
+    private var minTimeLocation: CGFloat {
+        contentInset.left
+    }
+    
     public override func layoutSubviews() {
         super.layoutSubviews()
         
         let size = bounds.size
-        let inset = thumbView.chevronWidth
-        var left = locationForTime(selectedRange.start) - inset
-        var right = locationForTime(selectedRange.end) + inset
+        let inset = thumbView.handleWidth
+        var left = locationForTime(selectedRange.start)
+        var right = locationForTime(selectedRange.end) + contentInset.left
+
+        if left.isNaN { left = minTimeLocation }
+        if left < contentInset.left { left = minTimeLocation }
+        if right.isNaN { right = maxTimeLocation }
+        if right > maxTimeLocation { right = maxTimeLocation }
         
-        if right > bounds.width { right = bounds.width + inset * 2 }
-        if left < 0 { left = 0 }
-        if left.isNaN { left = 0 }
-        if right.isNaN { right = bounds.width }
-        if thumbnails.isEmpty { right = bounds.width }
+        // make sure that an empty timeline is expanded full width
+        if thumbnails.isEmpty { right = maxTimeLocation }
 
         let rect = CGRect(origin: .zero, size: size)
         shadowView.frame = rect

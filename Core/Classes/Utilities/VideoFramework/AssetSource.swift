@@ -3,7 +3,8 @@ import Photos
 import VFCabbage
 
 public class AssetSource {
-    static let DEFAULT_TRANSITION_DURATION: CMTime = CMTime(seconds: 1, preferredTimescale: 600)
+    public static let DEFAULT_TRANSITION_DURATION: CMTime = CMTime(seconds: 1, preferredTimescale: 600)
+    public static let TRANSITION_DURATION: Double = 1
     
     public let resource: Resource
     public let trackItem: TrackItem
@@ -22,7 +23,20 @@ public class AssetSource {
     }
     
     public init(asset: PHAsset) {
-        resource = PHAssetImageResource(asset: asset, duration: Asset.DEFAULT_PHOTO_DURATION)
+        switch asset.mediaType {
+        case .video:
+            resource = PHAssetTrackResource(phasset: asset)
+        case .image:
+            switch asset.playbackStyle {
+            case .livePhoto:
+                resource = PHAssetLivePhotoResource(phasset: asset)
+            default:
+                resource = PHAssetImageResource(asset: asset, duration: Asset.DEFAULT_PHOTO_DURATION)
+            }
+        default:
+            resource = PHAssetImageResource(asset: asset, duration: Asset.DEFAULT_PHOTO_DURATION)
+        }
+        
         trackItem = TrackItem(resource: resource)
         trackItem.videoConfiguration.contentMode = .aspectFit
         trackItem.videoTransition = CrossDissolveTransition(duration: AssetSource.DEFAULT_TRANSITION_DURATION)

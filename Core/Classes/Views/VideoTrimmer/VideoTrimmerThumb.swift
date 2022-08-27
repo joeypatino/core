@@ -32,8 +32,8 @@ public final class VideoTrimmerThumb: UIView {
     private let leftView = LeftRoundedView()
     private let rightView = RightRoundedView()
     
-    public let chevronWidth = CGFloat(14)
-    public let edgeHeight = CGFloat(4)
+    public let handleWidth = CGFloat(14)
+    public let handleInsetWidth = CGFloat(4)
 
 	// MARK: - Input
 	@objc private func x(_ sender: Any) {
@@ -100,23 +100,23 @@ public final class VideoTrimmerThumb: UIView {
         
         size = bounds.insetBy(dx: 0, dy: 25).size
         let offset = ((bounds.height - size.height) / 2)
-        let leadingFrame = CGRect(x: 0, y: offset, width: chevronWidth, height: size.height)
-        let trailingFrame = CGRect(x: bounds.width - chevronWidth, y: offset, width: chevronWidth, height: size.height)
+        let leadingFrame = CGRect(x: 0, y: offset, width: handleWidth, height: size.height)
+        let trailingFrame = CGRect(x: bounds.width - handleWidth, y: offset, width: handleWidth, height: size.height)
         
-		topView.frame = CGRect(x: chevronWidth,
+		topView.frame = CGRect(x: handleWidth,
                                y: 0,
-                               width: bounds.width - chevronWidth * 2,
-                               height: edgeHeight)
-		bottomView.frame = CGRect(x: chevronWidth,
-                                  y: bounds.height - edgeHeight,
-                                  width: bounds.width - chevronWidth * 2,
-                                  height: edgeHeight)
+                               width: bounds.width - handleWidth * 2,
+                               height: handleInsetWidth)
+		bottomView.frame = CGRect(x: handleWidth,
+                                  y: bounds.height - handleInsetWidth,
+                                  width: bounds.width - handleWidth * 2,
+                                  height: handleInsetWidth)
 
         leftView.frame = CGRect(x: 5,// half left side width
                                 y: 0,
                                 width: leftView.intrinsicContentSize.width,
                                 height: bounds.height)
-        rightView.frame = CGRect(x: bounds.width - chevronWidth,
+        rightView.frame = CGRect(x: bounds.width - handleWidth,
                                  y: 0,
                                  width: rightView.intrinsicContentSize.width,
                                  height: bounds.height)
@@ -125,7 +125,7 @@ public final class VideoTrimmerThumb: UIView {
 		let chevronVerticalInset = CGFloat(7)
 		let chevronFrame = CGRect(x: chevronHorizontalInset,
                                   y: chevronVerticalInset,
-                                  width: chevronWidth - chevronHorizontalInset * 2,
+                                  width: handleWidth - chevronHorizontalInset * 2,
                                   height: size.height - chevronVerticalInset * 2)
 
         leadingView.frame = leadingFrame

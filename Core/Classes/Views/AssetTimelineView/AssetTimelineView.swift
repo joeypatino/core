@@ -113,6 +113,7 @@ public final class AssetTimelineView: UIView {
     private var follow: (IndexPath) -> Void = { _ in }
     private var assetViewModels: [AssetViewModel] = []
     private var assets: [Asset] { assetViewModels.map { $0.asset } }
+    private var afterCollapse: () -> Void = {}
     public init() {
         super.init(frame: .zero)
         setup()
@@ -184,8 +185,8 @@ public final class AssetTimelineView: UIView {
         switch mode {
         case .thumbs:
             var offset = CMTime.zero
-            let sequenced = assets.map { asset -> CMTimeRange in
-                let time = asset.timeRange
+            let sequenced = assetViewModels.map { viewModels -> CMTimeRange in
+                let time = viewModels.editedAsset.timeRange
                 let range = CMTimeRange(start: offset, duration: time.duration)
                 offset = CMTimeAdd(offset, time.duration)
                 return range
@@ -216,12 +217,33 @@ public final class AssetTimelineView: UIView {
         }
     }
 
+    public func delete(atIndex index: Int) {
+        self.afterCollapse = {
+            self.isEditing = false
+            self.reload()
+        }
+        mode = .thumbs
+    }
+    
+    public func remove(atIndex index: Int) {
+        collection.performBatchUpdates({
+            if remove(assetAt: index) {
+                collection.deleteItems(at: [IndexPath(row: index, section: 0)])
+            }
+        }, completion: { _ in
+            self.delegate?.viewDidEditAssets(self)
+        })
+    }
+    
     // MARK: Expansion
     
     private func updateMode(previousTrimmingIndexPath: IndexPath) {
         delegate?.view(self, didChangeDisplayMode: mode)
         switch mode {
         case .thumbs:
+            longPressGesture.isEnabled = true
+            collection.dragInteractionEnabled = true
+            collection.isScrollEnabled = true
             collapseItems(previousTrimmingIndexPath)
         case .trim(let indexPath):
             longPressGesture.isEnabled = false
@@ -268,7 +290,10 @@ public final class AssetTimelineView: UIView {
             stopTrimControlObservers(forCell: cell)
         }
         // update the collection layout
-        collection.performBatchUpdates({}) { _ in }
+        collection.performBatchUpdates({}) { _ in
+            self.afterCollapse()
+            self.afterCollapse = {}
+        }
     }
     
     private func expandedCell() -> AssetTimelineCell? {
@@ -305,8 +330,8 @@ public final class AssetTimelineView: UIView {
     
     private func startTrimControlObservers(forCell cell: AssetTimelineCell, withViewModel viewModel: AssetViewModel) {
         cell.onTrimEvent = { [weak self] event, trim in
-            let progress = trim.progress
-            
+            print("[Progress]", trim.progress.seconds)
+            print("[SelectedTime]", trim.selectedTime.seconds)
             guard let self = self else { return }
             switch event {
             case .didBeginTrimming:
@@ -316,11 +341,11 @@ public final class AssetTimelineView: UIView {
             case .didEndTrimming:
                 self.delegate?.view(self, didEndTrimming: viewModel.asset, selectedTimeRange: trim.selectedRange, selectedTime: trim.selectedTime)
             case .didBeginScrubbing:
-                self.delegate?.view(self, didStartScrubbing: viewModel.asset, selectedTimeRange: trim.selectedRange, selectedTime: progress)
+                self.delegate?.view(self, didStartScrubbing: viewModel.asset, selectedTimeRange: trim.selectedRange, selectedTime: trim.progress)
             case .progressChanged:
-                self.delegate?.view(self, didContinueScrubbing: viewModel.asset, selectedTimeRange: trim.selectedRange, selectedTime: progress)
+                self.delegate?.view(self, didContinueScrubbing: viewModel.asset, selectedTimeRange: trim.selectedRange, selectedTime: trim.progress)
             case .didEndScrubbing:
-                self.delegate?.view(self, didEndScrubbing: viewModel.asset, selectedTimeRange: trim.selectedRange, selectedTime: progress)
+                self.delegate?.view(self, didEndScrubbing: viewModel.asset, selectedTimeRange: trim.selectedRange, selectedTime: trim.progress)
             }
         }
     }
@@ -447,7 +472,7 @@ extension AssetTimelineView: UICollectionViewDataSource {
         let viewModel = assetViewModels[indexPath.row]
         cell.isAnimating = isEditing
         cell.hasFocus = indexPath == selectedIndexPath
-        cell.setDuration(viewModel.editedAsset.duration)
+        cell.setDuration(viewModel.selectedTimeRange.duration)
         cell.onDelete = { [weak self] in
             guard let self = self else { return }
             self.deleteItem(atIndexPath: indexPath)

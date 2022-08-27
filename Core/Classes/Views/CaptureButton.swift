@@ -42,6 +42,10 @@ public final class CaptureButton: RoundButton {
     public func removeSegment() {
         ringView.removeSegment()
     }
+    
+    public func removeAllSegments() {
+        ringView.removeAllSegments()
+    }
 }
 
 extension CaptureButton: RingViewDelegate {

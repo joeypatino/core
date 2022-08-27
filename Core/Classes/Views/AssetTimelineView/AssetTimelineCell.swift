@@ -1,6 +1,9 @@
 import UIKit
 import AVFoundation
 
+public typealias Trimmer = VideoTrimmer
+//public typealias Trimmer = TrimmerView
+
 public final class AssetTimelineCell: UICollectionViewCell {
     private class SelectedAssetTimelineCell: UIView {
         init() {
@@ -24,7 +27,7 @@ public final class AssetTimelineCell: UICollectionViewCell {
     
     public var onDelete:() -> Void = {}
     public var onCollapse:() -> Void = {}
-    public var onTrimEvent: (VideoTrimmerEvent, VideoTrimmer) -> Void = { _, _ in }
+    public var onTrimEvent: (Trimmer.Event, Trimmer) -> Void = { _, _ in }
     public var image: UIImage? { didSet { thumb.image = image } }
     public var imageGenerator: AVAssetImageGenerator? {
         didSet {
@@ -32,7 +35,7 @@ public final class AssetTimelineCell: UICollectionViewCell {
             imageGenerator == nil ? trim.fadeOut(duration: 0.1) : trim.fadeIn(duration: 0.1)
         }
     }
-    public let trim = VideoTrimmer()
+    public let trim = Trimmer()
     private let container = UIView()
     private let thumbstrip = UIImageView(contentMode: .scaleAspectFill)
     private let thumb = UIImageView(contentMode: .scaleAspectFill)
@@ -77,14 +80,19 @@ public final class AssetTimelineCell: UICollectionViewCell {
         trim.canZoomedIn = false
         trim.borderColor = .white
         trim.thumbBackgroundColor = .white
+//        trim.handleColor = .white
+//        trim.handleInsetColor = UIColor(red: 0.494, green: 0.867, blue: 0.612, alpha: 1)
+//        trim.mainColor = .black
+//        trim.borderColor = .white
+//        trim.borderWidth = 4
         trim.addTarget(self, action: #selector(onCollapseAction(_:)), for: .touchUpInside)
         
-        trim.addTarget(self, action: #selector(didBeginTrimming(_:)), for: VideoTrimmer.didBeginTrimming)
-        trim.addTarget(self, action: #selector(selectedRangeChanged(_:)), for: VideoTrimmer.selectedRangeChanged)
-        trim.addTarget(self, action: #selector(didEndTrimming(_:)), for: VideoTrimmer.didEndTrimming)
-        trim.addTarget(self, action: #selector(didBeginScrubbing(_:)), for: VideoTrimmer.didBeginScrubbing)
-        trim.addTarget(self, action: #selector(progressChanged(_:)), for: VideoTrimmer.progressChanged)
-        trim.addTarget(self, action: #selector(didEndScrubbing(_:)), for: VideoTrimmer.didEndScrubbing)
+        trim.addTarget(self, action: #selector(didBeginTrimming(_:)), for: TrimmerView.didBeginTrimming)
+        trim.addTarget(self, action: #selector(selectedRangeChanged(_:)), for: TrimmerView.selectedRangeChanged)
+        trim.addTarget(self, action: #selector(didEndTrimming(_:)), for: TrimmerView.didEndTrimming)
+        trim.addTarget(self, action: #selector(didBeginScrubbing(_:)), for: TrimmerView.didBeginScrubbing)
+        trim.addTarget(self, action: #selector(progressChanged(_:)), for: TrimmerView.progressChanged)
+        trim.addTarget(self, action: #selector(didEndScrubbing(_:)), for: TrimmerView.didEndScrubbing)
         
         delete.clipsToBounds = true
         delete.setLayerCornerRadius(10, maskCorners: .allCorners)
@@ -129,6 +137,7 @@ public final class AssetTimelineCell: UICollectionViewCell {
     }
     
     @objc private func didEndTrimming(_ sender: UIControl) {
+        setDuration(trim.selectedRange.duration)
         onTrimEvent(.didEndTrimming, trim)
     }
     

@@ -12,8 +12,10 @@ public class Layer: Codable {
         set { asset.timeRange = newValue }
     }
     
-    public init(asset: Asset) {
+    public init(asset: Asset, transition: LayerTransition? = nil) {
         self.asset = asset
+        self.trackItem.videoTransition = transition?.videoTransition
+        self.trackItem.audioTransition = transition?.audioTransition
     }
     
     public init(asset: Asset, timeRange: CMTimeRange) {

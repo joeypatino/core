@@ -1,6 +1,51 @@
 import AVKit
 import VFCabbage
 
+public protocol LayerTransition {
+    static var none: LayerTransition { get }
+    
+    var videoTransition: NoneTransition? { get }
+    var audioTransition: AudioTransition? { get }
+}
+
+public enum VideoLayerTransition: LayerTransition {
+    public static var none: LayerTransition = VideoLayerTransition.caseNone
+    
+    case caseNone
+    case crossDissolve(duration: Double)
+    
+    var transition: NoneTransition {
+        switch self {
+        case .caseNone:
+            return NoneTransition()
+        case .crossDissolve(let duration):
+            return CrossDissolveTransition(duration: CMTime(seconds: duration, preferredTimescale: 600))
+        }
+    }
+    
+    public var videoTransition: NoneTransition? { transition }
+    public var audioTransition: AudioTransition? { nil }
+}
+
+public enum AudioLayerTransition: LayerTransition {
+    public static var none: LayerTransition = AudioLayerTransition.caseNone
+    
+    case caseNone
+    case fadeInOut(duration: Double)
+    
+    var transition: AudioTransition {
+        switch self {
+        case .caseNone:
+            return FadeInOutAudioTransition(duration: CMTime(seconds: 0, preferredTimescale: 600))
+        case .fadeInOut(let duration):
+            return FadeInOutAudioTransition(duration: CMTime(seconds: duration, preferredTimescale: 600))
+        }
+    }
+    
+    public var videoTransition: NoneTransition? { nil }
+    public var audioTransition: AudioTransition? { transition }
+}
+
 /// Composition represents the entire video composition. It contains all of the video
 /// clips (videoLayers) and properties about them.
 public class Composition: Codable {

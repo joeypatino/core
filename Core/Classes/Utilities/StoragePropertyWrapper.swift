@@ -17,15 +17,22 @@ public struct Storage<T: Codable> {
                 // Return defaultValue when no data in UserDefaults
                 return defaultValue
             }
-            // Convert data to the desire data type
-            let value = try? JSONDecoder().decode(T.self, from: data)
-            return value ?? defaultValue
+            do {
+                // Convert data to the desire data type
+                return try JSONDecoder().decode(T.self, from: data)
+            } catch {
+                return defaultValue
+            }
         }
         set {
-            // Convert newValue to data
-            let data = try? JSONEncoder().encode(newValue)
-            // Set value to UserDefaults
-            UserDefaults.standard.set(data, forKey: key)
+            print("[SETTING]")
+            do {
+                // Convert newValue to data
+                let data = try JSONEncoder().pretty().encode(newValue)
+                print(String(data: data, encoding: .utf8) ?? "")
+                // Set value to UserDefaults
+                UserDefaults.standard.set(data, forKey: key)
+            } catch {}
         }
     }
 }
