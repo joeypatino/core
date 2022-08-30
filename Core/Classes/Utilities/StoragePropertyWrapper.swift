@@ -25,11 +25,9 @@ public struct Storage<T: Codable> {
             }
         }
         set {
-            print("[SETTING]")
             do {
                 // Convert newValue to data
                 let data = try JSONEncoder().pretty().encode(newValue)
-                print(String(data: data, encoding: .utf8) ?? "")
                 // Set value to UserDefaults
                 UserDefaults.standard.set(data, forKey: key)
             } catch {}

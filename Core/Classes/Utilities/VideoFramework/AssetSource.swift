@@ -16,7 +16,7 @@ public class AssetSource {
     public init(asset: AVAsset) {
         resource = AVAssetTrackResource(asset: asset)
         trackItem = TrackItem(resource: resource)
-        trackItem.videoConfiguration.contentMode = .aspectFit
+        trackItem.videoConfiguration.contentMode = .aspectFill
         trackItem.videoTransition = CrossDissolveTransition(duration: AssetSource.DEFAULT_TRANSITION_DURATION)
         trackItem.audioTransition = FadeInOutAudioTransition(duration: AssetSource.DEFAULT_TRANSITION_DURATION)
         resource.prepare(completion: { _, _ in })
@@ -38,7 +38,7 @@ public class AssetSource {
         }
         
         trackItem = TrackItem(resource: resource)
-        trackItem.videoConfiguration.contentMode = .aspectFit
+        trackItem.videoConfiguration.contentMode = .aspectFill
         trackItem.videoTransition = CrossDissolveTransition(duration: AssetSource.DEFAULT_TRANSITION_DURATION)
         resource.prepare(completion: { _, _ in })
     }

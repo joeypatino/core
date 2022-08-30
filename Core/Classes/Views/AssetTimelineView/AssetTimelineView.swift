@@ -22,6 +22,9 @@ public protocol AssetViewModel: AnyObject {
     // the selected time range of the asset, in relative time range scale (i.e. based on .zero start time)
     var selectedTimeRange: CMTimeRange { get set }
     
+    /// the real duration of the asset
+    var duration: CMTime { get }
+    
     // an av player item representing the edited asset
     func playerItem(size: CGSize) -> AVPlayerItem?
     
@@ -29,9 +32,6 @@ public protocol AssetViewModel: AnyObject {
 }
 
 extension AssetViewModel {
-    /// the real duration of the asset
-    var duration: CMTime { timeRange.duration }
-    
     /// the real start time of the asset, in relation its position in the timeline
     var startTime: CMTime { timeRangeInTimeline.start }
 }
@@ -330,8 +330,6 @@ public final class AssetTimelineView: UIView {
     
     private func startTrimControlObservers(forCell cell: AssetTimelineCell, withViewModel viewModel: AssetViewModel) {
         cell.onTrimEvent = { [weak self] event, trim in
-            print("[Progress]", trim.progress.seconds)
-            print("[SelectedTime]", trim.selectedTime.seconds)
             guard let self = self else { return }
             switch event {
             case .didBeginTrimming:

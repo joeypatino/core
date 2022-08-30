@@ -14,7 +14,11 @@ public extension Encodable {
 
 public extension Encodable {
     var encoded: Data? {
-        let encodeder = JSONEncoder()
-        return try? encodeder.encode(self)
+        do {
+            return try JSONEncoder().pretty().encode(self)
+        } catch {
+            print("Error", error)
+            return nil
+        }
     }
 }

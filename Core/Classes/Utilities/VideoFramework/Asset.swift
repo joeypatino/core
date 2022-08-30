@@ -26,6 +26,24 @@ public enum Asset: Codable {
             return asset.duration
         }
     }
+    public var originalTime: CMTimeRange {
+        get {
+            switch self {
+            case .localFile(let asset):
+                return asset.originalTime
+            case .photoLibrary(let asset):
+                return asset.originalTime
+            }
+        }
+        set {
+            switch self {
+            case .localFile(var asset):
+                asset.originalTime = newValue
+            case .photoLibrary(var asset):
+                asset.originalTime = newValue
+            }
+        }
+    }
     public var timeRange: CMTimeRange {
         get {
             switch self {
@@ -113,12 +131,16 @@ extension Asset {
     public func duplicate() -> Asset {
         switch self {
         case .localFile(let asset):
-            let copy = type(of: self).init(url: asset.url)
+            var copy = type(of: self).init(url: asset.url)
             copy.source.trackItem.identifier = self.identifier
+            copy.source.selectedTimeRange = self.source.selectedTimeRange
+            copy.originalTime = self.originalTime
             return copy
         case .photoLibrary(let asset):
-            let copy = type(of: self).init(asset: asset.asset)
+            var copy = type(of: self).init(asset: asset.asset)
             copy.source.trackItem.identifier = self.identifier
+            copy.source.selectedTimeRange = self.source.selectedTimeRange
+            copy.originalTime = self.originalTime
             return copy
         }
     }
@@ -129,6 +151,7 @@ public struct LocalFileAsset: Codable {
     public let url: URL
     public var source: AssetSource
     public var duration: CMTime { asset.duration }
+    public var originalTime: CMTimeRange
     public var timeRange: CMTimeRange {
         get { source.selectedTimeRange }
         set { source.selectedTimeRange = newValue }
@@ -147,6 +170,7 @@ public struct LocalFileAsset: Codable {
         let avAsset = AVAsset(url: url)
         self.asset = avAsset
         self.source = AssetSource(asset: avAsset)
+        self.originalTime = CMTimeRange(start: .zero, duration: avAsset.duration)
         self.timeRange = CMTimeRange(start: CMTime.zero, duration: avAsset.duration)
     }
     
@@ -177,6 +201,7 @@ public struct LocalFileAsset: Codable {
     public enum CodingKeys: String, CodingKey {
         case url
         case timeRange
+        case originalTime
         case type
     }
     
@@ -189,6 +214,7 @@ public struct LocalFileAsset: Codable {
             self.asset = AVAsset(url: url)
             self.source = AssetSource(asset: asset)
             //self.timeRange = CMTimeRange(start: CMTime.zero, duration: asset.duration)
+            self.originalTime = try values.decode(CMTimeRange.self, forKey: .originalTime)
             self.timeRange = try values.decode(CMTimeRange.self, forKey: .timeRange)
         } else {
             throw Asset.Error.invalidEncoding
@@ -199,6 +225,7 @@ public struct LocalFileAsset: Codable {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(url, forKey: .url)
         try container.encode(timeRange, forKey: .timeRange)
+        try container.encode(originalTime, forKey: .originalTime)
         try container.encode(type, forKey: .type)
     }
 }
@@ -211,6 +238,7 @@ public struct PhotosLibraryAsset: Codable {
         //Asset.DEFAULT_PHOTO_DURATION
         source.selectedTimeRange.duration
     }
+    public var originalTime: CMTimeRange
     public var timeRange: CMTimeRange {
         get { source.selectedTimeRange }
         set { source.selectedTimeRange = newValue }
@@ -230,6 +258,7 @@ public struct PhotosLibraryAsset: Codable {
         self.asset = asset
         self.source = AssetSource(asset: asset)
         //self.timeRange = CMTimeRange(start: CMTime.zero, duration: Asset.DEFAULT_PHOTO_DURATION)
+        self.originalTime = CMTimeRange(start: .zero, duration: source.selectedTimeRange.duration)
         self.timeRange = CMTimeRange(start: CMTime.zero, duration: source.selectedTimeRange.duration)
     }
     
@@ -243,6 +272,7 @@ public struct PhotosLibraryAsset: Codable {
     public enum CodingKeys: String, CodingKey {
         case localIdentifier
         case timeRange
+        case originalTime
         case type
     }
     
@@ -257,6 +287,7 @@ public struct PhotosLibraryAsset: Codable {
             self.source = AssetSource(asset: asset)
             //self.timeRange = CMTimeRange(start: CMTime.zero, duration: Asset.DEFAULT_PHOTO_DURATION)
             //self.timeRange = CMTimeRange(start: CMTime.zero, duration: source.selectedTimeRange.duration)
+            self.originalTime = try values.decode(CMTimeRange.self, forKey: .originalTime)
             self.timeRange = try values.decode(CMTimeRange.self, forKey: .timeRange)
         } else {
             throw Asset.Error.invalidEncoding
@@ -267,6 +298,7 @@ public struct PhotosLibraryAsset: Codable {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(localIdentifier, forKey: .localIdentifier)
         try container.encode(timeRange, forKey: .timeRange)
+        try container.encode(originalTime, forKey: .originalTime)
         try container.encode(type, forKey: .type)
     }
 }
