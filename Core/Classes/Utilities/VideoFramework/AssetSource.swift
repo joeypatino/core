@@ -26,13 +26,13 @@ public class AssetSource {
         switch asset.mediaType {
         case .video:
             resource = PHAssetTrackResource(phasset: asset)
-        case .image:
-            switch asset.playbackStyle {
-            case .livePhoto:
-                resource = PHAssetLivePhotoResource(phasset: asset)
-            default:
-                resource = PHAssetImageResource(asset: asset, duration: Asset.DEFAULT_PHOTO_DURATION)
-            }
+//        case .image:
+//            switch asset.playbackStyle {
+//            case .livePhoto:
+//                resource = PHAssetLivePhotoResource(phasset: asset)
+//            default:
+//                resource = PHAssetImageResource(asset: asset, duration: Asset.DEFAULT_PHOTO_DURATION)
+//            }
         default:
             resource = PHAssetImageResource(asset: asset, duration: Asset.DEFAULT_PHOTO_DURATION)
         }

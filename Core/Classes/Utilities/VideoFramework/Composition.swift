@@ -110,16 +110,8 @@ public class Composition: Codable {
             didUpdateVideoLayers()
             didUpdateAudioLayers()
         }
-        var timeRange = layer.asset.timeRange
-        if let lastLayer = videoLayers.last {
-            timeRange.start = CMTimeRangeGetEnd(lastLayer.asset.timeRange)
-            layer.asset.timeRange = timeRange
-            videoLayers.append(layer)
-        } else {
-            timeRange.start = .zero
-            layer.asset.timeRange = timeRange
-            videoLayers.append(layer)
-        }
+        videoLayers.append(layer)
+        audioLayers.append(layer)
     }
     
     public func insert(_ layer: Layer, at index: Int) {
