@@ -87,12 +87,12 @@ public final class AssetTimelineCell: UICollectionViewCell {
 //        trim.borderWidth = 4
         trim.addTarget(self, action: #selector(onCollapseAction(_:)), for: .touchUpInside)
         
-        trim.addTarget(self, action: #selector(didBeginTrimming(_:)), for: TrimmerView.didBeginTrimming)
-        trim.addTarget(self, action: #selector(selectedRangeChanged(_:)), for: TrimmerView.selectedRangeChanged)
-        trim.addTarget(self, action: #selector(didEndTrimming(_:)), for: TrimmerView.didEndTrimming)
-        trim.addTarget(self, action: #selector(didBeginScrubbing(_:)), for: TrimmerView.didBeginScrubbing)
-        trim.addTarget(self, action: #selector(progressChanged(_:)), for: TrimmerView.progressChanged)
-        trim.addTarget(self, action: #selector(didEndScrubbing(_:)), for: TrimmerView.didEndScrubbing)
+        trim.addTarget(self, action: #selector(didBeginTrimming(_:)), for: Trimmer.didBeginTrimming)
+        trim.addTarget(self, action: #selector(selectedRangeChanged(_:)), for: Trimmer.selectedRangeChanged)
+        trim.addTarget(self, action: #selector(didEndTrimming(_:)), for: Trimmer.didEndTrimming)
+        trim.addTarget(self, action: #selector(didBeginScrubbing(_:)), for: Trimmer.didBeginScrubbing)
+        trim.addTarget(self, action: #selector(progressChanged(_:)), for: Trimmer.progressChanged)
+        trim.addTarget(self, action: #selector(didEndScrubbing(_:)), for: Trimmer.didEndScrubbing)
         
         delete.clipsToBounds = true
         delete.setLayerCornerRadius(10, maskCorners: .allCorners)

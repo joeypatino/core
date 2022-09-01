@@ -141,6 +141,7 @@ extension Asset {
             copy.source.trackItem.identifier = self.identifier
             copy.source.selectedTimeRange = self.source.selectedTimeRange
             copy.originalTime = self.originalTime
+            //print("[DUPLICATE.TIMERANGE]", copy.timeRange.start.seconds, " - ", copy.timeRange.end.seconds)
             return copy
         }
     }
@@ -259,7 +260,8 @@ public struct PhotosLibraryAsset: Codable {
         self.source = AssetSource(asset: asset)
         //self.timeRange = CMTimeRange(start: CMTime.zero, duration: Asset.DEFAULT_PHOTO_DURATION)
         self.originalTime = CMTimeRange(start: .zero, duration: source.selectedTimeRange.duration)
-        self.timeRange = CMTimeRange(start: CMTime.zero, duration: source.selectedTimeRange.duration)
+        //self.timeRange = CMTimeRange(start: CMTime.zero, duration: source.selectedTimeRange.duration)
+        self.timeRange = source.selectedTimeRange
     }
     
     public func thumbnail(size: CGSize) async throws -> UIImage {

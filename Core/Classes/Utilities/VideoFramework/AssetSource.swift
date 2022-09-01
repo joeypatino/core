@@ -40,6 +40,7 @@ public class AssetSource {
         trackItem = TrackItem(resource: resource)
         trackItem.videoConfiguration.contentMode = .aspectFill
         trackItem.videoTransition = CrossDissolveTransition(duration: AssetSource.DEFAULT_TRANSITION_DURATION)
+        //print("[ASSETSOURCE.RESOURCE.SELECTED_TIMERANGE]", resource.selectedTimeRange.start.seconds, " - ", resource.selectedTimeRange.end.seconds)
         resource.prepare(completion: { _, _ in })
     }
 }

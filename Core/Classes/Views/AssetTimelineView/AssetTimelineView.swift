@@ -319,8 +319,8 @@ public final class AssetTimelineView: UIView {
 
         DispatchQueue.main.async {
             UIView.performWithoutAnimation {
-                let start = viewModel.selectedTimeRange.start.seconds
-                let end = viewModel.selectedTimeRange.end.seconds
+                let start = viewModel.editedAsset.timeRange.start.seconds
+                let end = viewModel.editedAsset.timeRange.end.seconds
                 cell.trim.selectedRange = CMTimeRange(start: CMTime(seconds: start, preferredTimescale: 600),
                                                       end: CMTime(seconds: end, preferredTimescale: 600))
                 cell.trim.range = CMTimeRange(start: .zero, duration: viewModel.duration)
