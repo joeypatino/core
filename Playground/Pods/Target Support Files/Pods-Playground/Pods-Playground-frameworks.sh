@@ -177,11 +177,11 @@ code_sign_if_enabled() {
 
 if [[ "$CONFIGURATION" == "Debug" ]]; then
   install_framework "${BUILT_PRODUCTS_DIR}/Core/Core.framework"
-  install_framework "${BUILT_PRODUCTS_DIR}/VideoLab/VideoLab.framework"
+  install_framework "${BUILT_PRODUCTS_DIR}/VFCabbage/VFCabbage.framework"
 fi
 if [[ "$CONFIGURATION" == "Release" ]]; then
   install_framework "${BUILT_PRODUCTS_DIR}/Core/Core.framework"
-  install_framework "${BUILT_PRODUCTS_DIR}/VideoLab/VideoLab.framework"
+  install_framework "${BUILT_PRODUCTS_DIR}/VFCabbage/VFCabbage.framework"
 fi
 if [ "${COCOAPODS_PARALLEL_CODE_SIGN}" == "true" ]; then
   wait

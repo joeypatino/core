@@ -15,6 +15,7 @@
 		607FACEC1AFB9204008FA782 /* Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 607FACEB1AFB9204008FA782 /* Tests.swift */; };
 		D411149A284E8B1A00D593FD /* VideoEditorPlaygroundViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4111499284E8B1A00D593FD /* VideoEditorPlaygroundViewController.swift */; };
 		D41FF58C28513D18006B2688 /* CAAnimationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D41FF58B28513D18006B2688 /* CAAnimationViewController.swift */; };
+		D436B54028C15A8F001AB0B0 /* CaptureButtonPlaygroundViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D436B53F28C15A8F001AB0B0 /* CaptureButtonPlaygroundViewController.swift */; };
 		D481326E284CD7E2001948F7 /* ModalViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D481326D284CD7E2001948F7 /* ModalViewController.swift */; };
 		D4813271284CDA57001948F7 /* ModalPresentationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4813270284CDA57001948F7 /* ModalPresentationViewController.swift */; };
 		D4813273284CDB9D001948F7 /* LoadingBannerModalPresentationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4813272284CDB9D001948F7 /* LoadingBannerModalPresentationViewController.swift */; };
@@ -65,6 +66,7 @@
 		CACFB25EE2758D54181A2A1B /* Pods-Core_Tests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Core_Tests.debug.xcconfig"; path = "Target Support Files/Pods-Core_Tests/Pods-Core_Tests.debug.xcconfig"; sourceTree = "<group>"; };
 		D4111499284E8B1A00D593FD /* VideoEditorPlaygroundViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoEditorPlaygroundViewController.swift; sourceTree = "<group>"; };
 		D41FF58B28513D18006B2688 /* CAAnimationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CAAnimationViewController.swift; sourceTree = "<group>"; };
+		D436B53F28C15A8F001AB0B0 /* CaptureButtonPlaygroundViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureButtonPlaygroundViewController.swift; sourceTree = "<group>"; };
 		D481326D284CD7E2001948F7 /* ModalViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModalViewController.swift; sourceTree = "<group>"; };
 		D4813270284CDA57001948F7 /* ModalPresentationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModalPresentationViewController.swift; sourceTree = "<group>"; };
 		D4813272284CDB9D001948F7 /* LoadingBannerModalPresentationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadingBannerModalPresentationViewController.swift; sourceTree = "<group>"; };
@@ -199,6 +201,7 @@
 				D4111499284E8B1A00D593FD /* VideoEditorPlaygroundViewController.swift */,
 				D41FF58B28513D18006B2688 /* CAAnimationViewController.swift */,
 				D4DEE16E2853679300E56202 /* AudioEditingPlaygroundViewController.swift */,
+				D436B53F28C15A8F001AB0B0 /* CaptureButtonPlaygroundViewController.swift */,
 			);
 			path = Modules;
 			sourceTree = "<group>";
@@ -344,16 +347,12 @@
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Playground/Pods-Playground-frameworks.sh",
 				"${BUILT_PRODUCTS_DIR}/Core/Core.framework",
-				"${BUILT_PRODUCTS_DIR}/MTTransitions/MTTransitions.framework",
-				"${BUILT_PRODUCTS_DIR}/MetalPetal/MetalPetal.framework",
-				"${BUILT_PRODUCTS_DIR}/VideoLab/VideoLab.framework",
+				"${BUILT_PRODUCTS_DIR}/VFCabbage/VFCabbage.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Core.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/MTTransitions.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/MetalPetal.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/VideoLab.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/VFCabbage.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -421,6 +420,7 @@
 				607FACD81AFB9204008FA782 /* RootViewController.swift in Sources */,
 				D4ACCB1E284D23C700DC0425 /* VideoPlayerPlaygroundViewController.swift in Sources */,
 				D4813286284CEE0A001948F7 /* CameraCaptureViewController.swift in Sources */,
+				D436B54028C15A8F001AB0B0 /* CaptureButtonPlaygroundViewController.swift in Sources */,
 				607FACD61AFB9204008FA782 /* AppDelegate.swift in Sources */,
 				D4813273284CDB9D001948F7 /* LoadingBannerModalPresentationViewController.swift in Sources */,
 				D4CBA2AB284A515800040CD6 /* SceneDelegate.swift in Sources */,

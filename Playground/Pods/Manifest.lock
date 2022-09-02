@@ -1,31 +1,33 @@
 PODS:
-  - Core (0.1.0):
-    - VideoLab
+  - Core (0.2.6):
+    - VFCabbage
   - FBSnapshotTestCase (2.1.4):
     - FBSnapshotTestCase/SwiftSupport (= 2.1.4)
   - FBSnapshotTestCase/Core (2.1.4)
   - FBSnapshotTestCase/SwiftSupport (2.1.4):
     - FBSnapshotTestCase/Core
-  - VideoLab (0.0.1)
+  - VFCabbage (0.5.1)
 
 DEPENDENCIES:
   - Core (from `../`)
   - FBSnapshotTestCase (~> 2.1.4)
+  - VFCabbage (from `/Users/joey/Documents/work/onitaps/Cabbage`)
 
 SPEC REPOS:
   trunk:
     - FBSnapshotTestCase
-    - VideoLab
 
 EXTERNAL SOURCES:
   Core:
     :path: "../"
+  VFCabbage:
+    :path: "/Users/joey/Documents/work/onitaps/Cabbage"
 
 SPEC CHECKSUMS:
-  Core: dcd4c80bd72eb153aea1c517f8dd9edbfa4fb127
+  Core: e1372110aa47817fa198a23308cd37ace557e939
   FBSnapshotTestCase: 094f9f314decbabe373b87cc339bea235a63e07a
-  VideoLab: b073f9e63b9625b2783d658a543969f559e506c1
+  VFCabbage: eb7c401e002e66a9f641590f274d9d5a6bfa85e2
 
-PODFILE CHECKSUM: 70ee49583c4f5aae6e559cfe274a892286e72eb5
+PODFILE CHECKSUM: bc1c7b3170578aaed5cb5c4d6d76c8cef96a30d9
 
-COCOAPODS: 1.11.2
+COCOAPODS: 1.11.3

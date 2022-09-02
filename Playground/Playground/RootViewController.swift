@@ -9,8 +9,9 @@ enum Playgrounds: String, CaseIterable {
     case mediaCaptureOptions
     case cameraCapture
     case mediaPlayer
-    case videoCapture
-    case videoEditor
+    case captureButton
+//    case videoCapture
+//    case videoEditor
     case caAnimations
     case audioEditor
 }
@@ -62,10 +63,8 @@ extension RootViewController: UITableViewDelegate {
             show(CameraPlaygroundViewController(), sender: nil)
         case .mediaPlayer:
             show(VideoPlayerPlaygroundViewController(), sender: nil)
-        case .videoCapture:
-            show(VideoCapturePlaygroundViewController(), sender: nil)
-        case .videoEditor:
-            show(VideoEditorPlaygroundViewController(), sender: nil)
+        case .captureButton:
+            show(CaptureButtonPlaygroundViewController(), sender: nil)
         case .audioEditor:
             show(AudioEditingPlaygroundViewController(), sender: nil)
         }

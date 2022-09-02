@@ -1,44 +1,33 @@
 PODS:
   - Core (0.2.6):
-    - MTTransitions
-    - VideoLab
+    - VFCabbage
   - FBSnapshotTestCase (2.1.4):
     - FBSnapshotTestCase/SwiftSupport (= 2.1.4)
   - FBSnapshotTestCase/Core (2.1.4)
   - FBSnapshotTestCase/SwiftSupport (2.1.4):
     - FBSnapshotTestCase/Core
-  - MetalPetal (1.24.2):
-    - MetalPetal/Core (= 1.24.2)
-  - MetalPetal/Core (1.24.2)
-  - MetalPetal/Swift (1.24.2):
-    - MetalPetal/Core
-  - MTTransitions (1.6.5):
-    - MetalPetal
-    - MetalPetal/Swift
-  - VideoLab (0.0.1)
+  - VFCabbage (0.5.1)
 
 DEPENDENCIES:
   - Core (from `../`)
   - FBSnapshotTestCase (~> 2.1.4)
+  - VFCabbage (from `/Users/joey/Documents/work/onitaps/Cabbage`)
 
 SPEC REPOS:
   trunk:
     - FBSnapshotTestCase
-    - MetalPetal
-    - MTTransitions
-    - VideoLab
 
 EXTERNAL SOURCES:
   Core:
     :path: "../"
+  VFCabbage:
+    :path: "/Users/joey/Documents/work/onitaps/Cabbage"
 
 SPEC CHECKSUMS:
-  Core: 713c95347513af72915a610b29ab135bb02bb0b4
+  Core: e1372110aa47817fa198a23308cd37ace557e939
   FBSnapshotTestCase: 094f9f314decbabe373b87cc339bea235a63e07a
-  MetalPetal: 063cb7f12c011a22fd311a355a4bd05302fc0de4
-  MTTransitions: f4818ba485abc477545af4ee483c00b717dfd76e
-  VideoLab: b073f9e63b9625b2783d658a543969f559e506c1
+  VFCabbage: eb7c401e002e66a9f641590f274d9d5a6bfa85e2
 
-PODFILE CHECKSUM: 6c09480cff5fe2bb9271467f75b088dca01f7883
+PODFILE CHECKSUM: bc1c7b3170578aaed5cb5c4d6d76c8cef96a30d9
 
 COCOAPODS: 1.11.3

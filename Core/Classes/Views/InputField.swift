@@ -92,6 +92,40 @@ open class InputField: UIView {
         get { textField.validators }
         set { textField.validators = newValue }
     }
+    
+    public var keyboardType: UIKeyboardType {
+        get { textField.keyboardType }
+        set { textField.keyboardType = newValue }
+    }
+    public var autocapitalizationType: UITextAutocapitalizationType {
+        get { textField.autocapitalizationType }
+        set { textField.autocapitalizationType = newValue }
+    }
+    public var autocorrectionType: UITextAutocorrectionType {
+        get { textField.autocorrectionType }
+        set { textField.autocorrectionType = newValue }
+    }
+    public var spellCheckingType: UITextSpellCheckingType {
+        get { textField.spellCheckingType }
+        set { textField.spellCheckingType = newValue }
+    }
+    public var smartQuotesType: UITextSmartQuotesType {
+        get { textField.smartQuotesType }
+        set { textField.smartQuotesType = newValue }
+    }
+    public var smartDashesType: UITextSmartDashesType {
+        get { textField.smartDashesType }
+        set { textField.smartDashesType = newValue }
+    }
+    public var keyboardAppearance: UIKeyboardAppearance {
+        get { textField.keyboardAppearance }
+        set { textField.keyboardAppearance = newValue }
+    }
+    public var returnKeyType: UIReturnKeyType {
+        get { textField.returnKeyType }
+        set { textField.returnKeyType = newValue }
+    }
+    
     public var accessoryPresentationDirection: InputTextField.AccessoryPresentationDirection {
         get { textField.accessoryPresentationDirection }
         set { textField.accessoryPresentationDirection = newValue }

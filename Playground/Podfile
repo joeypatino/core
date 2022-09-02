@@ -3,6 +3,7 @@ use_frameworks!
 platform :ios, '13.0'
 
 target 'Playground' do
+  pod 'VFCabbage', path: '/Users/joey/Documents/work/onitaps/Cabbage'
   pod 'Core', :path => '../'
   
   target 'Tests' do
