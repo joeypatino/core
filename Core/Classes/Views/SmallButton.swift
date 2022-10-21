@@ -10,6 +10,8 @@ open class SmallButton: UIButton {
         self.insets = insets
         super.init(frame: .zero)
         setImage(image, for: .normal)
+        clipsToBounds = true
+        layer.masksToBounds = true
     }
     
     required public init?(coder: NSCoder) {

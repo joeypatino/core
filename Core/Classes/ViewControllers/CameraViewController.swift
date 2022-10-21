@@ -8,6 +8,10 @@ public protocol CameraViewControllerDelegate: AnyObject {
 open class CameraViewController: UIViewController {
     public weak var delegate: CameraViewControllerDelegate?
     public var isRecording: Bool { camera.isRecording }
+    public var position: Camera.CameraPosition {
+        get { camera.position }
+        set { camera.position = newValue }
+    }
     private let camera = Camera(captureMode: .video(isRecording: false))
     private lazy var preview = view as! CameraPreview
     

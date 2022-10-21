@@ -19,13 +19,13 @@ public class VideoCaptureButton: UIButton {
     public var isAnimating = false
     
     public var strokeStart: CGFloat {
-        get { fill.presentation()?.strokeStart ?? 0 }
+        get { fill.model().strokeStart }
         set { fill.strokeStart = newValue }
     }
     
     public var strokeEnd: CGFloat {
-        get { fill.presentation()?.strokeEnd ?? 1 }
-        set { fill.strokeEnd = newValue }
+        get { fill.model().strokeEnd }
+        set { fill.strokeEnd = newValue; print("[Update StrokeEnd] ", newValue) }
     }
     public var isComplete: Bool {
         strokeEnd == 1.0
@@ -46,13 +46,12 @@ public class VideoCaptureButton: UIButton {
     private let animatingRingWidth: CGFloat = 4
     private let normalRingWidth: CGFloat = 3
     private let gutter: CGFloat = 2
-    private var stopInset: CGFloat { normalRingWidth + gutter + 14 }
+    private var stopInset: CGFloat { normalRingWidth + gutter + 16 }
     private var timePoints: [CGFloat] = []
     private var lineDashPoints: [CGFloat] = [] {
         didSet {
             fixed.lineDashPattern = lineDashPoints.map { NSNumber(value: $0) }
             fillMask.lineDashPattern = lineDashPoints.map { NSNumber(value: $0) }
-            print(lineDashPoints)
         }
     }
     
@@ -64,7 +63,7 @@ public class VideoCaptureButton: UIButton {
         animation.fillMode = .forwards
         animation.isRemovedOnCompletion = false
         animation.delegate = self
-        animation.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+        animation.timingFunction = CAMediaTimingFunction(name: .linear)
         return animation
     }()
     
@@ -74,6 +73,8 @@ public class VideoCaptureButton: UIButton {
         animation.duration = duration
         setup()
         layout()
+        update()
+        clear()
     }
     
     required init?(coder: NSCoder) {
@@ -82,7 +83,9 @@ public class VideoCaptureButton: UIButton {
 
     public override func layoutSubviews() {
         super.layoutSubviews()
-
+        guard !bounds.isEmpty else {
+            return
+        }
         background.position = bounds.center
         background.bounds = bounds
         background.cornerRadius = bounds.width/2
@@ -200,81 +203,89 @@ public class VideoCaptureButton: UIButton {
     
     // MARK: - Public
     
-    public func addTime(_ fromValue: CGFloat = 0.0, toValue: CGFloat = 1.0) {
+    public func addTime(_ fromValue: CGFloat = 0.0, toValue: CGFloat = 1.0, adjustStrokeEnd: Bool = true) {
+        //print(#function, fromValue, toValue)
         strokeEnd = toValue
-        addLineDash()
-    }
+        addLineDash(isClosed: strokeEnd == 1.0)
         
-    public func startAnimation(animated: Bool = true) throws {
+        if adjustStrokeEnd {
+            fill.beginTime = (toValue - fromValue) * duration
+        }
+    }
+
+    public func startAnimation(animated: Bool = true, shouldSendActions: Bool = true) throws {
         guard !isComplete else { throw Error.isComplete }
         guard background.animation(forKey: "untransforming") == nil else { return }
         isAnimating = !isAnimating
         
         CATransaction.begin()
-        CATransaction.setAnimationDuration(0.2)
+        CATransaction.setAnimationDuration(animated ? 0.2 : 0)
         CATransaction.setAnimationTimingFunction(CAMediaTimingFunction(name: .easeInEaseOut))
 
         fill.add(animation("mask", duration: 0.2), forKey: nil)
         fill.mask = nil
         
-        background.add(animation("transform", duration: 0.2), forKey: "transforming")
+        background.add(animation("transform", duration: animated ? 0.2 : 0), forKey: "transforming")
         background.transform = CATransform3DMakeScale(1.3, 1.3, 1)
-        fixed.add(animation("transform", duration: 0.2), forKey: nil)
+        fixed.add(animation("transform", duration: animated ? 0.2 : 0), forKey: nil)
         fixed.transform = CATransform3DMakeScale(1.3, 1.3, 1)
-        fill.add(animation("transform", duration: 0.2), forKey: nil)
+        fill.add(animation("transform", duration: animated ? 0.2 : 0), forKey: nil)
         fill.transform = CATransform3DMakeScale(1.3, 1.3, 1)
         
         layoutSubviews()
-
-        CATransaction.setCompletionBlock({
+        DispatchQueue.main.asyncAfter(delay: animated ? 0.2 : 0) {
             // start the stroke animation
             if let animationKeys = self.fill.animationKeys(), animationKeys.contains(AnimationKeys.strokeEndAnimation) {
-                let pausedTime = self.fill.timeOffset
+                let pausedTime = self.fill.timeOffset + self.fill.beginTime
                 self.fill.speed = 1.0
                 self.fill.timeOffset = 0.0
                 self.fill.beginTime = 0.0
                 let timeSincePause = self.fill.convertTime(CACurrentMediaTime(), from: nil) - pausedTime
+                //print("[ResumeTime] ", timeSincePause)
                 self.fill.beginTime = timeSincePause
             } else {
+                self.fill.speed = 1.0
                 self.fill.add(self.animation, forKey: AnimationKeys.strokeEndAnimation)
             }
-            self.sendActions(for: .editingDidBegin)
-        })
+            if shouldSendActions {
+                self.sendActions(for: .editingDidBegin)
+            }
+        }
         CATransaction.commit()
     }
     
-    public func stopAnimation(animated: Bool = true) {
+    public func stopAnimation(animated: Bool = true, shouldSendActions: Bool = true) {
         isAnimating = !isAnimating
-        sendActions(for: .editingDidEnd)
-        
+        if shouldSendActions {
+            sendActions(for: .editingDidEnd)
+        }
         CATransaction.begin()
-        CATransaction.setAnimationDuration(0.2)
+        CATransaction.setAnimationDuration(animated ? 0.2 : 0)
         CATransaction.setAnimationTimingFunction(CAMediaTimingFunction(name: .easeInEaseOut))
 
-        background.add(animation("transform", duration: 0.2), forKey: "untransforming")
+        background.add(animation("transform", duration: animated ? 0.2 : 0), forKey: "untransforming")
         background.transform = CATransform3DIdentity
-        fixed.add(animation("transform", duration: 0.2), forKey: nil)
+        fixed.add(animation("transform", duration: animated ? 0.2 : 0), forKey: nil)
         fixed.transform = CATransform3DIdentity
-        fill.add(animation("transform", duration: 0.2), forKey: nil)
+        fill.add(animation("transform", duration: animated ? 0.2 : 0), forKey: nil)
         fill.transform = CATransform3DIdentity
 
         layoutSubviews()
-        
-        CATransaction.setCompletionBlock({
-            if self.strokeEnd == 1.0 {
+        DispatchQueue.main.asyncAfter(delay: animated ? 0.2 : 0) {
+            if self.strokeEnd == 1.0 && shouldSendActions {
                 self.sendActions(for: .editingDidEnd)
             }
-        })
+        }
         CATransaction.commit()
         
-        self.addLineDash(isClosed: self.strokeEnd == 1.0)
-        self.fill.add(self.animation("mask", duration: 0.2), forKey: nil)
-        self.fill.mask = self.fillMask
+        fill.add(animation("mask", duration: animated ? 0.2 : 0), forKey: nil)
+        fill.mask = fillMask
 
         // pause the stroke animation
-        let pausedTime = self.fill.convertTime(CACurrentMediaTime(), from: nil)
-        self.fill.speed = 0.0
-        self.fill.timeOffset = pausedTime
+        let pausedTime = fill.convertTime(CACurrentMediaTime(), from: nil)
+        fill.speed = 0.0
+        fill.timeOffset = pausedTime
+        //print("[PausedTime] ", pausedTime)
     }
 
     public func clear() {
@@ -282,13 +293,37 @@ public class VideoCaptureButton: UIButton {
         lineDashPoints.removeAll()
         strokeEnd = 0
         strokeStart = 0
+        
+        stop()
+    }
+    
+    private func stop() {
+        isAnimating = false
+        background.removeAllAnimations()
+        background.transform = CATransform3DIdentity
+        fixed.removeAllAnimations()
+        fixed.transform = CATransform3DIdentity
+        fill.removeAllAnimations()
+        fill.transform = CATransform3DIdentity
+        layoutSubviews()
+        fill.removeAllAnimations()
+        fill.mask = fillMask
+        let pausedTime = fill.convertTime(CACurrentMediaTime(), from: nil)
+        fill.speed = 0.0
+        fill.timeOffset = pausedTime
     }
     
     // MARK: - Helper
     
     private func addLineDash(isClosed: Bool = false) {
+        let needsFiller = lineDashPoints.count == 0
+        if needsFiller {
+            let a = 0.0 * (CGFloat.pi/180) * (bounds.width/2)
+            lineDashPoints.append(a)
+            lineDashPoints.append(a + 2)
+        }
         // remove last two points, since they are fillers
-        if lineDashPoints.count > 1 {
+        if lineDashPoints.count > 1 && !needsFiller {
             _ = lineDashPoints.remove(at: lineDashPoints.count-1)
             _ = lineDashPoints.remove(at: lineDashPoints.count-1)
         }

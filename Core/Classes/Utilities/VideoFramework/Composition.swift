@@ -165,7 +165,7 @@ public class Composition: Codable {
             didUpdateAudioLayers()
         }
         if videoLayers.isEmpty { return nil }
-        let layer = videoLayers.remove(at: index)
+         let layer = videoLayers.remove(at: index)
         return layer
     }
 

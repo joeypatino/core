@@ -516,7 +516,19 @@ extension AssetTimelineView: UICollectionViewDelegateFlowLayout {
     public func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         cellSize(forIndexPath: indexPath)
     }
-    public func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets { insets }
+    public func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
+        insets
+//        let totalCellWidth = collapsedCellSize.width * CGFloat(assetViewModels.count)
+//        let totalSpacingWidth = interItemSpacing * CGFloat(assetViewModels.count - 1)
+//
+//        var leftInset = (collectionView.bounds.width - CGFloat(totalCellWidth + totalSpacingWidth)) / 2
+//        let rightInset = leftInset
+//        if assetViewModels.count == 1 {
+//            leftInset -= collapsedCellSize.width/2
+//        }
+//        return UIEdgeInsets(top: 0 - insets.top, left: leftInset - insets.left, bottom: 0 - insets.bottom, right: rightInset - insets.right)
+    }
+    
     public func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat { insets.top }
     public func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
         interItemSpacing
