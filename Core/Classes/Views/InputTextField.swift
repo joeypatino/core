@@ -11,6 +11,7 @@ struct InputTextFieldAction: OptionSet {
 
 
 public protocol InputTextFieldDelegate: AnyObject {
+    func textFieldCanBecomeFirstResponder(_ textField: InputTextField) -> Bool
     func textFieldDidBeginEditing(_ textField: InputTextField)
     func textFieldDidChange(_ textField: InputTextField)
     func textFieldDidEndEditing(_ textField: InputTextField)
@@ -21,6 +22,7 @@ public protocol InputTextFieldDelegate: AnyObject {
 }
 
 extension InputTextFieldDelegate {
+    public func textFieldCanBecomeFirstResponder(_ textField: InputTextField) -> Bool { true }
     public func textFieldDidBeginEditing(_ textField: InputTextField) {}
     public func textFieldDidChange(_ textField: InputTextField) {}
     public func textFieldDidEndEditing(_ textField: InputTextField) {}
@@ -314,6 +316,7 @@ public final class InputTextField: UIView {
     }
     
     public override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        guard delegate?.textFieldCanBecomeFirstResponder(self) == true else { return }
         textField.becomeFirstResponder()
     }
     
