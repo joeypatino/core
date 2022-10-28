@@ -52,7 +52,7 @@ import AVFoundation
     // defines how much the control is insetted from its sides:
     // this is set to 16, so that you can have the control fullscreen (and have it
     // edge-to-edge when zooming in)
-    @IBInspectable var horizontalInset: CGFloat = 16 {
+    @IBInspectable var horizontalInset: CGFloat = 0 {
         didSet { setNeedsLayout() }
     }
     
@@ -348,8 +348,12 @@ import AVFoundation
             let time = CMTimeAdd(visibleRange.start, CMTime(seconds: thumbnailDuration * Double(index), preferredTimescale: asset.duration.timescale * 2))
             guard CMTimeCompare(time, .zero) != -1 else {continue}
             times.append(NSValue(time: time))
-
+                        
             let newThumbnail = Thumbnail(imageView: UIImageView(frame: .zero), time: time)
+            newThumbnail.imageView.clipsToBounds = true
+            newThumbnail.imageView.layer.masksToBounds = true
+            newThumbnail.imageView.layer.cornerRadius = 6
+
             self.thumbnailTrackView.addSubview(newThumbnail.imageView)
             newThumbnails.append(newThumbnail)
         }
@@ -773,10 +777,15 @@ import AVFoundation
         }
         
         regenerateThumbnailsIfNeeded()
-        
-        for thumbnail in thumbnails {
-            let position = locationForTime(thumbnail.time) - horizontalInset + thumbnailOffset
-            let frame = CGRect(x: position, y: 0, width: thumbnailSize.width, height: thumbnailSize.height)
+        let halfThumbWidth = thumbView.handleWidth/2
+        let lastIdx = thumbnails.count-1
+        for (idx, thumbnail) in thumbnails.enumerated() {
+            let position = locationForTime(thumbnail.time) - horizontalInset + thumbnailOffset + halfThumbWidth
+            let isLast = lastIdx == idx
+            let frame = CGRect(x: isLast ? (position - (halfThumbWidth * 2)) : position,
+                               y: 0,
+                               width: isLast ? (thumbnailSize.width - (halfThumbWidth * 3)): thumbnailSize.width,
+                               height: thumbnailSize.height)
             if thumbnail.imageView.bounds.width == 0 {
                 UIView.performWithoutAnimation {
                     thumbnail.imageView.frame = frame

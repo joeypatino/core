@@ -33,7 +33,8 @@ public final class VideoTrimmerThumb: UIView {
     private let rightView = RightRoundedView()
     
     public let handleWidth = CGFloat(14)
-    public let handleInsetWidth = CGFloat(4)
+    public let handleInsetWidth = CGFloat(0)
+    public let bordersWidth = CGFloat(4)
 
 	// MARK: - Input
 	@objc private func x(_ sender: Any) {
@@ -106,11 +107,11 @@ public final class VideoTrimmerThumb: UIView {
 		topView.frame = CGRect(x: handleWidth,
                                y: 0,
                                width: bounds.width - handleWidth * 2,
-                               height: handleInsetWidth)
+                               height: bordersWidth)
 		bottomView.frame = CGRect(x: handleWidth,
-                                  y: bounds.height - handleInsetWidth,
+                                  y: bounds.height - bordersWidth,
                                   width: bounds.width - handleWidth * 2,
-                                  height: handleInsetWidth)
+                                  height: bordersWidth)
 
         leftView.frame = CGRect(x: 5,// half left side width
                                 y: 0,
