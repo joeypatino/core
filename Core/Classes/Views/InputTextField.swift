@@ -548,6 +548,7 @@ public final class InputTextField: UIView {
         updateBorder()
         /// only notify regarding the validation error if we've ended the focus AND have edited the text
         guard editActions.contains(.edit) else { return }
+        guard didEdit else { return }
         delegate?.textField(self, didUpdateValidation: validationError())
     }
     
