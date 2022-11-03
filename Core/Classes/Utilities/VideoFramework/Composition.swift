@@ -158,7 +158,7 @@ public class Composition: Codable {
             didUpdateVideoLayers()
             didUpdateAudioLayers()
         }
-        if videoLayers.isEmpty { return nil }
+        if videoLayers.isEmpty && index < videoLayers.count { return nil }
         return videoLayers.remove(at: index)
     }
 
@@ -168,9 +168,8 @@ public class Composition: Codable {
             didUpdateVideoLayers()
             didUpdateAudioLayers()
         }
-        if audioLayers.isEmpty { return nil }
-        let layer = audioLayers.remove(at: index)
-        return layer
+        if audioLayers.isEmpty && index < audioLayers.count { return nil }
+        return audioLayers.remove(at: index)
     }
     
     public func reload() {
