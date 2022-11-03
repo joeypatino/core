@@ -42,6 +42,7 @@ public protocol AssetTimelineViewDataSource: AnyObject {
 
 public protocol AssetTimelineViewDelegate: AnyObject {
     func viewDidEditAssets(_ assetTimeline: AssetTimelineView)
+    func viewDidStartReordering(_ assetTimeline: AssetTimelineView)
     func view(_ assetTimeline: AssetTimelineView, didChangeDisplayMode mode: AssetTimelineView.DisplayMode)
     func view(_ assetTimeline: AssetTimelineView, didSelectAsset asset: Asset)
     func view(_ assetTimeline: AssetTimelineView, deleteAssetAtIndex index: Int) -> Bool
@@ -57,6 +58,7 @@ public protocol AssetTimelineViewDelegate: AnyObject {
 }
 
 extension AssetTimelineViewDelegate {
+    public func viewDidStartReordering(_ assetTimeline: AssetTimelineView) {}
     public func view(_ assetTimeline: AssetTimelineView, didChangeDisplayMode mode: AssetTimelineView.DisplayMode) {}
     public func view(_ assetTimeline: AssetTimelineView, didSelectAsset asset: Asset) { }
     public func view(_ assetTimeline: AssetTimelineView, deleteAssetAtIndex index: Int) -> Bool { false }
@@ -181,9 +183,15 @@ public final class AssetTimelineView: UIView {
         }
     }
     
-    public func updateCurrentTime(_ time: CMTime) {
+    public func updateCurrentTime(_ time: CMTime, clear: Bool = false) {
         switch mode {
         case .thumbs:
+            if clear {
+                let cells = collection.visibleCells
+                if let cells = cells as? [AssetTimelineCell] {
+                    cells.forEach { $0.hasFocus = false }
+                }
+            }
             var offset = CMTime.zero
             let sequenced = assetViewModels.map { viewModels -> CMTimeRange in
                 let time = viewModels.editedAsset.timeRange
@@ -369,6 +377,7 @@ public final class AssetTimelineView: UIView {
         case .began:
             Vibration.heavy.vibrate()
             isEditing = true
+            delegate?.viewDidStartReordering(self)
         default:
             break
         }
@@ -391,6 +400,14 @@ extension AssetTimelineView: UICollectionViewDragDelegate {
         let params = UIDragPreviewParameters()
         params.backgroundColor = .clear
         return params
+    }
+    
+    public func collectionView(_ collectionView: UICollectionView, dragSessionWillBegin session: UIDragSession) {
+        delegate?.viewDidStartReordering(self)
+    }
+    
+    public func collectionView(_ collectionView: UICollectionView, dragSessionDidEnd session: UIDragSession) {
+        
     }
 }
 
@@ -416,8 +433,9 @@ extension AssetTimelineView: UICollectionViewDropDelegate {
                 }
             }, completion: { _ in
                 if self.selectedIndexPath == sourceIndexPath { self.selectedIndexPath = destinationIndexPath }
-                collectionView.reloadItems(at: [sourceIndexPath, destinationIndexPath])
+                // collectionView.reloadItems(at: [sourceIndexPath, destinationIndexPath])
                 self.delegate?.viewDidEditAssets(self)
+                collectionView.reloadData()
                 coordinator.drop(dropItem.dragItem, toItemAt: destinationIndexPath)
             })
         }

@@ -25,7 +25,7 @@ public class VideoCaptureButton: UIButton {
     
     public var strokeEnd: CGFloat {
         get { fill.model().strokeEnd }
-        set { fill.strokeEnd = newValue; print("[Update StrokeEnd] ", newValue) }
+        set { fill.strokeEnd = newValue }
     }
     public var isComplete: Bool {
         strokeEnd == 1.0

@@ -132,7 +132,7 @@ public class Composition: Codable {
     
     @discardableResult
     public func exchange(layerAt sourceIndex: Int, with destinationIndex: Int) -> Bool {
-        guard videoLayers.count-1 >= sourceIndex else { return false }
+        guard videoLayers.count-1 >= sourceIndex else { print("return false"); return false }
         var sindex = sourceIndex
         var dindex = destinationIndex
         
@@ -141,7 +141,7 @@ public class Composition: Codable {
         
         // update the destination index if needed
         if dindex >= sindex { dindex += 1 }
-        
+                
         // insert the layer to the destination
         insert(layer, at: dindex)
         
@@ -149,13 +149,7 @@ public class Composition: Codable {
         if sindex >= dindex { sindex += 1 }
         
         // remove the original source layer
-        if let _ = remove(layerAt: sindex) {
-            return true
-        }
-        // on failure revert insertion
-        remove(layerAt: dindex)
-        
-        return false
+        return remove(layerAt: sindex) != nil
     }
     
     @discardableResult
@@ -165,8 +159,7 @@ public class Composition: Codable {
             didUpdateAudioLayers()
         }
         if videoLayers.isEmpty { return nil }
-         let layer = videoLayers.remove(at: index)
-        return layer
+        return videoLayers.remove(at: index)
     }
 
     @discardableResult
