@@ -1041,3 +1041,32 @@ public extension Date {
         return "\(quotient)\(unit)\(quotient == 1 ? "" : shouldPluralize ? "s" : "")"
     }
 }
+
+public extension Date {
+    var nextYear: Date {
+        var dateComponents = DateComponents()
+        dateComponents.year = 1
+        return Calendar.current.date(byAdding: dateComponents, to: self) ?? self
+    }
+    
+    var startOfDay: Date {
+        let calendar = Calendar.current
+        let calendarComponents:[Calendar.Component] = [.year, .month, .day, .hour, .minute, .second, .nanosecond, .timeZone, .calendar]
+        var base = calendar.dateComponents(Set(calendarComponents), from: self)
+        
+        let components: [Calendar.Component] = [.nanosecond, .second, .minute, .hour]
+        for component in components {
+            guard let max = calendar.maximumRange(of: component)?.lowerBound else { continue }
+            base.setValue(max, for: component)
+        }
+        return calendar.date(from: base) ?? self
+    }
+    
+    var endOfDay: Date {
+        let calendar = Calendar.current
+        return calendar.date(bySettingHour: 23,
+                             minute: 59,
+                             second: 59,
+                             of: self, matchingPolicy: .strict, repeatedTimePolicy: .first, direction: .forward) ?? self
+    }
+}

@@ -182,6 +182,9 @@ public class VideoCaptureButton: UIButton {
         fillMask.strokeColor = UIColor.black.cgColor
         fillMask.lineWidth = normalRingWidth
         
+        fill.speed = 0.0
+        fill.add(animation, forKey: AnimationKeys.strokeEndAnimation)
+        
         let longPressGesture = UILongPressGestureRecognizer(target: self, action: #selector(onLongPressGesture(_:)))
         addGestureRecognizer(longPressGesture)
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(onGesture(_:)))
@@ -205,11 +208,33 @@ public class VideoCaptureButton: UIButton {
     
     public func addTime(_ fromValue: CGFloat = 0.0, toValue: CGFloat = 1.0, adjustStrokeEnd: Bool = true) {
         //print(#function, fromValue, toValue)
-        strokeEnd = toValue
-        addLineDash(isClosed: strokeEnd == 1.0)
+        
+        self.strokeEnd = toValue
+        self.addLineDash(isClosed: self.strokeEnd == 1.0)
         
         if adjustStrokeEnd {
-            fill.beginTime = (toValue - fromValue) * duration
+            DispatchQueue.main.asyncAfter(delay: 0.01) {
+                /// store the new begin time...
+                self.fill.speed = 0.0
+                self.fill.beginTime = (toValue - fromValue) * self.duration
+                
+//                /// quickly start the animation, to force the strokeEnd to update... HACK
+//                DispatchQueue.main.asyncAfter(delay: 0.01) {
+//                    let pausedTime = self.fill.timeOffset + self.fill.beginTime
+//                    self.fill.speed = 1.0
+//                    self.fill.timeOffset = 0.0
+//                    self.fill.beginTime = 0.0
+//                    let timeSincePause = self.fill.convertTime(CACurrentMediaTime(), from: nil) - pausedTime
+//                    self.fill.beginTime = timeSincePause
+//
+//                    /// then stop the animation and store the pause time
+//                    DispatchQueue.main.asyncAfter(delay: 0) {
+//                        let pausedTime = self.fill.convertTime(CACurrentMediaTime(), from: nil)
+//                        self.fill.speed = 0.0
+//                        self.fill.timeOffset = pausedTime
+//                    }
+//                }
+            }
         }
     }
 
@@ -303,10 +328,12 @@ public class VideoCaptureButton: UIButton {
         background.transform = CATransform3DIdentity
         fixed.removeAllAnimations()
         fixed.transform = CATransform3DIdentity
-        fill.removeAllAnimations()
+        //fill.removeAllAnimations()
+        fill.animationKeys()?.filter({ $0 != AnimationKeys.strokeEndAnimation }).forEach( { fill.removeAnimation(forKey: $0 )})
         fill.transform = CATransform3DIdentity
         layoutSubviews()
-        fill.removeAllAnimations()
+        //fill.removeAllAnimations()
+        fill.animationKeys()?.filter({ $0 != AnimationKeys.strokeEndAnimation }).forEach( { fill.removeAnimation(forKey: $0 )})
         fill.mask = fillMask
         let pausedTime = fill.convertTime(CACurrentMediaTime(), from: nil)
         fill.speed = 0.0

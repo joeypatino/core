@@ -142,7 +142,7 @@ open class InputField: UIView {
     private var textInsetBottom = NSLayoutConstraint()
     
     private let footer = UILabel(font: .systemFont(ofSize: 12.0, weight: .regular), color: .lightGray)
-    internal let textField: InputTextField
+    public let textField: InputTextField
     
     public init(headerLabel: UILabel = UILabel(),
                 placeholder: String? = nil,

@@ -11,12 +11,13 @@ extension ModallyPresentable where Self: UIViewController {
     }
     
     @discardableResult
-    public func presentModal<T>(_ viewController: UIViewController, canTapToDismiss: Bool = true, canSwipeDownToDismiss: Bool = true, shouldUseIntrinsicHeight: Bool = false, completion: (() -> Void)? = nil) -> T where T: ModalPresentationController {
+    public func presentModal<T>(_ viewController: UIViewController, canTapToDismiss: Bool = true, canSwipeDownToDismiss: Bool = true, shouldUseIntrinsicHeight: Bool = false, appliesPerspectiveTransform: Bool = true, completion: (() -> Void)? = nil) -> T where T: ModalPresentationController {
         let presentationController = T.init(presentedViewController: viewController,
                                             presenting: self,
                                             canTapToDismiss: canTapToDismiss,
                                             canSwipeDownToDismiss: canSwipeDownToDismiss,
-                                            shouldUseIntrinsicHeight: shouldUseIntrinsicHeight)
+                                            shouldUseIntrinsicHeight: shouldUseIntrinsicHeight,
+                                            appliesPerspectiveTransform: appliesPerspectiveTransform)
         viewController.transitioningDelegate = presentationController
         viewController.modalPresentationStyle = .custom
         present(viewController, animated: true, completion: completion)
@@ -61,7 +62,13 @@ open class ModalPresentationController: UIPresentationController {
     }
     public var topSpacing: CGFloat {
         if shouldUseIntrinsicHeight {
-            let height = presentedViewController.view.requiredHeight
+            let height: CGFloat
+            if let presentedViewController = presentedViewController as? UINavigationController {
+                height = presentedViewController.topViewController?.view.requiredHeight ?? 0
+            } else {
+                height = presentedViewController.view.requiredHeight
+            }
+            
             let safeArea = UIApplication.shared.windowSafeAreaInsets.top
             let screenHeight = UIScreen.main.bounds.height
             return screenHeight - height - safeArea
@@ -70,6 +77,7 @@ open class ModalPresentationController: UIPresentationController {
     }
     
     public var shouldUseIntrinsicHeight: Bool
+    public var appliesPerspectiveTransform: Bool
     
     // MARK: Public Properties
     
@@ -84,12 +92,13 @@ open class ModalPresentationController: UIPresentationController {
     
     // MARK: Initializers
     
-    required public init(presentedViewController: UIViewController, presenting presentingViewController: UIViewController?, canTapToDismiss: Bool = true, canSwipeDownToDismiss: Bool = true, shouldUseIntrinsicHeight: Bool = false) {
+    required public init(presentedViewController: UIViewController, presenting presentingViewController: UIViewController?, canTapToDismiss: Bool = true, canSwipeDownToDismiss: Bool = true, shouldUseIntrinsicHeight: Bool = false, appliesPerspectiveTransform: Bool = true) {
         self.canTapToDismiss = canTapToDismiss
         self.canSwipeDownToDismiss = canSwipeDownToDismiss
         self.shouldUseIntrinsicHeight = shouldUseIntrinsicHeight
         self.presentedCornerRadius = presentedViewController.view.layer.cornerRadius
         self.presentingCornerRadius = presentingViewController?.view.layer.cornerRadius ?? 0
+        self.appliesPerspectiveTransform = appliesPerspectiveTransform
         super.init(presentedViewController: presentedViewController, presenting: presentingViewController)
     }
     
@@ -109,8 +118,8 @@ open class ModalPresentationController: UIPresentationController {
 
         // Configure the presented view.
         containerView?.addSubview(presentedView)
-        presentedView.layoutIfNeeded()
         presentedView.frame = frameOfPresentedViewInContainerView
+        presentedView.layoutIfNeeded()
         presentedView.frame.origin.y = containerBounds.height
         presentedView.layer.masksToBounds = true
         presentedView.layer.cornerRadius = 20
@@ -133,7 +142,7 @@ open class ModalPresentationController: UIPresentationController {
         if canTapToDismiss { dismissBackground.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(dismiss))) }
         
         presentedViewController.transitionCoordinator?.animate(alongsideTransition: { [unowned self] _ in
-            self.presentingViewController.view.layer.transform = self.calculatePerspectiveTransform()
+            if self.appliesPerspectiveTransform { self.presentingViewController.view.layer.transform = self.calculatePerspectiveTransform() }
             self.presentingViewController.view.layer.cornerRadius = 20
             self.presented?.view.layer.cornerRadius = 20
             self.background.alpha = 0.5
