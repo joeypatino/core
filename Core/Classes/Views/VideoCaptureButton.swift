@@ -207,8 +207,6 @@ public class VideoCaptureButton: UIButton {
     // MARK: - Public
     
     public func addTime(_ fromValue: CGFloat = 0.0, toValue: CGFloat = 1.0, adjustStrokeEnd: Bool = true) {
-        //print(#function, fromValue, toValue)
-        
         self.strokeEnd = toValue
         self.addLineDash(isClosed: self.strokeEnd == 1.0)
         

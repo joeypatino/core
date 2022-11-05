@@ -34,6 +34,7 @@ open class VideoPlayerViewController: UIViewController {
         set { playerViewController.videoGravity = newValue }
     }
     @Published public var isPlaying: Bool = false
+    @Published public var playbackRate: Float = 0
     public var playbackCompletionAction: PlaybackCompletionAction = .stop
     public var player: AVPlayer
     public var playbackComplete: (CMTime) -> Void = { _ in }
@@ -153,7 +154,10 @@ open class VideoPlayerViewController: UIViewController {
     public override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         if keyPath == #keyPath(AVPlayer.rate) {
             DispatchQueue.main.async { self.controls.playbackRate = self.player.rate }
-            DispatchQueue.main.async { self.isPlaying = self.player.rate != 0.0 }
+            DispatchQueue.main.async {
+                self.isPlaying = self.player.rate != 0.0
+                self.playbackRate = self.player.rate
+            }
         } else if keyPath == #keyPath(AVPlayer.timeControlStatus) {
             DispatchQueue.main.async { self.timeControlStatus = self.player.timeControlStatus }
         } else if keyPath == #keyPath(AVPlayerItem.status) {
