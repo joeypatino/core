@@ -17,22 +17,24 @@ public class AssetSource {
         resource = AVAssetTrackResource(asset: asset)
         trackItem = TrackItem(resource: resource)
         trackItem.videoConfiguration.contentMode = .aspectFill
-        trackItem.videoTransition = CrossDissolveTransition(duration: AssetSource.DEFAULT_TRANSITION_DURATION)
+        trackItem.videoTransition = NoneTransition()
         trackItem.audioTransition = FadeInOutAudioTransition(duration: AssetSource.DEFAULT_TRANSITION_DURATION)
         resource.prepare(completion: { _, _ in })
     }
     
+    public init(urlAsset: AVURLAsset) {
+        resource = AVURLAssetTrackResource(asset: urlAsset)
+        trackItem = TrackItem(resource: resource)
+        trackItem.videoConfiguration.contentMode = .aspectFill
+        trackItem.videoTransition = CrossDissolveTransition(duration: AssetSource.DEFAULT_TRANSITION_DURATION)
+        trackItem.audioTransition = FadeInOutAudioTransition(duration: AssetSource.DEFAULT_TRANSITION_DURATION)
+        resource.prepare(completion: { _, _ in })
+    }
+
     public init(asset: PHAsset) {
         switch asset.mediaType {
         case .video:
             resource = PHAssetTrackResource(phasset: asset)
-//        case .image:
-//            switch asset.playbackStyle {
-//            case .livePhoto:
-//                resource = PHAssetLivePhotoResource(phasset: asset)
-//            default:
-//                resource = PHAssetImageResource(asset: asset, duration: Asset.DEFAULT_PHOTO_DURATION)
-//            }
         default:
             resource = PHAssetImageResource(asset: asset, duration: Asset.DEFAULT_PHOTO_DURATION)
         }
@@ -40,7 +42,6 @@ public class AssetSource {
         trackItem = TrackItem(resource: resource)
         trackItem.videoConfiguration.contentMode = .aspectFill
         trackItem.videoTransition = CrossDissolveTransition(duration: AssetSource.DEFAULT_TRANSITION_DURATION)
-        //print("[ASSETSOURCE.RESOURCE.SELECTED_TIMERANGE]", resource.selectedTimeRange.start.seconds, " - ", resource.selectedTimeRange.end.seconds)
         resource.prepare(completion: { _, _ in })
     }
 }

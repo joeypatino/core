@@ -57,7 +57,7 @@ public class Composition: Codable {
         CompositionGenerator(timeline: timeline).buildImageGenerator()
     }
     public var exportSession: AVAssetExportSession {
-        CompositionGenerator(timeline: timeline).buildExportSession(presetName: AVAssetExportPreset1280x720, outputDirectory: FileManager.default.cachesDirectory)!
+        CompositionGenerator(timeline: timeline).buildExportSession(presetName: AVAssetExportPresetHighestQuality, outputDirectory: FileManager.default.cachesDirectory)!
     }
     public private(set) var videoLayers: [Layer] {
         didSet { timeline.videoChannel = videoLayers.map { $0.asset.source.trackItem } }

@@ -156,7 +156,7 @@ open class VideoPlayerViewController: UIViewController {
             DispatchQueue.main.async { self.controls.playbackRate = self.player.rate }
             DispatchQueue.main.async {
                 self.isPlaying = self.player.rate != 0.0
-                self.playbackRate = self.player.rate
+                if self.lastProgress != .zero { self.playbackRate = self.player.rate }
             }
         } else if keyPath == #keyPath(AVPlayer.timeControlStatus) {
             DispatchQueue.main.async { self.timeControlStatus = self.player.timeControlStatus }
