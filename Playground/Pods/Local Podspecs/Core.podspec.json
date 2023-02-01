@@ -1,6 +1,6 @@
 {
   "name": "Core",
-  "version": "0.2.6",
+  "version": "0.2.8",
   "summary": "A collection iOS User interface elements and extensions to speed up your iOS development.",
   "description": "Core is a collection iOS User interface elements and extensions to speed up your iOS development.",
   "homepage": "https://www.github.com/joeypatino/core",
@@ -13,7 +13,7 @@
   },
   "source": {
     "git": "git@github.com:joeypatino/core.git",
-    "tag": "0.2.6"
+    "tag": "0.2.8"
   },
   "source_files": "Core/Classes/**/*",
   "platforms": {

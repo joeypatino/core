@@ -28,3 +28,10 @@ public extension URL {
         return self.appending(queryItems: [queryItem])
     }
 }
+
+public extension URL {    
+    func queryParameter(named: String, resolvingAgainstBaseURL: Bool = true) -> String? {
+      guard let url = URLComponents(url: self, resolvingAgainstBaseURL: resolvingAgainstBaseURL) else { return nil }
+      return url.queryItems?.first(where: { $0.name == named })?.value
+    }
+}

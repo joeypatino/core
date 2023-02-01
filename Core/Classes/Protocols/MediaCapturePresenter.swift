@@ -60,6 +60,10 @@ extension MediaCapturePresenter where Self: UIViewController {
     }
     
     private func showImagePicker(withType type: UIImagePickerController.SourceType) {
+        if UIDevice.isSimulator && type == .camera {
+            imagePicker.delegate?.imagePickerController?(imagePicker, didFinishPickingMediaWithInfo: [.originalImage: simulatorPhoto()])
+            return
+        }
         defer {
             let status = PHPhotoLibrary.authorizationStatus()
             if status == .notDetermined  { PHPhotoLibrary.requestAuthorization({status in }) }
@@ -113,5 +117,54 @@ extension UIImagePickerController.CameraDevice {
         @unknown default:
             return .rear
         }
+    }
+}
+
+extension MediaCapturePresenter {
+    private func simulatorPhoto() -> UIImage {
+        defer { UIGraphicsEndImageContext() }
+        
+        let backgroundColor = UIColor.random
+        let resolution = ImageResolution.sixteen
+        let description = "The camera is not\navailable in the simulator\n" + Date().localizedString()
+        let size = UIDevice.current.orientation.isPortrait
+        ? resolution.portrait
+        : resolution.landscape
+        let rect = CGRect(origin: .zero, size: size)
+        UIGraphicsBeginImageContextWithOptions(size, true, 1)
+        backgroundColor.setFill()
+        UIRectFill(rect)
+        let paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.alignment = .center
+        let attributes: [NSAttributedString.Key: Any]?
+        attributes = [.font: UIFont.systemFont(ofSize: 160, weight: .medium),
+                      .foregroundColor: UIColor.white,
+                      .paragraphStyle: paragraphStyle]
+        
+        let image = UIGraphicsGetImageFromCurrentImageContext()
+        return image!.overlay(string: description, withAttributes: attributes)!
+    }
+}
+
+fileprivate extension UIImage {
+    func overlay(string: String?, withAttributes attributes: [NSAttributedString.Key: Any]? = nil) -> UIImage? {
+        guard let string = string else { return self }
+        UIGraphicsBeginImageContextWithOptions(size, false, scale)
+        let rect = CGRect(origin: .zero, size: size)
+        
+        draw(in: rect)
+        string.drawCentered(in: rect, attributes: attributes)
+        return UIGraphicsGetImageFromCurrentImageContext()
+    }
+}
+
+
+fileprivate extension Date {
+    func localizedString(dateStyle: DateFormatter.Style = .medium, timeStyle: DateFormatter.Style = .medium) -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = dateStyle
+        formatter.timeStyle = timeStyle
+        
+        return formatter.string(from: self)
     }
 }

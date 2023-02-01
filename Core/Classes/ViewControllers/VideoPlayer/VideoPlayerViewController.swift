@@ -36,7 +36,7 @@ open class VideoPlayerViewController: UIViewController {
     @Published public var isPlaying: Bool = false
     @Published public var playbackRate: Float = 0
     public var playbackCompletionAction: PlaybackCompletionAction = .stop
-    public var player: AVPlayer
+    public let player: AVPlayer
     public var playbackComplete: (CMTime) -> Void = { _ in }
     public var timeAndDurationObserver: (CMTime, CMTime) -> Void = { _, _ in }
     private let playerViewController = AVPlayerViewController()
@@ -66,6 +66,10 @@ open class VideoPlayerViewController: UIViewController {
         self.playerItem = AVPlayerItem(asset: asset)
         self.player = AVPlayer(playerItem: playerItem)
         super.init(nibName: nil, bundle: nil)
+        registerPlayerItemObservers(playerItem)
+        player.addObserver(self, forKeyPath: #keyPath(AVPlayer.rate), options: [.new], context: nil)
+        player.addObserver(self, forKeyPath: #keyPath(AVPlayer.timeControlStatus), options: [.new], context: nil)
+
     }
     
     public init(playerItem: AVPlayerItem) {
@@ -73,6 +77,10 @@ open class VideoPlayerViewController: UIViewController {
         self.playerItem = playerItem
         self.player = AVPlayer(playerItem: playerItem)
         super.init(nibName: nil, bundle: nil)
+        registerPlayerItemObservers(playerItem)
+        player.addObserver(self, forKeyPath: #keyPath(AVPlayer.rate), options: [.new], context: nil)
+        player.addObserver(self, forKeyPath: #keyPath(AVPlayer.timeControlStatus), options: [.new], context: nil)
+
     }
     
     required public init?(coder: NSCoder) {
@@ -96,10 +104,8 @@ open class VideoPlayerViewController: UIViewController {
         layout()
     }
     
+    private var didRegister = false
     private func setup() {
-        registerPlayerItemObservers(playerItem)
-        player.addObserver(self, forKeyPath: #keyPath(AVPlayer.rate), options: [.new], context: nil)
-        player.addObserver(self, forKeyPath: #keyPath(AVPlayer.timeControlStatus), options: [.new], context: nil)
         timeObserver = player.addPeriodicTimeObserver(forInterval: CMTime(value: 1, timescale: 30), queue: .main) { [weak self] progress in
             guard let self = self else { return }
             guard let duration = self.player.currentItem?.duration else { return }
@@ -113,7 +119,6 @@ open class VideoPlayerViewController: UIViewController {
         playerViewController.player = player
         playerViewController.showsPlaybackControls = false
         playerViewController.updatesNowPlayingInfoCenter = false
-        
     }
     
     private func layout() {

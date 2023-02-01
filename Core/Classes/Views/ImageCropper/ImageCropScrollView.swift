@@ -1,6 +1,8 @@
 import UIKit
+import Combine
 
 public class ImageCropScrollView: UIScrollView {
+    @Published public var contentOffsetSubject = PassthroughSubject<CGPoint, Never>()
     public let imageView = UIImageView()
     public var imageToDisplay: UIImage? = nil {
         didSet{
@@ -9,6 +11,7 @@ public class ImageCropScrollView: UIScrollView {
             imageView.image = imageToDisplay
             imageView.frame.size = sizeForImageToDisplay()
             imageView.center = center
+            imageView.bounds = imageView.frame
             contentSize = imageView.frame.size
             contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
             updateLayout()
@@ -100,7 +103,7 @@ public class ImageCropScrollView: UIScrollView {
         return  CGSize(width: actualWidth, height: actualHeight)
     }
     
-    public func zoomScaleWithNoWhiteSpaces() -> CGFloat{
+    public func zoomScaleWithNoWhiteSpaces() -> CGFloat {
         let imageViewSize:CGSize  = imageView.bounds.size
         let scrollViewSize:CGSize = bounds.size;
         let widthScale:CGFloat  = scrollViewSize.width / imageViewSize.width
@@ -150,5 +153,6 @@ extension ImageCropScrollView: UIScrollViewDelegate {
             break
         default: break
         }
+        contentOffsetSubject.send(scrollView.contentOffset)
     }
 }

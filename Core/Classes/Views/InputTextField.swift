@@ -16,6 +16,7 @@ public protocol InputTextFieldDelegate: AnyObject {
     func textFieldDidChange(_ textField: InputTextField)
     func textFieldDidEndEditing(_ textField: InputTextField)
     func textFieldDidReturn(_ textField: InputTextField)
+    func textFieldShouldReturn(_ textField: InputTextField) -> Bool
     func textField(_ textField: InputTextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool
     func textField(_ textField: InputTextField, didChangeFocus isFocused: Bool)
     func textField(_ textField: InputTextField, didUpdateValidation error: String?)
@@ -27,6 +28,7 @@ extension InputTextFieldDelegate {
     public func textFieldDidChange(_ textField: InputTextField) {}
     public func textFieldDidEndEditing(_ textField: InputTextField) {}
     public func textFieldDidReturn(_ textField: InputTextField) {}
+    public func textFieldShouldReturn(_ textField: InputTextField) -> Bool { true }
     public func textField(_ textField: InputTextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool { true }
     public func textField(_ textField: InputTextField, didChangeFocus isFocused: Bool) {}
     public func textField(_ textField: InputTextField, didUpdateValidation error: String?) {}
@@ -54,6 +56,10 @@ public final class InputTextField: UIView {
         get { textField.text.orEmpty }
         set { textField.text = newValue; updateClearButton() }
     }
+    public var attributedText: NSAttributedString? {
+        get { textField.attributedText }
+        set { textField.attributedText = newValue; updateClearButton() }
+    }
     public var placeholder: String {
         get { textField.placeholder.orEmpty }
         set { textField.placeholder = newValue; updatePlaceholder() }
@@ -61,7 +67,7 @@ public final class InputTextField: UIView {
     public var placeholderFont: UIFont? {
         didSet { updatePlaceholder() }
     }
-    public var placeholderColor: UIColor = UIColor.gray.withAlphaComponent(0.7) {
+    public var placeholderColor: UIColor = UIColor.gray.withAlphaComponent(0.85) {
         didSet { updatePlaceholder() }
     }
     public var placeholderKern: Float = 0.0 {
@@ -217,8 +223,19 @@ public final class InputTextField: UIView {
     /// temporary invalidation state
     private var isMarkedInvalid: Bool = false
 
-    private var focusedHeaderOffset: CGPoint = .init(x: 16, y: 12)
-    private var unFocusedHeaderOffset: CGPoint = .init(x: 16, y: 20)
+    public var focusedHeaderOffset: CGPoint = .init(x: 16, y: 12) {
+        didSet {
+            headerTopHeightConstraint.constant = focusedHeaderOffset.x
+            headerLeadingConstraint.constant = focusedHeaderOffset.y
+        }
+    }
+    public var unFocusedHeaderOffset: CGPoint = .init(x: 16, y: 20) {
+        didSet {
+            headerTopHeightConstraint.constant = focusedHeaderOffset.x
+            headerLeadingConstraint.constant = focusedHeaderOffset.y
+        }
+    }
+    
     private var borderWidth: CGFloat {
         borderStyle == .focused ? focusedBorderWidth : unFocusedBorderWidth
     }
@@ -580,7 +597,7 @@ public final class InputTextField: UIView {
 }
 
 extension InputTextField: UITextFieldDelegate {
-    @objc private func textFieldDidChange(_ textField: UITextField) {
+    @objc public func textFieldDidChange(_ textField: UITextField) {
         editActions.insert(.edit)
         delegate?.textFieldDidChange(self)
         updateValidationIfNeeded()
@@ -614,6 +631,7 @@ extension InputTextField: UITextFieldDelegate {
     }
 
     public func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        guard delegate?.textFieldShouldReturn(self) == true else { return false }
         textField.resignFirstResponder()
         delegate?.textFieldDidReturn(self)
         return true

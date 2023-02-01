@@ -67,6 +67,25 @@ public class Composition: Codable {
     }
     
     private let timeline = Timeline()
+    public var backgroundAudio: AVAsset? {
+        didSet { updateBackgroundAudio() }
+    }
+    
+    private var _backgroundAudioTrack: TrackItem = TrackItem(resource: Resource())
+    public var backgroundAudioConfiguration: AudioConfiguration {
+        _backgroundAudioTrack.audioConfiguration
+    }
+    
+    private var _audioTrack: TrackItem = TrackItem(resource: Resource())
+    public var audioConfiguration: AudioConfiguration {
+        _audioTrack.audioConfiguration
+    }
+    public func setAudioVolume(_ volume: Float) {
+        audioConfiguration.volume = volume
+        audioLayers.forEach { $0.trackItem.audioConfiguration.volume = volume }
+        videoLayers.forEach { $0.trackItem.audioConfiguration.volume = volume }
+        didUpdateVideoLayers()
+    }
     
     public init(videoLayers: [Layer] = [], audioLayers: [Layer] = [], renderSize: CGSize = CGSize(width: 1080, height: 1920)) {
         self.videoLayers = videoLayers
@@ -75,7 +94,7 @@ public class Composition: Codable {
         timeline.renderSize = renderSize
         timeline.videoChannel = videoLayers.map { $0.asset.source.trackItem }
         timeline.audioChannel = audioLayers.map { $0.asset.source.trackItem }
-        
+        timeline.audios = [_backgroundAudioTrack]
         didUpdateVideoLayers()
     }
 
@@ -179,20 +198,35 @@ public class Composition: Codable {
     
     // MARK: Private
     
+    private func updateBackgroundAudio() {
+        if let asset = backgroundAudio {
+            _backgroundAudioTrack.resource = AVAssetTrackResource(asset: asset)
+            _backgroundAudioTrack.resource.selectedTimeRange = CMTimeRange(start: .zero, end: timeline.videoChannel.last?.timeRange.end ?? .zero)
+//            print("playerItem.duration", playerItem.duration)
+//            print("_backgroundAudioTrack", _backgroundAudioTrack.duration)
+//            print("videoChannel", timeline.videoChannel.last?.timeRange.end ?? .zero)
+            timeline.audios = [_backgroundAudioTrack]
+        } else {
+            timeline.audios = []
+        }
+    }
+    
     private func didUpdateVideoLayers() {
         do {
             try Timeline.reloadVideoStartTime(providers: timeline.videoChannel)
+            updateBackgroundAudio()
         } catch {
             print("Error", error)
         }
     }
     
     private func didUpdateAudioLayers() {
-        do {
-            try Timeline.reloadVideoStartTime(providers: timeline.videoChannel)
-        } catch {
-            print("Error", error)
-        }
+//        do {
+//            try Timeline.reloadAudioStartTime(providers: timeline.audioChannel)
+//            updateBackgroundAudio()
+//        } catch {
+//            print("Error", error)
+//        }
     }
 
     // Coding

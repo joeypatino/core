@@ -1,9 +1,21 @@
 import UIKit
 
-public final class TextView: UITextView {
+open class TextView: UITextView {
     public let placeholderLabel: UILabel = UILabel()
     public let headerLabel: UILabel = UILabel()
     private var placeholderLabelConstraints = [NSLayoutConstraint]()
+    
+    public var attributedPlaceholder: NSAttributedString? {
+        didSet {
+            self.placeholder = attributedPlaceholder?.string ?? ""
+            guard let attr = attributedPlaceholder?.attributes(at: 0, effectiveRange: nil) else {
+                return
+            }
+            placeholderFont = (attr[.font] as? UIFont) ?? font
+            placeholderColor = (attr[.foregroundColor] as? UIColor) ?? textColor ?? UIColor(red:0.8, green:0.8, blue:0.8, alpha:1)
+            placeholderLabel.attributedText = attributedPlaceholder
+        }
+    }
     
     public var placeholder: String = "" {
         didSet {
@@ -144,7 +156,7 @@ public final class TextView: UITextView {
         placeholderLabel.isHidden = !text.isEmpty
     }
     
-    public override func layoutSubviews() {
+    open override func layoutSubviews() {
         super.layoutSubviews()
         placeholderLabel.preferredMaxLayoutWidth = textContainer.size.width - textContainer.lineFragmentPadding * 2.0
     }

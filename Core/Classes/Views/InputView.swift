@@ -123,14 +123,14 @@ open class InputView: UIView {
     }
     
     private let footer = UILabel(font: .systemFont(ofSize: 12.0, weight: .regular), color: .lightGray)
-    internal let textView: InputTextView
+    internal let textView: CoreInputTextView
     
     public init(headerLabel: UILabel = UILabel(),
                 placeholder: String? = nil,
                 headerText: String? = nil,
                 footerText: String? = nil,
                 defaultText: String? = nil) {
-        self.textView = InputTextView(headerLabel: headerLabel, header: headerText, placeholder: placeholder, defaultValue: defaultText)
+        self.textView = CoreInputTextView(headerLabel: headerLabel, header: headerText, placeholder: placeholder, defaultValue: defaultText)
         super.init(frame: .zero)
         footer.text = footerText
         setup()
@@ -195,15 +195,15 @@ open class InputView: UIView {
 }
 
 extension InputView: InputTextViewDelegate {
-    public func textViewDidChange(_ textView: InputTextView) {
+    public func textViewDidChange(_ textView: CoreInputTextView) {
         text = textView.text
     }
     
-    public func textViewDidEndEditing(_ textView: InputTextView) {
+    public func textViewDidEndEditing(_ textView: CoreInputTextView) {
         text = textView.text
     }
     
-    public func textView(_ textView: InputTextView, didUpdateValidation error: String?) {
+    public func textView(_ textView: CoreInputTextView, didUpdateValidation error: String?) {
         guard let error = error else {
             self.error = ""
             return

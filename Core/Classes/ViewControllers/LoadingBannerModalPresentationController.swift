@@ -5,14 +5,43 @@ public final class LoadingBannerModalPresentationController: ModalPresentationCo
     private var bannerBackground = UIVisualEffectView(effect: UIBlurEffect(style: .dark))
     private var isLoading: Bool = false
     
-    public init(banner: UIView, presentedViewController: UIViewController, presenting presentingViewController: UIViewController?, canTapToDismiss: Bool = true, canSwipeDownToDismiss: Bool = true, shouldUseIntrinsicHeight: Bool = false, appliesPerspectiveTransform: Bool = true) {
+    public init(banner: UIView,
+                presentedViewController: UIViewController,
+                presenting presentingViewController: UIViewController?,
+                canTapToDismiss: Bool = true,
+                canSwipeDownToDismiss: Bool = true,
+                shouldUseIntrinsicHeight: Bool = false,
+                usesSafeAreas: Bool = true,
+                presentedViewCornerRadius: CGFloat = 20,
+                appliesPerspectiveTransform: Bool = true) {
         self.banner = banner
-        super.init(presentedViewController: presentedViewController, presenting: presentingViewController, canTapToDismiss: canTapToDismiss, canSwipeDownToDismiss: canSwipeDownToDismiss, shouldUseIntrinsicHeight: shouldUseIntrinsicHeight, appliesPerspectiveTransform: appliesPerspectiveTransform)
+        super.init(presentedViewController: presentedViewController,
+                   presenting: presentingViewController,
+                   canTapToDismiss: canTapToDismiss,
+                   canSwipeDownToDismiss: canSwipeDownToDismiss,
+                   shouldUseIntrinsicHeight: shouldUseIntrinsicHeight,
+                   usesSafeAreas: usesSafeAreas,
+                   presentedViewCornerRadius: presentedViewCornerRadius,
+                   appliesPerspectiveTransform: appliesPerspectiveTransform)
         self.bannerBackground.isUserInteractionEnabled = false
     }
     
-    required public init(presentedViewController: UIViewController, presenting presentingViewController: UIViewController?, canTapToDismiss: Bool = true, canSwipeDownToDismiss: Bool = true, shouldUseIntrinsicHeight: Bool = false, appliesPerspectiveTransform: Bool = true) {
-        super.init(presentedViewController: presentedViewController, presenting: presentingViewController, canTapToDismiss: canTapToDismiss, canSwipeDownToDismiss: canSwipeDownToDismiss, shouldUseIntrinsicHeight: shouldUseIntrinsicHeight, appliesPerspectiveTransform: appliesPerspectiveTransform)
+    required public init(presentedViewController: UIViewController,
+                         presenting presentingViewController: UIViewController?,
+                         canTapToDismiss: Bool = true,
+                         canSwipeDownToDismiss: Bool = true,
+                         shouldUseIntrinsicHeight: Bool = false,
+                         usesSafeAreas: Bool = true,
+                         presentedViewCornerRadius: CGFloat = 20,
+                         appliesPerspectiveTransform: Bool = true) {
+        super.init(presentedViewController: presentedViewController,
+                   presenting: presentingViewController,
+                   canTapToDismiss: canTapToDismiss,
+                   canSwipeDownToDismiss: canSwipeDownToDismiss,
+                   shouldUseIntrinsicHeight: shouldUseIntrinsicHeight,
+                   usesSafeAreas: usesSafeAreas,
+                   presentedViewCornerRadius: presentedViewCornerRadius,
+                   appliesPerspectiveTransform: appliesPerspectiveTransform)
     }
     
     public override var frameOfPresentedViewInContainerView: CGRect {

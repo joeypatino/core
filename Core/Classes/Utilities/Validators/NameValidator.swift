@@ -7,7 +7,7 @@ public struct NameValidator: ValidatorType {
         self.validationHint = validationHint
     }
     public func isValid(_ input: String) -> Bool {
-        let components = input.components(separatedBy: " ")
+        let components = input.components(separatedBy: " ").filter { $0.lengthOfBytes(using: .utf8) > 0 }
         return components.count == 2
     }
 }

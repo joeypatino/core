@@ -63,6 +63,10 @@ open class ScrollingStackView: UIScrollView {
         super.init(coder: aDecoder)
         commonInit()
     }
+    
+    public convenience init(_ subviews: [UIView] = [], axis: NSLayoutConstraint.Axis, alignment: UIStackView.Alignment = .fill, distribution: UIStackView.Distribution = .fill, spacing: CGFloat = 0) {
+        self.init(axis: axis, subviews: subviews, distribution: distribution, alignment: alignment)
+    }
 
     public convenience init(axis: NSLayoutConstraint.Axis, subviews: [UIView] = [], distribution: UIStackView.Distribution = .fill, alignment: UIStackView.Alignment = .fill) {
         self.init(frame: .zero)
@@ -147,18 +151,18 @@ public extension StackView {
         addArrangedSubview(stack)
     }
     
-    func addArrangedSubview(_ views: [UIView], leadingMargin leading: CGFloat = 0, trailingMargin trailing: CGFloat = 0) {
+    func addArrangedSubview(_ views: [UIView], leadingMargin leading: CGFloat = 0, trailingMargin trailing: CGFloat = 0, alignment: UIStackView.Alignment = .fill, distribution: UIStackView.Distribution = .fill, spacing: CGFloat = 6) {
         let stack = UIStackView()
         switch axis {
         case .horizontal:
             stack.axis = .vertical
             stack.addArrangedSubview(Spacer(orientation: .vertical(height: leading)))
-            stack.addArrangedSubview(UIStackView(views, axis: .vertical, alignment: .fill, distribution: .fill, spacing: 6))
+            stack.addArrangedSubview(UIStackView(views, axis: .vertical, alignment: alignment, distribution: distribution, spacing: spacing))
             stack.addArrangedSubview(Spacer(orientation: .vertical(height: trailing)))
         case .vertical:
             stack.axis = .horizontal
             stack.addArrangedSubview(Spacer(orientation: .horizonal(width: leading)))
-            stack.addArrangedSubview(UIStackView(views, axis: .horizontal, alignment: .fill, distribution: .fill, spacing: 6))
+            stack.addArrangedSubview(UIStackView(views, axis: .horizontal, alignment: alignment, distribution: distribution, spacing: spacing))
             stack.addArrangedSubview(Spacer(orientation: .horizonal(width: trailing)))
         @unknown default:
             break

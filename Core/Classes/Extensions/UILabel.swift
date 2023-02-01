@@ -37,6 +37,16 @@ public extension UILabel {
                           options: [direction.transition],
                           animations: animate)
     }
+    
+    func setTitle(_ title: String?, duration: TimeInterval = 0.4, direction: FlipDirection = .fromTop, animated: Bool = true) {
+        let animate = {
+            self.text = title
+        }
+        UIView.transition(with: self,
+                          duration: animated ? duration : 0.0,
+                          options: [direction.transition],
+                          animations: animate)
+    }
 }
 
 public extension UILabel {

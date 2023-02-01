@@ -12,6 +12,28 @@ public struct Keychain {
         self.serviceId = serviceId
     }
     
+    public func storeData(_ data: Data, forKey key: String) throws {
+        /// drop the object. required for some reason?...
+        try remove(forKey: key)
+
+        do {
+            _ = try retrieveData(forKey: key)
+            var newItem = keychainQuery(withService: serviceId)
+            newItem[kSecValueData as String] = data as AnyObject?
+            
+            let status = SecItemAdd(newItem as CFDictionary, nil)
+            // Throw an error if an unexpected status was returned.
+            guard status == noErr else { throw KeychainError.unhandled(status: status) }
+        } catch {
+            var attributesToUpdate: [String : AnyObject] = [:]
+            attributesToUpdate[kSecValueData as String] = data as AnyObject?
+            
+            let query = keychainQuery(withService: serviceId)
+            let status = SecItemUpdate(query as CFDictionary, attributesToUpdate as CFDictionary)
+            guard status == noErr else { throw KeychainError.unhandled(status: status) }
+        }
+    }
+    
     public func store<M>(_ value: M, for key: String) throws where M: Codable {
         /// drop the object. required for some reason?...
         try remove(forKey: key)
@@ -40,6 +62,16 @@ public struct Keychain {
     }
     
     public func retrieve<M>(forKey key: String) throws -> M where M: Codable {
+        let data = try retrieveData(forKey: key)
+
+        // Parse the value from the query result
+        guard let value = try? JSONDecoder().decode(M.self, from: data)
+            else { throw KeychainError.unexpectedData }
+        
+        return value
+    }
+    
+    public func retrieveData(forKey key: String) throws -> Data {
         var query = keychainQuery(withService: serviceId)
         query[kSecMatchLimit as String] = kSecMatchLimitOne
         query[kSecReturnAttributes as String] = kCFBooleanTrue
@@ -54,14 +86,13 @@ public struct Keychain {
         // Check the return status and return if appropriate
         guard status != errSecItemNotFound else { throw KeychainError.notFound }
         guard status == noErr else { throw KeychainError.unhandled(status: status) }
-
+        
         // Parse the value from the query result
         guard let item = queryResult as? [String : AnyObject],
-            let data = item[kSecValueData as String] as? Data,
-            let value = try? JSONDecoder().decode(M.self, from: data)
-            else { throw KeychainError.unexpectedData }
+              let data = item[kSecValueData as String] as? Data
+        else { throw KeychainError.unexpectedData }
         
-        return value
+        return data
     }
     
     public func remove(forKey key: String) throws {
@@ -71,6 +102,13 @@ public struct Keychain {
         
         // Throw an error if an unexpected status was returned.
         guard status == noErr || status == errSecItemNotFound else { throw KeychainError.unhandled(status: status) }
+    }
+    
+    @discardableResult
+    public func clear() -> Bool {
+        let query = keychainQuery(withService: serviceId)
+        let status = SecItemDelete(query as CFDictionary)
+        return status == noErr
     }
     
     // MARK: Private

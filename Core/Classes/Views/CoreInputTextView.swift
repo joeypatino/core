@@ -11,27 +11,26 @@ struct InputTextViewAction: OptionSet {
 
 
 public protocol InputTextViewDelegate: AnyObject {
-    func textViewDidBeginEditing(_ textView: InputTextView)
-    func textViewDidChange(_ textView: InputTextView)
-    func textViewDidEndEditing(_ textView: InputTextView)
-    func textView(_ textView: InputTextView, didChangeFocus isFocused: Bool)
-    func textView(_ textView: InputTextView, didUpdateValidation error: String?)
+    func textViewDidBeginEditing(_ textView: CoreInputTextView)
+    func textViewDidChange(_ textView: CoreInputTextView)
+    func textViewDidEndEditing(_ textView: CoreInputTextView)
+    func textView(_ textView: CoreInputTextView, didChangeFocus isFocused: Bool)
+    func textView(_ textView: CoreInputTextView, didUpdateValidation error: String?)
 }
 
 extension InputTextViewDelegate {
-    public func textViewDidBeginEditing(_ textView: InputTextView) {}
-    public func textViewDidChange(_ textView: InputTextView) {}
-    public func textViewDidEndEditing(_ textView: InputTextView) {}
-    public func textView(_ textView: InputTextView, didChangeFocus isFocused: Bool) {}
-    public func textView(_ textView: InputTextView, didUpdateValidation error: String?) {}
+    public func textViewDidBeginEditing(_ textView: CoreInputTextView) {}
+    public func textViewDidChange(_ textView: CoreInputTextView) {}
+    public func textViewDidEndEditing(_ textView: CoreInputTextView) {}
+    public func textView(_ textView: CoreInputTextView, didChangeFocus isFocused: Bool) {}
+    public func textView(_ textView: CoreInputTextView, didUpdateValidation error: String?) {}
 }
 
-public final class InputTextView: UIView {
+public final class CoreInputTextView: UIView {
     public enum FocusStyle {
         case unfocused
         case focused
     }
-
     public weak var delegate: InputTextViewDelegate?
     
     public var text: String {
@@ -58,6 +57,15 @@ public final class InputTextView: UIView {
     }
     public var placeholderKern: Float = 0.0 {
         didSet { updatePlaceholder() }
+    }
+
+    public var attributedText: NSAttributedString? {
+        get { textView.attributedText }
+        set { textView.attributedText = newValue }
+    }
+    public var linkTextAttributes: [NSAttributedString.Key : Any]! {
+        get { textView.linkTextAttributes }
+        set { textView.linkTextAttributes = newValue }
     }
 
     public var isSecureTextEntry: Bool {
@@ -103,8 +111,18 @@ public final class InputTextView: UIView {
     /// the validators for this text input
     public var validators: [ValidatorType] = []
 
+    public var textContainerInset: UIEdgeInsets {
+        get { textView.textContainerInset }
+        set { textView.textContainerInset = newValue }
+    }
+    public var lineFragmentPadding: CGFloat {
+        get { textView.textContainer.lineFragmentPadding }
+        set { textView.textContainer.lineFragmentPadding = newValue }
+    }
+    
+    public let textView = TextView()
+    
     private var unsecureText = ""
-    private let textView = TextView()
     private let header: UILabel
     private let stack = UIStackView(axis: .horizontal)
     
@@ -310,7 +328,7 @@ public final class InputTextView: UIView {
     }
 }
 
-extension InputTextView: UITextViewDelegate {
+extension CoreInputTextView: UITextViewDelegate {
     public func textViewDidBeginEditing(_ textView: UITextView) {
         isMarkedInvalid = false
         setIsFocusedIfAllowed(true)
@@ -347,7 +365,7 @@ extension InputTextView: UITextViewDelegate {
     }
 }
 
-extension InputTextView {
+extension CoreInputTextView {
     private func updateValidationIfNeeded() {
         updateBorder()
         /// only notify regarding the validation error if we've ended the focus AND have edited the text
@@ -404,7 +422,7 @@ extension InputTextView {
     }
 }
 
-extension InputTextView: NSLayoutManagerDelegate {
+extension CoreInputTextView: NSLayoutManagerDelegate {
     public func layoutManager(_ layoutManager: NSLayoutManager, lineSpacingAfterGlyphAt glyphIndex: Int, withProposedLineFragmentRect rect: CGRect) -> CGFloat {
         6
     }

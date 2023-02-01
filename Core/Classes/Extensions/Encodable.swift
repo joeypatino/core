@@ -10,6 +10,10 @@ public extension Encodable {
     var array: [[String: Any]] {
         (try? JSONSerialization.jsonObject(with: JSONEncoder().encode(self))) as? [[String: Any]] ?? [[:]]
     }
+    
+    func dictionary(_ encoder: JSONEncoder = JSONEncoder()) -> [String: Any] {
+        (try? JSONSerialization.jsonObject(with: encoder.encode(self))) as? [String: Any] ?? [:]
+    }
 }
 
 public extension Encodable {

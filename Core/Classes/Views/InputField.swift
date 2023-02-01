@@ -136,6 +136,16 @@ open class InputField: UIView {
         set { textField.insets = newValue }
     }
     
+    public var focusedHeaderOffset: CGPoint {
+        get { textField.focusedHeaderOffset }
+        set { textField.focusedHeaderOffset = newValue }
+    }
+
+    public var unFocusedHeaderOffset: CGPoint {
+        get { textField.unFocusedHeaderOffset }
+        set { textField.unFocusedHeaderOffset = newValue }
+    }
+    
     private var textInsetLeft = NSLayoutConstraint()
     private var textInsetTop = NSLayoutConstraint()
     private var textInsetRight = NSLayoutConstraint()
