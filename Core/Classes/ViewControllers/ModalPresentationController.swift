@@ -94,9 +94,8 @@ open class ModalPresentationController: UIPresentationController {
     public override var frameOfPresentedViewInContainerView: CGRect {
         guard let containerBounds = containerView?.bounds else { return .zero }
         var frame = containerBounds
-        frame.size.height = (containerBounds.height - topSpacing)
+        frame.size.height = min((containerBounds.height - topSpacing), containerBounds.height)
         frame.origin.y = containerBounds.height - frame.size.height
-        
         return frame
     }
     
