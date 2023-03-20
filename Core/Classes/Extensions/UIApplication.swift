@@ -31,7 +31,7 @@ public extension UIApplication {
     /// - debug: Application is running in debug mode.
     /// - testFlight: Application is installed from Test Flight.
     /// - appStore: Application is installed from the App Store.
-    enum Environment {
+    enum Environment: String, Equatable {
         /// Application is running in debug mode.
         case debug
         /// Application is installed from Test Flight.
@@ -82,5 +82,17 @@ public extension UIApplication {
     /// App's current version number (if applicable).
     var version: String? {
         return Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
+    }
+    
+    var isConnectedToVpn: Bool {
+        if let settings = CFNetworkCopySystemProxySettings()?.takeRetainedValue() as? Dictionary<String, Any>,
+            let scopes = settings["__SCOPED__"] as? [String:Any] {
+            for (key, _) in scopes {
+             if key.contains("tap") || key.contains("tun") || key.contains("ppp") || key.contains("ipsec") {
+                    return true
+                }
+            }
+        }
+        return false
     }
 }
