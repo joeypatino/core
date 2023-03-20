@@ -22,9 +22,9 @@ public extension UIButton {
             right: contentPadding.right + imageTitlePadding
         )
         self.titleEdgeInsets = UIEdgeInsets(
-            top: 0,
+            top: titleEdgeInsets.top,
             left: imageTitlePadding,
-            bottom: 0,
+            bottom: titleEdgeInsets.bottom,
             right: -imageTitlePadding
         )
     }
