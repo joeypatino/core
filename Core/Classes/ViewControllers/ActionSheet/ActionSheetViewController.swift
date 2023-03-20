@@ -71,7 +71,11 @@ public final class ActionSheetViewController: UIViewController {
         let button = ActionSheetButton()
         let action = actions[index]
         button.image = action.icon
-        button.setAttributedTitle(NSAttributedString(string: action.title ?? "", attributes: titleAttributes), for: .normal)
+        var attributes = titleAttributes
+        for (_, attr) in (action.titleAttributes ?? [:]).enumerated() {
+            attributes[attr.key] = attr.value
+        }
+        button.setAttributedTitle(NSAttributedString(string: action.title ?? "", attributes: attributes), for: .normal)
         button.addTarget(self, action: #selector(onAction), for: .touchUpInside)
         button.tag = index
 
