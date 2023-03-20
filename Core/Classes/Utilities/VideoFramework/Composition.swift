@@ -177,7 +177,8 @@ public class Composition: Codable {
             didUpdateVideoLayers()
             didUpdateAudioLayers()
         }
-        if videoLayers.isEmpty && index < videoLayers.count { return nil }
+        if videoLayers.isEmpty { return nil }
+        if index >= videoLayers.count { return nil }
         return videoLayers.remove(at: index)
     }
 
@@ -187,7 +188,8 @@ public class Composition: Codable {
             didUpdateVideoLayers()
             didUpdateAudioLayers()
         }
-        if audioLayers.isEmpty && index < audioLayers.count { return nil }
+        if audioLayers.isEmpty { return nil }
+        if index >= audioLayers.count { return nil }
         return audioLayers.remove(at: index)
     }
     

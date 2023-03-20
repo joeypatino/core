@@ -337,7 +337,7 @@ import AVFoundation
         let height = size.height - thumbView.handleInsetWidth * 2
         thumbnailSize = CGSize(width: height / fixedSize.height * fixedSize.width, height: height)
         let thumbCount = ceil(size.width / thumbnailSize.width)
-        let numberOfThumbnails = Int(thumbCount.isNaN ? 0 : thumbCount)
+        let numberOfThumbnails = max(Int(thumbCount.isNaN ? 0 : thumbCount), 3)
         
         var newThumbnails = Array<Thumbnail>()
         let thumbnailDuration = visibleRange.duration.seconds / Double(numberOfThumbnails)
@@ -741,7 +741,7 @@ import AVFoundation
         let rect = CGRect(origin: .zero, size: size)
         shadowView.frame = rect
         wrapperView.frame = rect
-        thumbView.frame = CGRect(x: left, y: 0, width: max(right - left, inset * 2), height: size.height)
+        thumbView.frame = CGRect(x: left, y: 0, width: max(right - left + inset/2, inset * 2), height: size.height)
         
         let isZoomedToEnd = (trimmingState == .leading && isZoomedIn == true)
         
