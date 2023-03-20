@@ -5,10 +5,7 @@ open class InputField: UIView {
     @Published public var text: String = ""
     @Published public var error: String = ""
     
-    public weak var delegate: InputTextFieldDelegate? {
-        get { textField.delegate }
-        set { textField.delegate = newValue }
-    }
+    public weak var delegate: InputTextFieldDelegate?
 
     public var font: UIFont {
         get { textField.font }
@@ -239,15 +236,22 @@ open class InputField: UIView {
 extension InputField: InputTextFieldDelegate {
     public func textFieldDidChange(_ textField: InputTextField) {
         text = textField.text
+        delegate?.textFieldDidChange(textField)
     }
     public func textFieldDidEndEditing(_ textField: InputTextField) {
         text = textField.text
+        delegate?.textFieldDidEndEditing(textField)
+    }
+    public func textFieldShouldReturn(_ textField: InputTextField) -> Bool {
+        delegate?.textFieldShouldReturn(textField) ?? true
     }
     public func textField(_ textField: InputTextField, didUpdateValidation error: String?) {
         guard let error = error else {
             self.error = ""
+            delegate?.textField(textField, didUpdateValidation: error)
             return
         }
         self.error = error
+        delegate?.textField(textField, didUpdateValidation: error)
     }
 }

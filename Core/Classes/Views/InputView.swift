@@ -2,6 +2,7 @@ import UIKit
 import Combine
 
 open class InputView: UIView {
+    public weak var delegate: InputTextViewDelegate?
     @Published public var text: String = ""
     @Published public var error: String = ""
     
@@ -195,19 +196,27 @@ open class InputView: UIView {
 }
 
 extension InputView: InputTextViewDelegate {
+    public func textView(_ textView: CoreInputTextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
+        delegate?.textView(textView, shouldChangeTextIn: range, replacementText: text) ?? true
+    }
+    
     public func textViewDidChange(_ textView: CoreInputTextView) {
         text = textView.text
+        delegate?.textViewDidChange(textView)
     }
     
     public func textViewDidEndEditing(_ textView: CoreInputTextView) {
         text = textView.text
+        delegate?.textViewDidEndEditing(textView)
     }
     
     public func textView(_ textView: CoreInputTextView, didUpdateValidation error: String?) {
         guard let error = error else {
             self.error = ""
+            delegate?.textView(textView, didUpdateValidation: error)
             return
         }
         self.error = error
+        delegate?.textView(textView, didUpdateValidation: error)
     }
 }

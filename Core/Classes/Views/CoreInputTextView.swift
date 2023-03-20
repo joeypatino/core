@@ -16,6 +16,7 @@ public protocol InputTextViewDelegate: AnyObject {
     func textViewDidEndEditing(_ textView: CoreInputTextView)
     func textView(_ textView: CoreInputTextView, didChangeFocus isFocused: Bool)
     func textView(_ textView: CoreInputTextView, didUpdateValidation error: String?)
+    func textView(_ textView: CoreInputTextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool
 }
 
 extension InputTextViewDelegate {
@@ -24,6 +25,7 @@ extension InputTextViewDelegate {
     public func textViewDidEndEditing(_ textView: CoreInputTextView) {}
     public func textView(_ textView: CoreInputTextView, didChangeFocus isFocused: Bool) {}
     public func textView(_ textView: CoreInputTextView, didUpdateValidation error: String?) {}
+    public func textView(_ textView: CoreInputTextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool { true }
 }
 
 public final class CoreInputTextView: UIView {
@@ -357,8 +359,11 @@ extension CoreInputTextView: UITextViewDelegate {
     }
     public func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
         guard text == "\n" else {
-            unsecureText = (unsecureText as NSString).replacingCharacters(in: range, with: text)
-            return true
+            if delegate?.textView(self, shouldChangeTextIn: range, replacementText: text) == true {
+                unsecureText = (unsecureText as NSString).replacingCharacters(in: range, with: text)
+                return true
+            }
+            return false
         }
         textView.resignFirstResponder()
         return false
