@@ -169,8 +169,12 @@ public final class AssetTimelineView: UIView {
     }
     
     public func reload() {
-        assetViewModels = datasource?.viewAssetsInTimeline(self) ?? []
+        reloadViewModels()
         collection.reloadData()
+    }
+    
+    private func reloadViewModels() {
+        assetViewModels = datasource?.viewAssetsInTimeline(self) ?? []
     }
     
     // MARK: Timeline Adjustment
@@ -236,10 +240,13 @@ public final class AssetTimelineView: UIView {
     public func remove(atIndex index: Int) {
         collection.performBatchUpdates({
             if remove(assetAt: index) {
-                collection.deleteItems(at: [IndexPath(row: index, section: 0)])
+                self.reload()
+//                reloadViewModels()
+//                collection.deleteItems(at: [IndexPath(row: index, section: 0)])
             }
         }, completion: { _ in
             self.delegate?.viewDidEditAssets(self)
+            self.reload()
         })
     }
     
@@ -428,14 +435,17 @@ extension AssetTimelineView: UICollectionViewDropDelegate {
             
             collectionView.performBatchUpdates({
                 if exchange(assetAt: sourceIndexPath.row, with: destinationIndexPath.row) {
-                    collectionView.deleteItems(at: [sourceIndexPath])
-                    collectionView.insertItems(at: [destinationIndexPath])
+                    self.reload()
+//                    self.reload()
+//                    collectionView.deleteItems(at: [sourceIndexPath])
+//                    collectionView.insertItems(at: [destinationIndexPath])
                 }
             }, completion: { _ in
                 if self.selectedIndexPath == sourceIndexPath { self.selectedIndexPath = destinationIndexPath }
                 // collectionView.reloadItems(at: [sourceIndexPath, destinationIndexPath])
                 self.delegate?.viewDidEditAssets(self)
-                collectionView.reloadData()
+                self.reload()
+                // collectionView.reloadData()
                 coordinator.drop(dropItem.dragItem, toItemAt: destinationIndexPath)
             })
         }
@@ -501,13 +511,16 @@ extension AssetTimelineView: UICollectionViewDataSource {
         return cell
     }
     
-    private func deleteItem(atIndexPath indexPath: IndexPath) {
+    public func deleteItem(atIndexPath indexPath: IndexPath) {
         collection.performBatchUpdates({
             if remove(assetAt: indexPath.row) {
-                collection.deleteItems(at: [indexPath])
+//                reloadViewModels()
+//                collection.deleteItems(at: [indexPath])
+                self.reload()
             }
         }, completion: { _ in
             self.delegate?.viewDidEditAssets(self)
+            self.reload()
         })
     }
 }

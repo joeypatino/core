@@ -178,14 +178,20 @@ open class VideoPlayerViewController: UIViewController {
     }
     
     @objc private func playerEndedPlaying(_ notification: Notification) {
+        let duration = self.player.currentItem?.duration ?? CMTime.zero
         DispatchQueue.main.async {
             switch self.playbackCompletionAction {
-            case .repeat:
+            case .repeat where duration.seconds > 0:
                 self.playbackComplete(self.player.currentTime())
                 self.player.seek(to: CMTime.zero)
                 self.lastProgress = .zero
                 self.play()
             case .stop:
+                self.playbackComplete(self.player.currentTime())
+                self.player.seek(to: CMTime.zero)
+                self.lastProgress = .zero
+                self.controls.show()
+            default:
                 self.playbackComplete(self.player.currentTime())
                 self.player.seek(to: CMTime.zero)
                 self.lastProgress = .zero

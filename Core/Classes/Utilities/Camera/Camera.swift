@@ -85,11 +85,11 @@ public final class Camera: NSObject {
     }
     
     public func startRunning() {
-        session.startRunning()
+        DispatchQueue.background.async { self.session.startRunning() }
     }
     
     public func stopRunning() {
-        session.stopRunning()
+        DispatchQueue.background.async { self.session.stopRunning() }
     }
 
     /// starts recording a video. fails if the capture mode is not video
