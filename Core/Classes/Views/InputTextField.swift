@@ -135,10 +135,15 @@ public final class InputTextField: UIView {
         set { textField.returnKeyType = newValue }
     }
     public var displaysHeader: Bool = true {
-        didSet { textTopConstraint.isActive = !displaysHeader }
+        didSet {
+            textTopConstraint.isActive = !displaysHeader
+            insetsTopNoHeaderConstraint.isActive = displaysHeader
+            insetsTopConstraint.isActive = displaysHeader
+        }
     }
     public var insets: UIEdgeInsets = UIEdgeInsets(top: 2, left: 0, bottom: 12, right: 0) {
         didSet {
+            insetsTopNoHeaderConstraint.constant(insets.top)
             insetsTopConstraint.constant(insets.top)
             insetsLeftConstraint.constant(insets.left)
             insetsRightConstraint.constant(-insets.right)
@@ -223,17 +228,22 @@ public final class InputTextField: UIView {
     /// temporary invalidation state
     private var isMarkedInvalid: Bool = false
 
-    public var focusedHeaderOffset: CGPoint = .init(x: 16, y: 12) {
+    public var focusedHeaderOffset: CGPoint {
         didSet {
-            headerTopHeightConstraint.constant = focusedHeaderOffset.x
-            headerLeadingConstraint.constant = focusedHeaderOffset.y
+            headerTopHeightConstraint.constant = focusedHeaderOffset.y
+            headerLeadingConstraint.constant = focusedHeaderOffset.x
         }
     }
-    public var unFocusedHeaderOffset: CGPoint = .init(x: 16, y: 20) {
+    public var unFocusedHeaderOffset: CGPoint {
         didSet {
-            headerTopHeightConstraint.constant = focusedHeaderOffset.x
-            headerLeadingConstraint.constant = focusedHeaderOffset.y
+            headerTopHeightConstraint.constant = focusedHeaderOffset.y
+            headerLeadingConstraint.constant = focusedHeaderOffset.x
         }
+    }
+    
+    public var stackSpacing: CGFloat {
+        get { stack.spacing }
+        set { stack.spacing = newValue }
     }
     
     private var borderWidth: CGFloat {
@@ -269,18 +279,22 @@ public final class InputTextField: UIView {
     private var textTopConstraint = NSLayoutConstraint()
     private var accessoryPresentationConstraints: [AccessoryPresentationDirection: [NSLayoutConstraint]] = [:]
     
+    private var insetsTopNoHeaderConstraint = NSLayoutConstraint()
     private var insetsTopConstraint = NSLayoutConstraint()
     private var insetsRightConstraint = NSLayoutConstraint()
     private var insetsLeftConstraint = NSLayoutConstraint()
     private var insetsBottomConstraint = NSLayoutConstraint()
+    private var stackTrailingConstraint = NSLayoutConstraint()
     
-    public init(headerLabel: UILabel = UILabel(), header: String? = nil, placeholder: String? = nil, defaultValue: String? = nil) {
+    public init(headerLabel: UILabel = UILabel(), header: String? = nil, placeholder: String? = nil, defaultValue: String? = nil, focusedHeaderOffset: CGPoint? = nil, unFocusedHeaderOffset: CGPoint? = nil) {
+        self.focusedHeaderOffset = focusedHeaderOffset ?? .init(x: 16, y: 12)
+        self.unFocusedHeaderOffset = unFocusedHeaderOffset ?? .init(x: 16, y: 20)
         self.header = headerLabel
         self.header.text = header
         self.textField.text = defaultValue
         super.init(frame: .zero)
         self.placeholder = placeholder.orEmpty
-        displaysHeader = header?.isEmpty == false
+        displaysHeader = !header.orEmpty.isEmpty
         setup()
         layout()
         updateFocusStyle()
@@ -297,7 +311,7 @@ public final class InputTextField: UIView {
     public override func updateConstraints() {
         super.updateConstraints()
         removeConstraint(minHeightConstraint)
-        minHeightConstraint = heightAnchor.equalToConstant(minimumHeight)
+        minHeightConstraint = heightAnchor.greaterThanOrEqualToConstant(minimumHeight)
     }
     
     public override var canBecomeFirstResponder: Bool {
@@ -405,7 +419,7 @@ public final class InputTextField: UIView {
 
         addAutoLayoutSubview(stack)
         stack.topAnchor.equalTo(topAnchor)
-        stack.trailingAnchor.equalTo(trailingAnchor, priority: 999).constant(-16)
+        stackTrailingConstraint = stack.trailingAnchor.equalTo(trailingAnchor, priority: 999).constant(-16)
         stackHeightConstraint = stack.heightAnchor.equalToConstant(minimumHeight)
         
         addAutoLayoutSubview(header)
@@ -417,13 +431,17 @@ public final class InputTextField: UIView {
         
         addAutoLayoutSubview(textField)
         textTopConstraint = textField.topAnchor.equalTo(topAnchor).constant(12)
-        textTopConstraint.isActive = !displaysHeader
         
+        insetsTopNoHeaderConstraint = textField.topAnchor.equalTo(topAnchor).constant(insets.top)
         insetsTopConstraint = textField.topAnchor.equalTo(header.bottomAnchor, priority: 999).constant(insets.top)
         insetsLeftConstraint = textField.leadingAnchor.equalTo(header.leadingAnchor).constant(insets.left)
         insetsRightConstraint = textField.trailingAnchor.equalTo(stack.leadingAnchor).constant(-insets.right)
         insetsBottomConstraint = textField.bottomAnchor.equalTo(bottomAnchor).constant(-insets.bottom)
 
+        textTopConstraint.isActive = !displaysHeader
+        insetsTopNoHeaderConstraint.isActive = displaysHeader
+        insetsTopConstraint.isActive = displaysHeader
+        
         updateBorder()
         updateHeader()
     }

@@ -143,6 +143,11 @@ open class InputField: UIView {
         set { textField.unFocusedHeaderOffset = newValue }
     }
     
+    public var stackSpacing: CGFloat {
+        get { textField.stackSpacing }
+        set { textField.stackSpacing = newValue }
+    }
+    
     private var textInsetLeft = NSLayoutConstraint()
     private var textInsetTop = NSLayoutConstraint()
     private var textInsetRight = NSLayoutConstraint()
@@ -155,8 +160,10 @@ open class InputField: UIView {
                 placeholder: String? = nil,
                 headerText: String? = nil,
                 footerText: String? = nil,
-                defaultText: String? = nil) {
-        self.textField = InputTextField(headerLabel: headerLabel, header: headerText, placeholder: placeholder, defaultValue: defaultText)
+                defaultText: String? = nil,
+                focusedHeaderOffset: CGPoint? = nil,
+                unFocusedHeaderOffset: CGPoint? = nil) {
+        self.textField = InputTextField(headerLabel: headerLabel, header: headerText, placeholder: placeholder, defaultValue: defaultText, focusedHeaderOffset: focusedHeaderOffset, unFocusedHeaderOffset: unFocusedHeaderOffset)
         super.init(frame: .zero)
         footer.text = footerText
         setup()

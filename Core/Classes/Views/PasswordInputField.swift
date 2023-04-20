@@ -14,12 +14,14 @@ public final class PasswordInputField: InputField {
     private let togglePassword = TogglePasswordButton()
     
     public override init(headerLabel: UILabel = UILabel(),
-                placeholder: String? = nil,
-                headerText: String? = nil,
-                footerText: String? = nil,
-                defaultText: String? = nil) {
+                         placeholder: String? = nil,
+                         headerText: String? = nil,
+                         footerText: String? = nil,
+                         defaultText: String? = nil,
+                         focusedHeaderOffset: CGPoint? = nil,
+                         unFocusedHeaderOffset: CGPoint? = nil) {
         self.toggleTintColor = headerLabel.tintColor
-        super.init(headerLabel: headerLabel, placeholder: placeholder, headerText: headerText, footerText: footerText, defaultText: defaultText)
+        super.init(headerLabel: headerLabel, placeholder: placeholder, headerText: headerText, footerText: footerText, defaultText: defaultText, focusedHeaderOffset: focusedHeaderOffset, unFocusedHeaderOffset: unFocusedHeaderOffset)
         setup()
         layout()
     }
