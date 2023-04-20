@@ -151,7 +151,7 @@ public extension StackView {
         addArrangedSubview(stack)
     }
     
-    func addArrangedSubview(_ views: [UIView], leadingMargin leading: CGFloat = 0, trailingMargin trailing: CGFloat = 0, alignment: UIStackView.Alignment = .fill, distribution: UIStackView.Distribution = .fill, spacing: CGFloat = 6) {
+    func addArrangedSubview(_ views: [UIView], leadingMargin leading: CGFloat = 0, trailingMargin trailing: CGFloat = 0, alignment: UIStackView.Alignment = .fill, distribution: UIStackView.Distribution = .fill, spacing: CGFloat = 0) {
         let stack = UIStackView()
         switch axis {
         case .horizontal:
