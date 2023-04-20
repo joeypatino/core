@@ -1043,6 +1043,12 @@ public extension Date {
 }
 
 public extension Date {
+    var lastYear: Date {
+        var dateComponents = DateComponents()
+        dateComponents.year = -1
+        return Calendar.current.date(byAdding: dateComponents, to: self) ?? self
+    }
+
     var nextYear: Date {
         var dateComponents = DateComponents()
         dateComponents.year = 1
