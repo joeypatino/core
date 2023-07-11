@@ -28,8 +28,9 @@ public extension ActionSheetViewControllerDelegate {
 }
 
 public final class ActionSheetViewController: UIViewController {
+    public static let defaultTitleAttributes: [NSAttributedString.Key: Any] = [NSAttributedString.Key.font: UIFont.systemFont(ofSize: 16.0, weight: .regular) as Any, .foregroundColor: UIColor.black]
     public var delegate: ActionSheetViewControllerDelegate?
-    public var titleAttributes: [NSAttributedString.Key: Any] = [NSAttributedString.Key.font: UIFont.systemFont(ofSize: 16.0, weight: .regular) as Any, .foregroundColor: UIColor.black] {
+    public var titleAttributes: [NSAttributedString.Key: Any] = ActionSheetViewController.defaultTitleAttributes {
         didSet { stylize() }
     }
     

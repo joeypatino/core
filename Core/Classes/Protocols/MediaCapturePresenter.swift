@@ -11,6 +11,26 @@ public protocol MediaCapturePresenter: ActionSheetViewControllerDelegate, AudioV
 extension MediaCapturePresenter where Self: UIViewController {
     public var defaultCamera: UIImagePickerController.CameraDevice { .front }
     
+    public func presentMediaCapture(_ actions: [ActionSheetAction] = []) {
+        actionSheet = ActionSheetTransitioningDelegate(presentingViewController: self)
+        let viewController = ActionSheetViewController()
+        let imageAction = ActionSheetAction(title: Localization.MediaCapture.openCamera.localizedString, icon: nil, action: {
+            [weak self] in
+            self?.showImagePicker(withType: .camera)
+        })
+        let libraryAction = ActionSheetAction(title: Localization.MediaCapture.openLibrary.localizedString, icon: nil, action: {
+            [weak self] in
+            self?.showImagePicker(withType: .photoLibrary)
+        })
+        viewController.addAction(imageAction)
+        viewController.addAction(libraryAction)
+        actions.forEach { viewController.addAction($0) }
+        viewController.delegate = self
+        viewController.transitioningDelegate = actionSheet
+        viewController.modalPresentationStyle = .custom
+        present(viewController, animated: true)
+    }
+    
     public func presentMediaCaptureOptions() {
         actionSheet = ActionSheetTransitioningDelegate(presentingViewController: self)
         let viewController = ActionSheetViewController()

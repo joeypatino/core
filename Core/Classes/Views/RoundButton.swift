@@ -1,6 +1,6 @@
 import UIKit
 
-public class RoundButton: UIButton {
+open class RoundButton: UIButton {
     override public init(frame: CGRect) {
         super.init(frame: frame)
         setup()
@@ -14,7 +14,7 @@ public class RoundButton: UIButton {
     }
     
     // MARK: - Overrides
-    override public var bounds: CGRect {
+    override open var bounds: CGRect {
         didSet { layer.cornerRadius = bounds.width / 2 }
     }
     
