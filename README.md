@@ -58,9 +58,8 @@ constants among them, are pushed into extensions so component code reads as inte
 
 ## Testing
 
-Components are snapshot tested with
-[FBSnapshotTestCase](https://github.com/uber/ios-snapshot-test-case) in the `Playground`
-workspace, covering each component across its states and configurations.
+The `Playground` project has a test target, currently holding only the template stubs.
+Snapshot coverage of the component matrix is the obvious next step and is not done yet.
 
 ## Installation
 
@@ -78,10 +77,8 @@ is missing fixes the video components rely on. SPM resolves it automatically.
 
 ## Example
 
-The `Playground` workspace renders every component in its states, and is what the snapshot
-tests exercise.
-
-<!-- TODO: Playground still builds through CocoaPods and needs converting to SPM. -->
+The `Playground` app renders the components in their states. Open `Playground/Core.xcodeproj`
+and run; SPM resolves everything.
 
 ## Requirements
 

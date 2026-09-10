@@ -1,4 +1,5 @@
 import CoreGraphics
+import Foundation
 
 public extension Double {
     /// convert to Int.

@@ -29,10 +29,11 @@ public extension ValidatorType {
     }
 }
 
-extension ValidatorType {
-    static func ==(lhs: ValidatorType, rhs: ValidatorType) -> Bool {
-        return lhs.validationId == rhs.validationId
-    }
+// Declared at file scope rather than in a protocol extension: Swift requires an operator
+// declared as a protocol member to take at least one argument of type Self, and this compares
+// two existentials.
+func ==(lhs: any ValidatorType, rhs: any ValidatorType) -> Bool {
+    return lhs.validationId == rhs.validationId
 }
 
 public enum ValidationResult {

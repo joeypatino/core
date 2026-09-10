@@ -1,4 +1,5 @@
 import QuartzCore
+import UIKit
 
 public extension CAShapeLayer {
     convenience init(bezierPath: UIBezierPath, fillColor: UIColor, strokeColor: UIColor? = nil) {

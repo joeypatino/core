@@ -1,0 +1,15 @@
+{
+  "originHash" : "10996bff3054e062c0cf3a1880f93cccaed0f54b29f3774854614a8b18670e65",
+  "pins" : [
+    {
+      "identity" : "cabbage",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/joeypatino/Cabbage.git",
+      "state" : {
+        "revision" : "fcb5cb01460cc5c3342ad15d42bdec1d880dae35",
+        "version" : "0.5.3"
+      }
+    }
+  ],
+  "version" : 3
+}

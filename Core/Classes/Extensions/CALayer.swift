@@ -1,4 +1,5 @@
 import QuartzCore
+import UIKit
 
 public extension CALayer {
     func image() -> UIImage? {

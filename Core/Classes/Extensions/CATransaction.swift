@@ -1,4 +1,4 @@
-import Foundation
+import QuartzCore
 
 public extension CATransaction {
     class func withDisabledActions<T>(_ body: () throws -> T) rethrows -> T {

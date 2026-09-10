@@ -1,4 +1,5 @@
 import Foundation
+import UIKit
 
 public extension String {
     func drawCentered(in rect: CGRect, attributes: [NSAttributedString.Key: Any]? = nil) {

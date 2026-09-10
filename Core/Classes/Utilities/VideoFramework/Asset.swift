@@ -1,6 +1,7 @@
 import PhotosUI
 import AVKit
 import AVFoundation
+import UIKit
 
 public enum Asset: Codable {
     static let DEFAULT_PHOTO_DURATION: CMTime = CMTime(seconds: 5, preferredTimescale: 600)

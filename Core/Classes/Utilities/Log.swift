@@ -1,4 +1,5 @@
 import os
+import Foundation
 
 /// Any object that implements the LoggingSupport protocol will inherit a Log object
 /// which can be used to control output to the console. adjusting the `verbosity` parameter
