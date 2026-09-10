@@ -3,7 +3,7 @@ use_frameworks!
 platform :ios, '13.0'
 
 target 'Playground' do
-  pod 'VFCabbage'
+  pod 'VFCabbage', :path => '/Users/joey/Documents/work/private/Cabbage' # FIXME: fork-only, see README
   pod 'Core', :path => '../'
   
   target 'Tests' do
