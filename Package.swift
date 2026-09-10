@@ -13,9 +13,9 @@ let package = Package(
             targets: ["Core"]),
     ],
     dependencies: [
-        // Fork of VideoFlint/Cabbage. Upstream has been dormant since March 2022 and the
-        // published 0.5.1 lacks AVURLAssetTrackResource and the VideoCompositor thread-safety
-        // fixes that Classes/Utilities/VideoFramework depends on.
+        // Fork of VideoFlint/Cabbage. Upstream has been dormant since March 2022; its
+        // published 0.5.1 lacks AVURLAssetTrackResource and the outputDirectory parameter
+        // that Classes/Utilities/VideoFramework uses, and does not compile against current SDKs.
         .package(url: "https://github.com/joeypatino/Cabbage.git", from: "0.5.3")
     ],
     targets: [
