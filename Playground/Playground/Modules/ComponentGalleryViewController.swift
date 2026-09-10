@@ -17,6 +17,8 @@ final class ComponentGalleryViewController: UIViewController {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
             _ = self.invalid.resignFirstResponder()
             self.invalid.invalidate()
+            // Focusing scrolled the field into view; put it back for the screenshot.
+            self.scrollView.setContentOffset(.zero, animated: false)
         }
     }
 
@@ -85,6 +87,7 @@ final class ComponentGalleryViewController: UIViewController {
         activity.setTitle("Activity button", for: .normal)
         activity.backgroundColor = .systemIndigo
         activity.layer.cornerRadius = 8
+        activity.isActive = true
         add(activity, height: 48)
 
         // RoundButton constrains width to height, so it needs a row that does not
