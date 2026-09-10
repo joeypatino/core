@@ -42,3 +42,7 @@ Pods/
 # Scratch
 Core/Classes/Views/InputTextView.swift
 Playground/Podfile.lock
+
+# SPM
+.build/
+.swiftpm/

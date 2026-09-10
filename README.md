@@ -64,29 +64,24 @@ workspace, covering each component across its states and configurations.
 
 ## Installation
 
-### Swift Package Manager
+Swift Package Manager. Add to `Package.swift`:
 
-<!-- TODO: add Package.swift, then document it here. -->
-
-### CocoaPods
-
-```ruby
-platform :ios, '13.0'
-use_frameworks!
-
-pod 'Core', :git => 'https://github.com/joeypatino/core.git'
+```swift
+.package(url: "https://github.com/joeypatino/core.git", from: "1.0.0")
 ```
+
+Or in Xcode: File > Add Package Dependencies, then paste the URL.
+
+Core depends on [joeypatino/Cabbage](https://github.com/joeypatino/Cabbage), a fork of
+VideoFlint/Cabbage kept because upstream has been dormant since 2022 and its published release
+is missing fixes the video components rely on. SPM resolves it automatically.
 
 ## Example
 
-```sh
-cd Playground
-pod install
-open Core.xcworkspace
-```
+The `Playground` workspace renders every component in its states, and is what the snapshot
+tests exercise.
 
-The Playground app renders every component in its states, and is what the snapshot tests
-exercise.
+<!-- TODO: Playground still builds through CocoaPods and needs converting to SPM. -->
 
 ## Requirements
 
