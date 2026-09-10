@@ -6,6 +6,19 @@ import Core
 final class ComponentGalleryViewController: UIViewController {
     private let scrollView = UIScrollView()
     private let stack = UIStackView()
+    private let filled = InputField()
+    private let invalid = InputField()
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        // Focus then blur, then mark invalid. This gives the invalid border. The hint text
+        // needs actual typing, see the note in viewDidLoad.
+        _ = invalid.becomeFirstResponder()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            _ = self.invalid.resignFirstResponder()
+            self.invalid.invalidate()
+        }
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -31,11 +44,24 @@ final class ComponentGalleryViewController: UIViewController {
         ])
 
         section("InputField")
-        // text and error are @Published outputs, set from the field as the user types,
-        // so a filled or invalid state cannot be staged from here. Shown empty.
         let plain = InputField()
         plain.placeholder = "Email address"
         add(plain, height: 64)
+
+        // setText is the way in. InputField.text is a @Published output written as the user
+        // types, so assigning to it does not populate the field.
+        filled.placeholder = "Email address"
+        filled.setText("joey.patino@pm.me")
+        add(filled, height: 64)
+
+        // invalidate() repaints the border red, and that much can be staged from outside.
+        // The hint underneath cannot: it is gated on editActions containing .edit, which is
+        // only inserted by textFieldDidChange, the real-keystroke path. setText does not go
+        // through it. Type into this field by hand and the hint appears on blur.
+        invalid.placeholder = "Email address"
+        invalid.validators = [EmailValidator(validationHint: "Enter a valid email address")]
+        invalid.setText("not-an-email")
+        add(invalid, height: 78)
 
         section("PasswordInputField")
         let secure = PasswordInputField()
