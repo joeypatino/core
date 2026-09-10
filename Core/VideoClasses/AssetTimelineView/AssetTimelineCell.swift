@@ -2,6 +2,9 @@ import UIKit
 import AVFoundation
 import Core
 
+// The trimming control behind AssetTimelineView. TrimmerView, in
+// VideoClasses/PryntTrimmerView, is an alternative implementation kept for the moment:
+// swap the alias to try it. Both conform to the same surface used here.
 public typealias Trimmer = VideoTrimmer
 
 public final class AssetTimelineCell: UICollectionViewCell {
