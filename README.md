@@ -9,10 +9,9 @@ framework so I stop rewriting them. Input fields that validate and mask, a confi
 cropper, a video asset timeline, paginated and self-sizing collection views, and the Foundation
 and UIKit extensions that hold them together.
 
-<!-- TODO: component gallery. A grid of screenshots or short GIFs captured from the Playground
-     app: the button variants, the InputField family in each validation and focus state,
-     ImageCropper, AssetTimelineView, PageSelector. This is the first thing anyone sees and
-     the single highest-value addition to this file. -->
+<p align="center">
+  <img src="Documentation/images/components.png" width="380" alt="Core components rendered in the Playground app">
+</p>
 
 ## What's inside
 
@@ -77,8 +76,12 @@ is missing fixes the video components rely on. SPM resolves it automatically.
 
 ## Example
 
-The `Playground` app renders the components in their states. Open `Playground/Core.xcodeproj`
-and run; SPM resolves everything.
+Open `Playground/Core.xcodeproj` and run; SPM resolves everything. The first row,
+**Components**, is the gallery above; the rest demo modal presentation, media capture,
+the media player and Core Animation helpers.
+
+To regenerate the gallery screenshot, launch with the `-gallery` argument and it opens
+straight onto that screen.
 
 ## Requirements
 

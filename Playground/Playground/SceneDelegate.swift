@@ -17,7 +17,12 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             return
         }
         let window = UIWindow(windowScene: windowScene)
-        let navigationController = UINavigationController(rootViewController: RootViewController())
+        // Launch with -gallery to open the component gallery straight away, so the
+        // README screenshots can be regenerated without driving the UI.
+        let root: UIViewController = ProcessInfo.processInfo.arguments.contains("-gallery")
+            ? ComponentGalleryViewController()
+            : RootViewController()
+        let navigationController = UINavigationController(rootViewController: root)
         window.rootViewController = navigationController
         self.window = window
         window.makeKeyAndVisible()

@@ -2,6 +2,7 @@ import UIKit
 import Core
 
 enum Playgrounds: String, CaseIterable {
+    case componentGallery
     case modalPresentation
     case modalPresentationWithLoadingBanner
     case pageIndicatorView
@@ -49,6 +50,8 @@ extension RootViewController: UITableViewDelegate {
         switch playground {
         case .caAnimations:
             show(CAAnimationViewController(), sender: nil)
+        case .componentGallery:
+            show(ComponentGalleryViewController(), sender: nil)
         case .modalPresentation:
             show(ModalPresentationViewController(), sender: nil)
         case .modalPresentationWithLoadingBanner:

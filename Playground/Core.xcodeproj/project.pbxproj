@@ -15,6 +15,7 @@
 		607FACE01AFB9204008FA782 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 607FACDE1AFB9204008FA782 /* LaunchScreen.xib */; };
 		607FACEC1AFB9204008FA782 /* Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 607FACEB1AFB9204008FA782 /* Tests.swift */; };
 		D411149A284E8B1A00D593FD /* VideoEditorPlaygroundViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4111499284E8B1A00D593FD /* VideoEditorPlaygroundViewController.swift */; };
+		AA0000000000000000000010 /* ComponentGalleryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000011 /* ComponentGalleryViewController.swift */; };
 		D41FF58C28513D18006B2688 /* CAAnimationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D41FF58B28513D18006B2688 /* CAAnimationViewController.swift */; };
 		D436B54028C15A8F001AB0B0 /* CaptureButtonPlaygroundViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D436B53F28C15A8F001AB0B0 /* CaptureButtonPlaygroundViewController.swift */; };
 		D481326E284CD7E2001948F7 /* ModalViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D481326D284CD7E2001948F7 /* ModalViewController.swift */; };
@@ -55,6 +56,7 @@
 		607FACEA1AFB9204008FA782 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		607FACEB1AFB9204008FA782 /* Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tests.swift; sourceTree = "<group>"; };
 		D4111499284E8B1A00D593FD /* VideoEditorPlaygroundViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoEditorPlaygroundViewController.swift; sourceTree = "<group>"; };
+		AA0000000000000000000011 /* ComponentGalleryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComponentGalleryViewController.swift; sourceTree = "<group>"; };
 		D41FF58B28513D18006B2688 /* CAAnimationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CAAnimationViewController.swift; sourceTree = "<group>"; };
 		D436B53F28C15A8F001AB0B0 /* CaptureButtonPlaygroundViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureButtonPlaygroundViewController.swift; sourceTree = "<group>"; };
 		D481326D284CD7E2001948F7 /* ModalViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModalViewController.swift; sourceTree = "<group>"; };
@@ -176,6 +178,7 @@
 				D4ACCB1D284D23C700DC0425 /* VideoPlayerPlaygroundViewController.swift */,
 				D4ACCB19284D147C00DC0425 /* VideoCapturePlaygroundViewController.swift */,
 				D4111499284E8B1A00D593FD /* VideoEditorPlaygroundViewController.swift */,
+				AA0000000000000000000011 /* ComponentGalleryViewController.swift */,
 				D41FF58B28513D18006B2688 /* CAAnimationViewController.swift */,
 				D4DEE16E2853679300E56202 /* AudioEditingPlaygroundViewController.swift */,
 				D436B53F28C15A8F001AB0B0 /* CaptureButtonPlaygroundViewController.swift */,
@@ -300,6 +303,7 @@
 			files = (
 				D4ACCB1A284D147C00DC0425 /* VideoCapturePlaygroundViewController.swift in Sources */,
 				D411149A284E8B1A00D593FD /* VideoEditorPlaygroundViewController.swift in Sources */,
+				AA0000000000000000000010 /* ComponentGalleryViewController.swift in Sources */,
 				D4813279284CDF61001948F7 /* MediaCapturePlaygroundViewController.swift in Sources */,
 				D4813277284CDEC3001948F7 /* ActionSheetPlaygroundViewController.swift in Sources */,
 				D481326E284CD7E2001948F7 /* ModalViewController.swift in Sources */,
