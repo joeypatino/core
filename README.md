@@ -1,50 +1,100 @@
 # Core
-[![CI Status](https://img.shields.io/travis/joey-patino/Core.svg?style=flat)](https://travis-ci.org/joey-patino/Core)
-[![Version](https://img.shields.io/cocoapods/v/Core.svg?style=flat)](https://cocoapods.org/pods/Core)
-[![License](https://img.shields.io/cocoapods/l/Core.svg?style=flat)](https://cocoapods.org/pods/Core)
-[![Platform](https://img.shields.io/cocoapods/p/Core.svg?style=flat)](https://cocoapods.org/pods/Core)
 
-<br />
-<p align="left">
-    Core is a collection iOS User interface elements and extensions to speed up your iOS development.
-</p>
+![Swift](https://img.shields.io/badge/Swift-5.0-orange)
+![Platform](https://img.shields.io/badge/platform-iOS%2013%2B-lightgrey)
+![License](https://img.shields.io/badge/License-MIT-blue)
 
-## Example
+The UIKit components and extensions I reach for on every iOS project, collected into one
+framework so I stop rewriting them. Input fields that validate and mask, a configurable image
+cropper, a video asset timeline, paginated and self-sizing collection views, and the Foundation
+and UIKit extensions that hold them together.
 
-To run the example project, clone the repo, and run `pod install` from the Example directory first.
+<!-- TODO: component gallery. A grid of screenshots or short GIFs captured from the Playground
+     app: the button variants, the InputField family in each validation and focus state,
+     ImageCropper, AssetTimelineView, PageSelector. This is the first thing anyone sees and
+     the single highest-value addition to this file. -->
 
-## Requirements
+## What's inside
 
-- iOS 13.1+
+### Views
+
+The input field family is the core of it. `InputField`, `InputTextField`, `InputTextView` and
+`InsetTextField` share one validation and presentation model, so a field can carry a
+placeholder, a focus style, an error state and a secure-entry mask without every screen
+reimplementing them.
+
+Beyond those: `ImageCropper` for interactive crop and scale, `AssetTimelineView` for scrubbing
+video compositions, `PaginatedTableView` for pages loaded on demand, `IntrinsicTableView` and
+`IntrinsicCollectionView` for scroll views that size to their content inside a stack view, and
+`PageSelector`, `CameraPreview`, `ActivityButton`, `GradientButton`, `CaptureButton` and
+`ClearButton`.
+
+### Utilities
+
+`Keychain` wraps secure storage. `Storage` is a `Codable`-backed `@propertyWrapper` over
+`UserDefaults`, so a persisted setting is one annotation. `Validator` and its implementations
+cover email, name, city, zip code, no-spaces, not-empty, regular expressions, and street
+addresses in both German and US formats. Also `LocationManager`, `Log`, `Observers`,
+`Vibration`, `Gradient`, a `Camera` capture wrapper, and a small video framework of
+`Composition`, `Asset`, `Layer` and `TrackItem` built over VFCabbage.
+
+### Extensions and view controllers
+
+Around sixty extensions across Foundation and UIKit, plus view controllers including a
+configurable `ActionSheetViewController`.
+
+## Design notes
+
+**Public by intent, not by default.** The framework exposes a deliberately narrow surface.
+Anything `public` is something I wanted to depend on from an app; everything else stays
+internal, which keeps the API small enough to hold in your head.
+
+**Composition over configuration.** The input field family shares behaviour by composing small
+pieces, validators and focus styles among them, rather than growing one class with a long
+initialiser. Adding a validation rule means conforming to `Validator`, not editing a field.
+
+**Extensions carry the boilerplate.** The awkward parts of UIKit, corner masking and layout
+constants among them, are pushed into extensions so component code reads as intent.
+
+## Testing
+
+Components are snapshot tested with
+[FBSnapshotTestCase](https://github.com/uber/ios-snapshot-test-case) in the `Playground`
+workspace, covering each component across its states and configurations.
 
 ## Installation
 
-#### CocoaPods
-You can use [CocoaPods](http://cocoapods.org/) to install `Core` by adding it to your `Podfile`:
+### Swift Package Manager
+
+<!-- TODO: add Package.swift, then document it here. -->
+
+### CocoaPods
 
 ```ruby
-platform :ios, '13.1'
+platform :ios, '13.0'
 use_frameworks!
-pod 'Core', :git => 'git@github.com:joeypatino/core.git'
+
+pod 'Core', :git => 'https://github.com/joeypatino/core.git'
 ```
 
-## Additional Packages
+## Example
 
-The Packages are also recommended
+```sh
+cd Playground
+pod install
+open Core.xcworkspace
+```
 
-```ruby
-https://github.com/Moya/Moya.git
-https://github.com/scenee/FloatingPanel.git
-https://github.com/realm/realm-swift.git
-https://github.com/evgenyneu/keychain-swift.git
-https://github.com/efremidze/Haptica.git
-https://github.com/kylebrowning/Storage.git
-https://github.com/onevcat/Kingfisher.git
-https://github.com/Xiaoye220/EmptyDataSet-Swift.git
- ```
+The Playground app renders every component in its states, and is what the snapshot tests
+exercise.
 
-### Meta
+## Requirements
 
-Joey Patino – [@nsinvalidarg](https://twitter.com/nsinvalidarg) – joey.patino@pm.com
+- iOS 13.0+
+- Swift 5.0+
 
-Distributed under the MIT license
+## License
+
+MIT. See [LICENSE](LICENSE).
+
+Joey Patino - joey.patino@pm.me

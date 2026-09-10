@@ -35,3 +35,10 @@ Carthage/Build
 # `pod install` in .travis.yml
 #
 # Pods/
+
+# CocoaPods
+Pods/
+
+# Scratch
+Core/Classes/Views/InputTextView.swift
+Playground/Podfile.lock
