@@ -8,6 +8,7 @@
 
 import UIKit
 import AVFoundation
+import Core
 
 private let margin: CGFloat = 16
 

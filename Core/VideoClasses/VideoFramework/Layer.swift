@@ -1,5 +1,6 @@
 import AVKit
 import VFCabbage
+import Core
 
 /// A layer represents a single video (or audio) clip, with a backing asset.
 public class Layer: Codable {

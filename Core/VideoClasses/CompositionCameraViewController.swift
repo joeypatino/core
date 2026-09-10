@@ -1,5 +1,6 @@
 import UIKit
 import AVKit
+import Core
 
 public protocol CompositionCameraViewControllerDelegate: AnyObject {
     func viewController(_ viewController: CompositionCameraViewController, didAppendAsset asset: Asset)

@@ -11,6 +11,9 @@ let package = Package(
         .library(
             name: "Core",
             targets: ["Core"]),
+        .library(
+            name: "CoreVideoKit",
+            targets: ["CoreVideoKit"]),
     ],
     dependencies: [
         // Fork of VideoFlint/Cabbage. Upstream has been dormant since March 2022; its
@@ -21,15 +24,21 @@ let package = Package(
     targets: [
         .target(
             name: "Core",
-            dependencies: [
-                .product(name: "VFCabbage", package: "Cabbage")
-            ],
+            dependencies: [],
             path: "Core",
-            exclude: ["Scripts"],
+            exclude: ["Scripts", "VideoClasses"],
             sources: ["Classes"],
             resources: [
                 .process("Localizable.strings")
             ]
+        ),
+        .target(
+            name: "CoreVideoKit",
+            dependencies: [
+                "Core",
+                .product(name: "VFCabbage", package: "Cabbage")
+            ],
+            path: "Core/VideoClasses"
         )
     ]
 )

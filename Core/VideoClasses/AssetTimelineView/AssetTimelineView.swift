@@ -1,5 +1,6 @@
 import UIKit
 import AVKit
+import Core
 
 public protocol AssetViewModel: AnyObject {
     /// the asset we are managing

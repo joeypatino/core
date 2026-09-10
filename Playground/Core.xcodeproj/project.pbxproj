@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		AA0000000000000000000004 /* Core in Frameworks */ = {isa = PBXBuildFile; productRef = AA0000000000000000000002 /* Core */; };
+		AA0000000000000000000007 /* CoreVideoKit in Frameworks */ = {isa = PBXBuildFile; productRef = AA0000000000000000000006 /* CoreVideoKit */; };
 		AA0000000000000000000005 /* Core in Frameworks */ = {isa = PBXBuildFile; productRef = AA0000000000000000000003 /* Core */; };
 		607FACD61AFB9204008FA782 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 607FACD51AFB9204008FA782 /* AppDelegate.swift */; };
 		607FACD81AFB9204008FA782 /* RootViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 607FACD71AFB9204008FA782 /* RootViewController.swift */; };
@@ -81,6 +82,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				AA0000000000000000000004 /* Core in Frameworks */,
+				AA0000000000000000000007 /* CoreVideoKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -204,6 +206,7 @@
 			name = Playground;
 			packageProductDependencies = (
 				AA0000000000000000000002 /* Core */,
+				AA0000000000000000000006 /* CoreVideoKit */,
 			);
 			productName = Core;
 			productReference = 607FACD01AFB9204008FA782 /* Playground.app */;
@@ -361,6 +364,10 @@
 		AA0000000000000000000002 /* Core */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = Core;
+		};
+		AA0000000000000000000006 /* CoreVideoKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = CoreVideoKit;
 		};
 		AA0000000000000000000003 /* Core */ = {
 			isa = XCSwiftPackageProductDependency;

@@ -1,5 +1,6 @@
 import AVKit
 import VFCabbage
+import Core
 
 public protocol LayerTransition {
     static var none: LayerTransition { get }

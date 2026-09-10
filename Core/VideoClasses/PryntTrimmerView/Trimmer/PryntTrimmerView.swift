@@ -8,6 +8,7 @@
 
 import AVFoundation
 import UIKit
+import Core
 
 /// A view to select a specific time range of a video. It consists of an asset preview with thumbnails inside a scroll view, two
 /// handles on the side to select the beginning and the end of the range, and a position bar to synchronize the control with a

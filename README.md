@@ -70,9 +70,12 @@ Swift Package Manager. Add to `Package.swift`:
 
 Or in Xcode: File > Add Package Dependencies, then paste the URL.
 
-Core depends on [joeypatino/Cabbage](https://github.com/joeypatino/Cabbage), a fork of
-VideoFlint/Cabbage kept because upstream has been dormant since 2022 and its published release
-is missing fixes the video components rely on. SPM resolves it automatically.
+Two products. **`Core`** is the components, utilities and extensions, and has **no third-party
+dependencies**. **`CoreVideoKit`** adds video composition, trimming and capture, and depends on
+[joeypatino/Cabbage](https://github.com/joeypatino/Cabbage) — a fork of VideoFlint/Cabbage kept
+because upstream has been dormant since 2022, its published release is missing fixes the video
+code relies on, and it does not compile against current SDKs. Depend on `CoreVideoKit` only if
+you want the video pieces.
 
 ## Example
 

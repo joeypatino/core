@@ -1,6 +1,7 @@
 import AVFoundation
 import Photos
 import VFCabbage
+import Core
 
 public class AssetSource {
     public static let DEFAULT_TRANSITION_DURATION: CMTime = CMTime(seconds: 1, preferredTimescale: 600)

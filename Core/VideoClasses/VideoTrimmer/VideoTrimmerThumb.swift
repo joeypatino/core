@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import Core
 
 public final class VideoTrimmerThumb: UIView {
     public var borderColor: UIColor = UIColor.systemYellow {

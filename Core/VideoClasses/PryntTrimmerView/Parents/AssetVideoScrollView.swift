@@ -8,6 +8,7 @@
 
 import AVFoundation
 import UIKit
+import Core
 
 class AssetVideoScrollView: UIScrollView {
 

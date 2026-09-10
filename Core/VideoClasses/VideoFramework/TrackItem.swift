@@ -1,5 +1,6 @@
 import VFCabbage
 import AVFoundation
+import Core
 
 extension TrackItem {
     public func generatePlayerItem(size: CGSize = .zero, timeRange: CMTimeRange) -> AVPlayerItem? {

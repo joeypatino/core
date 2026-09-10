@@ -1,5 +1,6 @@
 import UIKit
 import AVFoundation
+import Core
 
 public typealias Trimmer = VideoTrimmer
 //public typealias Trimmer = TrimmerView

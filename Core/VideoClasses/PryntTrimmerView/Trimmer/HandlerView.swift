@@ -8,6 +8,7 @@
 
 import Foundation
 import UIKit
+import Core
 
 class PositionBar: UIView {
     override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {

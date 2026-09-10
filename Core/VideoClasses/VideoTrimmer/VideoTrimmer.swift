@@ -8,6 +8,7 @@
 
 import UIKit
 import AVFoundation
+import Core
 
 // Controls that allows trimming a range and scrubbing a progress indicator
 @IBDesignable public final class VideoTrimmer: UIControl {
