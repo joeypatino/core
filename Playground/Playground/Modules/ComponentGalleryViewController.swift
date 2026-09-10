@@ -106,9 +106,6 @@ final class ComponentGalleryViewController: UIViewController {
         row.addArrangedSubview(UIView())
         add(row, height: 48)
 
-        section("RangeSlider")
-        add(RangeSlider(), height: 40)
-
         section("Hr")
         add(Hr(color: .separator), height: 1)
     }

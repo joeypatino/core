@@ -3,7 +3,6 @@ import AVFoundation
 import Core
 
 public typealias Trimmer = VideoTrimmer
-//public typealias Trimmer = TrimmerView
 
 public final class AssetTimelineCell: UICollectionViewCell {
     private class SelectedAssetTimelineCell: UIView {

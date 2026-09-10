@@ -93,6 +93,6 @@ straight onto that screen.
 
 ## License
 
-MIT. See [LICENSE](LICENSE).
+MIT. See [LICENSE](LICENSE) and [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
 
 Joey Patino - joey.patino@pm.me
